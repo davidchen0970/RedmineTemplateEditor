@@ -40,26 +40,14 @@ const presets = {
 	desc: "Schematic / 線路檢查",
 	title: "檢查 SOL 在 schematic 的電路",
 	status: "PASS",
-	summary: "檢查後確認 BMC <-UART1-> CPLD <--> console\nSYS_UART 線路已補上",
+	summary: "",
 	change: "X",
 	sections: [
-		sec("Block Diagram", true, [
-		block(
-			"text",
-			"說明",
-			"底下分三部份檢視\n## SYS_UART 線路\n## SOL_UART 線路\n## CPLD <-> RJ45 線路",
-		),
-		]),
-		sec("Schematic", true, [
-		block(
-			"mermaid",
-			"SYS_UART 線路",
-			"flowchart LR\n	x86[Intel x86] <--> SYS_UART\n	SYS_UART <--> CPLD[CPLD]",
-		),
-		]),
-		sec("實作流程", false, [impl()]),
+		sec("Block Diagram", false, []),
+		sec("Schematic", false, []),
+		sec("實作流程", false, []),
 		sec("結果驗證", false, []),
-		sec("參考資料", true, [block("text", "Reference", '# "":')]),
+		sec("參考資料", false, []),
 	],
 	},
 	porting: {
@@ -67,38 +55,14 @@ const presets = {
 	desc: "功能移植 / 設定修改",
 	title: "Porting SOL function",
 	status: "PASS",
-	summary: "在手動調整 UART route 後即可成功使用 SOL",
-	change: "Add obmc-console in @meta-platform@",
+	summary: "",
+	change: "",
 	sections: [
-		sec("系統架構", true, [
-		block(
-			"mermaid",
-			"obmc-console workflow",
-			"flowchart LR\n	client[obmc-console-client] <--> socket[Unix socket]\n	socket <--> server[obmc-console-server]",
-		),
-		]),
-		sec("實作流程", true, [impl("api.c", "(docker)$ pwd", "cpp", "")]),
-		sec("結果驗證", true, [
-		block(
-			"command",
-			"service status",
-			"root@bmc-host:~# systemctl status obmc-console@ttyS0.service -l",
-		),
-		]),
-		sec("備註", true, [
-		block(
-			"text",
-			"UART route",
-			"0x71 0xc = 0 (x86 mode)\n0x71 0xc = 1 (BMC mode)\n0x71 0xc = 2 (SOL mode)",
-		),
-		]),
-		sec("參考資料", true, [
-		block(
-			"text",
-			"Reference",
-			'# "Platform Porting Guide.pdf":https://example.invalid/...',
-		),
-		]),
+		sec("Block Diagram", false, []),
+		sec("Schematic", false, []),
+		sec("實作流程", false, []),
+		sec("結果驗證", false, []),
+		sec("參考資料", false, []),
 	],
 	},
 	debug: {
@@ -106,26 +70,14 @@ const presets = {
 	desc: "問題排查 / FAILED note",
 	title: "在 obmc-console 當中加上 debug code 計算 client 個數",
 	status: "FAILED",
-	summary:
-		"有 @Open /tmp/biosDbg0.log to write@ 的 err msg\n一開始有 @bus_error_message@ 的問題產生",
-	change: "obmc-console (socket-handler.c) - 增加 n_clients 的 debug info",
+	summary: "",
+	change: "",
 	sections: [
-		sec("實作流程", true, [
-		impl(
-			"socket-handler.c",
-			"(docker)$ devtool modify obmc-console",
-			"cpp",
-			'warn("%d = sh->n_clients", sh->n_clients);',
-		),
-		]),
-		sec("結果驗證", true, [
-		block(
-			"log",
-			"測試 1：不同瀏覽器使用 WebUI SOL",
-			"root@bmc-host:~# journalctl -o short-precise | grep obmc-console-server\n...",
-		),
-		]),
-		sec("參考資料", true, [block("text", "Reference", '# "":')]),
+		sec("Block Diagram", false, []),
+		sec("Schematic", false, []),
+		sec("實作流程", false, []),
+		sec("結果驗證", false, []),
+		sec("參考資料", false, []),
 	],
 	},
 };
