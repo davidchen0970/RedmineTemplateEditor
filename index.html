@@ -5,7 +5,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>Redmine Template Editor v3</title>
- <link rel="stylesheet" href="styles.css" />
+	<link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
@@ -19,21 +19,23 @@
 				type="file" accept=".json,application/json" class="hidden"><button id="reset"
 				class="danger">重設</button><span id="save" class="save"></span></div>
 	</header>
-	<main class="layout">
-		<aside class="panel">
-			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-templates" aria-expanded="true">模板與段落</button></h2>
-			<div class="body" id="panel-templates">
+	<main class="layout" id="appLayout">
+		<aside class="panel sidebar-panel" id="sidebarPanel">
+			<h2 class="panel-head sidebar-head"><button type="button" id="sidebarCollapse" class="sidebar-collapse"
+					aria-label="收合模板與段落" title="收合模板與段落">☰</button><span>模板與段落</span></h2>
+			<div class="body sidebar-body" id="panel-templates">
 				<div id="templates"></div>
 				<hr><label>段落顯示</label>
 				<div id="toggles"></div>
 				<hr><label>快速片段</label>
 				<div class="actions"><button class="small" data-snip="journalctl">journalctl</button><button
 						class="small" data-snip="systemctl">systemctl</button><button class="small"
-						data-snip="i2c">i2c</button><button class="small" data-snip="impl">實作流程單位</button></div>
+						data-snip="i2c">i2c</button></div>
 			</div>
 		</aside>
-		<section class="panel">
-			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-form" aria-expanded="true">互動式表單</button></h2>
+		<section class="panel form-panel">
+			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-form"
+					aria-expanded="true">互動式表單</button></h2>
 			<div class="body" id="panel-form">
 				<div class="row">
 					<div class="field"><label>標題 h2.</label><input id="title" type="text"></div>
@@ -44,25 +46,33 @@
 							<option>N/A</option>
 						</select></div>
 				</div>
-				<div class="field"><label>簡要說明實做內容</label><textarea id="ref" type="text"></textarea></div>
-				<div class="field"><label>修改內容</label><textarea id="change" type="text"></textarea></div>
 				<div class="field"><label>結論補充 bullet，每行一筆</label><textarea id="summary"></textarea></div>
+				<div class="row">
+					<div class="field"><label>修改內容</label><input id="change" type="text"></div>
+					<div class="field"><label>簡要說明實做內容</label><input id="ref" type="text"></div>
+				</div>
 				<div class="section">
-					<div class="section-head"><button type="button" class="section-toggle" data-collapse-target="section-env" aria-expanded="true">測試環境</button></div>
-					<div class="section-body" id="section-env"><div class="row" id="env"></div></div>
+					<div class="section-head"><button type="button" class="section-toggle"
+							data-collapse-target="section-env" aria-expanded="true">測試環境</button></div>
+					<div class="section-body" id="section-env">
+						<div class="row" id="env"></div>
+					</div>
 				</div>
 				<div id="sections"></div>
 			</div>
 		</section>
-		<section class="panel right">
-			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-output" aria-expanded="true">Redmine Textile 輸出</button></h2>
+		<div class="resizer" id="formOutputResizer" title="拖曳調整左右寬度" role="separator"
+			aria-label="調整互動式表單與 Redmine 輸出寬度"></div>
+		<section class="panel right output-panel">
+			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-output"
+					aria-expanded="true">Redmine Textile 輸出</button></h2>
 			<div class="body" id="panel-output">
 				<div class="actions" style="margin-bottom:10px"><button id="raw" class="primary">原始輸出</button><button
 						id="statebtn">JSON 狀態</button></div><textarea id="out" class="output" readonly></textarea>
 			</div>
 		</section>
 	</main>
- <script src="app.js"></script>
+	<script src="app.js"></script>
 </body>
 
 </html>
