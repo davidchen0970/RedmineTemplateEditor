@@ -21,8 +21,8 @@
 	</header>
 	<main class="layout">
 		<aside class="panel">
-			<h2>模板與段落</h2>
-			<div class="body">
+			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-templates" aria-expanded="true">模板與段落</button></h2>
+			<div class="body" id="panel-templates">
 				<div id="templates"></div>
 				<hr><label>段落顯示</label>
 				<div id="toggles"></div>
@@ -33,8 +33,8 @@
 			</div>
 		</aside>
 		<section class="panel">
-			<h2>互動式表單</h2>
-			<div class="body">
+			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-form" aria-expanded="true">互動式表單</button></h2>
+			<div class="body" id="panel-form">
 				<div class="row">
 					<div class="field"><label>標題 h2.</label><input id="title" type="text"></div>
 					<div class="field"><label>執行狀態</label><select id="status">
@@ -48,15 +48,15 @@
 				<div class="field"><label>修改內容</label><textarea id="change" type="text"></textarea></div>
 				<div class="field"><label>結論補充 bullet，每行一筆</label><textarea id="summary"></textarea></div>
 				<div class="section">
-					<div class="section-head"><strong>測試環境</strong></div>
-					<div class="section-body row" id="env"></div>
+					<div class="section-head"><button type="button" class="section-toggle" data-collapse-target="section-env" aria-expanded="true">測試環境</button></div>
+					<div class="section-body" id="section-env"><div class="row" id="env"></div></div>
 				</div>
 				<div id="sections"></div>
 			</div>
 		</section>
 		<section class="panel right">
-			<h2>Redmine Textile 輸出</h2>
-			<div class="body">
+			<h2 class="panel-head"><button type="button" class="collapse-toggle" data-collapse-target="panel-output" aria-expanded="true">Redmine Textile 輸出</button></h2>
+			<div class="body" id="panel-output">
 				<div class="actions" style="margin-bottom:10px"><button id="raw" class="primary">原始輸出</button><button
 						id="statebtn">JSON 狀態</button></div><textarea id="out" class="output" readonly></textarea>
 			</div>

@@ -274,15 +274,19 @@ function renderSections() {
 		s.id +
 		'" ' +
 		(s.enabled ? "checked" : "") +
-		"> <strong>" +
+		'></label><button type="button" class="section-toggle" data-collapse-target="section-body-' +
+		s.id +
+		'" aria-expanded="true"><strong>' +
 		esc(s.title) +
-		'</strong></label><div class="actions"><button class="small" data-up="' +
+		'</strong></button><div class="actions"><button class="small" data-up="' +
 		s.id +
 		'">上移</button><button class="small" data-down="' +
 		s.id +
 		'">下移</button><button class="small" data-add="' +
 		s.id +
-		'">新增區塊</button></div></div><div class="section-body"><div class="field"><label>段落標題 h3.</label><input type="text" data-st="' +
+		'">新增區塊</button></div></div><div class="section-body" id="section-body-' +
+		s.id +
+		'"><div class="field"><label>段落標題 h3.</label><input type="text" data-st="' +
 		s.id +
 		'" value="' +
 		esc(s.title) +
@@ -694,5 +698,21 @@ document.querySelectorAll("[data-snip]").forEach(
 		render();
 	}),
 );
+
+function setupCollapsible() {
+	document.addEventListener("click", (e) => {
+		const toggle = e.target.closest("[data-collapse-target]");
+		if (!toggle) return;
+
+		const target = document.getElementById(toggle.dataset.collapseTarget);
+		if (!target) return;
+
+		const expanded = toggle.getAttribute("aria-expanded") !== "false";
+		toggle.setAttribute("aria-expanded", String(!expanded));
+		target.classList.toggle("collapsed", expanded);
+	});
+}
+setupCollapsible();
+
 save();
 render();
