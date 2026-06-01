@@ -264,27 +264,19 @@ function renderToggles() {
 	);
 }
 function sectionActionsHtml(s, position = "top") {
-	const suffix = position === "bottom" ? "-bottom" : "";
 	const extraClass = position === "bottom" ? " section-actions-bottom" : "";
 	return (
 	'<div class="actions' +
 	extraClass +
 	'"><button class="small" data-up="' +
 	s.id +
-	'" data-action-pos="' +
-	position +
 	'">上移</button><button class="small" data-down="' +
 	s.id +
-	'" data-action-pos="' +
-	position +
 	'">下移</button><button class="small" data-add="' +
 	s.id +
-	'" data-action-pos="' +
-	position +
 	'">新增區塊</button></div>'
 	);
 }
-
 function renderSections() {
 	const r = document.getElementById("sections");
 	r.innerHTML = "";
@@ -370,7 +362,7 @@ function renderBlock(sid, b) {
 	.join("");
 	if (b.type === "implementation") {
 	d.innerHTML =
-		'<div class="actions" style="justify-content:space-between"><span class="note">implementation</span><span><button class="small" data-du="' +
+		'<div class="actions" style="justify-content:space-between"><span class="note">Implementation Unit</span><span><button class="small" data-du="' +
 		b.id +
 		'">複製</button> <button class="small danger" data-del="' +
 		b.id +
@@ -470,7 +462,7 @@ function renderBlock(sid, b) {
 }
 function label(t) {
 	const labels = {
-		implementation: "Implementation",
+		implementation: "Implementation Unit",
 		text: "Text / Textile",
 		command: "Command Block",
 		diff: "Diff Block",
@@ -485,19 +477,87 @@ function label(t) {
 function findSec(id) {
 	return state.sections.find((s) => s.id === id);
 }
+let pendingAddSectionId = null;
+function blockTypeOptionsHtml() {
+	return [
+	["implementation", "Implementation Unit"],
+	["text", "Text / Textile"],
+	["command", "Command block"],
+	["diff", "Diff block"],
+	["log", "Log block"],
+	["mermaid", "Mermaid block"],
+	["image", "Image"],
+	["collapse", "Collapse"],
+	]
+	.map(
+		([value, text]) => '<option value="' + value + '">' + text + "</option>",
+	)
+	.join("");
+}
+function defaultBlockTitle(type) {
+	return type === "implementation" ? "api.c" : label(type);
+}
+function ensureAddBlockDialog() {
+	let dialog = document.getElementById("addBlockDialog");
+	if (dialog) return dialog;
+	dialog = document.createElement("dialog");
+	dialog.id = "addBlockDialog";
+	dialog.className = "add-block-dialog";
+	dialog.innerHTML =
+	'<form method="dialog" id="addBlockForm"><div class="dialog-head">新增區塊</div><div class="dialog-body"><div class="field"><label>區塊類型</label><select id="addBlockType">' +
+	blockTypeOptionsHtml() +
+	'</select></div><div class="field"><label>區塊標題</label><input id="addBlockTitle" type="text"></div></div><div class="dialog-actions"><button type="button" id="addBlockCancel">取消</button><button type="submit" class="primary">新增</button></div></form>';
+	document.body.appendChild(dialog);
+	const type = dialog.querySelector("#addBlockType");
+	const title = dialog.querySelector("#addBlockTitle");
+	type.onchange = () => {
+	title.value = defaultBlockTitle(type.value);
+	};
+	dialog.querySelector("#addBlockCancel").onclick = () => {
+	pendingAddSectionId = null;
+	dialog.close();
+	};
+	dialog.querySelector("#addBlockForm").onsubmit = (e) => {
+	e.preventDefault();
+	if (!pendingAddSectionId) return;
+	const selectedType = type.value || "text";
+	const selectedTitle = title.value || defaultBlockTitle(selectedType);
+	findSec(pendingAddSectionId).blocks.push(
+		selectedType === "implementation"
+		? impl(selectedTitle || "api.c")
+		: block(selectedType, selectedTitle, ""),
+	);
+	pendingAddSectionId = null;
+	dialog.close();
+	changed();
+	render();
+	};
+	return dialog;
+}
 function addBlock(id) {
+	if (typeof HTMLDialogElement === "undefined") {
 	const t =
-	prompt(
-		"區塊類型：implementation / text / command / diff / log / mermaid / image / collapse",
+		prompt(
+		"區塊類型：Implementation Unit (implementation) / text / command / diff / log / mermaid / image / collapse",
 		"implementation",
-	) || "text";
-	const title =
-	prompt("區塊標題", t === "implementation" ? "api.c" : label(t)) || "";
+		) || "text";
+	const title = prompt("區塊標題", defaultBlockTitle(t)) || "";
 	findSec(id).blocks.push(
-	t === "implementation" ? impl(title || "api.c") : block(t, title, ""),
+		t === "implementation" ? impl(title || "api.c") : block(t, title, ""),
 	);
 	changed();
 	render();
+	return;
+	}
+	pendingAddSectionId = id;
+	const dialog = ensureAddBlockDialog();
+	const type = dialog.querySelector("#addBlockType");
+	const title = dialog.querySelector("#addBlockTitle");
+	type.value = "implementation";
+	title.value = defaultBlockTitle(type.value);
+	dialog.showModal();
+	title.focus();
+	title.select();
 }
 function moveSec(id, dir) {
 	const i = state.sections.findIndex((s) => s.id === id),
@@ -721,18 +781,78 @@ document.querySelectorAll("[data-snip]").forEach(
 
 function setupCollapsible() {
 	document.addEventListener("click", (e) => {
-		const toggle = e.target.closest("[data-collapse-target]");
-		if (!toggle) return;
+	const toggle = e.target.closest("[data-collapse-target]");
+	if (!toggle) return;
 
-		const target = document.getElementById(toggle.dataset.collapseTarget);
-		if (!target) return;
+	const target = document.getElementById(toggle.dataset.collapseTarget);
+	if (!target) return;
 
-		const expanded = toggle.getAttribute("aria-expanded") !== "false";
-		toggle.setAttribute("aria-expanded", String(!expanded));
-		target.classList.toggle("collapsed", expanded);
+	const expanded = toggle.getAttribute("aria-expanded") !== "false";
+	toggle.setAttribute("aria-expanded", String(!expanded));
+	target.classList.toggle("collapsed", expanded);
 	});
 }
+function setupSidebarCollapse() {
+	const layout = document.getElementById("appLayout");
+	const btn = document.getElementById("sidebarCollapse");
+	if (!layout || !btn) return;
+	const saved = localStorage.getItem(KEY + ":sidebarCollapsed") === "1";
+	layout.classList.toggle("sidebar-collapsed", saved);
+	btn.textContent = saved ? "☰" : "‹";
+	btn.title = saved ? "展開模板與段落" : "收合模板與段落";
+	btn.onclick = () => {
+	const collapsed = !layout.classList.contains("sidebar-collapsed");
+	layout.classList.toggle("sidebar-collapsed", collapsed);
+	localStorage.setItem(KEY + ":sidebarCollapsed", collapsed ? "1" : "0");
+	btn.textContent = collapsed ? "☰" : "‹";
+	btn.title = collapsed ? "展開模板與段落" : "收合模板與段落";
+	};
+}
+function setupResizablePanels() {
+	const layout = document.getElementById("appLayout");
+	const resizer = document.getElementById("formOutputResizer");
+	if (!layout || !resizer) return;
+	const saved = localStorage.getItem(KEY + ":formWidth");
+	if (saved) layout.style.setProperty("--form-width", saved + "px");
+	let dragging = false;
+	const startDrag = (e) => {
+	dragging = true;
+	resizer.classList.add("dragging");
+	document.body.classList.add("resizing");
+	e.preventDefault();
+	};
+	const move = (e) => {
+	if (!dragging) return;
+	const rect = layout.getBoundingClientRect();
+	const sidebar = layout.classList.contains("sidebar-collapsed") ? 48 : 260;
+	const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+	const gapAndResizer = 32;
+	const minForm = 360;
+	const minOutput = 420;
+	const maxForm = Math.max(
+		minForm,
+		rect.width - sidebar - minOutput - gapAndResizer,
+	);
+	const next = Math.min(Math.max(x - sidebar - 12, minForm), maxForm);
+	layout.style.setProperty("--form-width", next + "px");
+	localStorage.setItem(KEY + ":formWidth", String(Math.round(next)));
+	};
+	const stop = () => {
+	if (!dragging) return;
+	dragging = false;
+	resizer.classList.remove("dragging");
+	document.body.classList.remove("resizing");
+	};
+	resizer.addEventListener("mousedown", startDrag);
+	resizer.addEventListener("touchstart", startDrag, { passive: false });
+	window.addEventListener("mousemove", move);
+	window.addEventListener("touchmove", move, { passive: false });
+	window.addEventListener("mouseup", stop);
+	window.addEventListener("touchend", stop);
+}
 setupCollapsible();
+setupSidebarCollapse();
+setupResizablePanels();
 
 save();
 render();
