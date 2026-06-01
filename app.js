@@ -19,6 +19,7 @@ function impl(
 	workPath = "(docker)$ pwd",
 	lang = "cpp",
 	content = "",
+	description = "",
 ) {
 	return {
 	id: uid(),
@@ -26,6 +27,7 @@ function impl(
 	title,
 	workPath,
 	codeLang: lang,
+	description,
 	content,
 	};
 }
@@ -382,7 +384,11 @@ function renderBlock(sid, b) {
 		b.id +
 		'" value="' +
 		esc(b.codeLang || "cpp") +
-		'"></div></div><div class="field"><label>主要內容，輸出到 &lt;pre&gt;&lt;code class="..."&gt;</label><textarea style="min-height:170px" data-cont="' +
+		'"></div></div><div class="field"><label>Description 簡述內容</label><textarea data-desc="' +
+		b.id +
+		'">' +
+		esc(b.description || "") +
+		'</textarea></div><div class="field"><label>主要內容，輸出到 &lt;pre&gt;&lt;code class="..."&gt;</label><textarea style="min-height:170px" data-cont="' +
 		b.id +
 		'">' +
 		esc(b.content || "") +
@@ -414,6 +420,7 @@ function renderBlock(sid, b) {
 	if (b.type === "implementation") {
 		b.workPath = b.workPath || "(docker)$ pwd";
 		b.codeLang = b.codeLang || "cpp";
+		b.description = b.description || "";
 		b.title = b.title || "api.c";
 	}
 	changed();
@@ -442,6 +449,13 @@ function renderBlock(sid, b) {
 	if (l)
 	l.oninput = (e) => {
 		b.codeLang = e.target.value;
+		changed();
+		renderOut();
+	};
+	const desc = d.querySelector("[data-desc]");
+	if (desc)
+	desc.oninput = (e) => {
+		b.description = e.target.value;
 		changed();
 		renderOut();
 	};
@@ -631,6 +645,9 @@ function push(o, b) {
 	o.push(b.workPath || "(docker)$ pwd");
 	o.push("</code></pre>");
 	o.push("}}");
+	if ((b.description || "").trim()) {
+		o.push(" " + b.description || "");
+	}
 	o.push(
 		'<pre><code class="' +
 		(b.codeLang || "cpp") +
