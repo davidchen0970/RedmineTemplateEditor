@@ -263,6 +263,28 @@ function renderToggles() {
 		}),
 	);
 }
+function sectionActionsHtml(s, position = "top") {
+	const suffix = position === "bottom" ? "-bottom" : "";
+	const extraClass = position === "bottom" ? " section-actions-bottom" : "";
+	return (
+	'<div class="actions' +
+	extraClass +
+	'"><button class="small" data-up="' +
+	s.id +
+	'" data-action-pos="' +
+	position +
+	'">上移</button><button class="small" data-down="' +
+	s.id +
+	'" data-action-pos="' +
+	position +
+	'">下移</button><button class="small" data-add="' +
+	s.id +
+	'" data-action-pos="' +
+	position +
+	'">新增區塊</button></div>'
+	);
+}
+
 function renderSections() {
 	const r = document.getElementById("sections");
 	r.innerHTML = "";
@@ -278,13 +300,9 @@ function renderSections() {
 		s.id +
 		'" aria-expanded="true"><strong>' +
 		esc(s.title) +
-		'</strong></button><div class="actions"><button class="small" data-up="' +
-		s.id +
-		'">上移</button><button class="small" data-down="' +
-		s.id +
-		'">下移</button><button class="small" data-add="' +
-		s.id +
-		'">新增區塊</button></div></div><div class="section-body" id="section-body-' +
+		'</strong></button>' +
+		sectionActionsHtml(s, "top") +
+		'</div><div class="section-body" id="section-body-' +
 		s.id +
 		'"><div class="field"><label>段落標題 h3.</label><input type="text" data-st="' +
 		s.id +
@@ -292,7 +310,9 @@ function renderSections() {
 		esc(s.title) +
 		'"></div><div data-bs="' +
 		s.id +
-		'"></div></div>';
+		'"></div>' +
+		sectionActionsHtml(s, "bottom") +
+		'</div>';
 	r.appendChild(d);
 	const br = d.querySelector("[data-bs]");
 	s.blocks.forEach((b) => br.appendChild(renderBlock(s.id, b)));
