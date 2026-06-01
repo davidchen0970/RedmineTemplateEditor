@@ -646,7 +646,7 @@ function push(o, b) {
 	o.push("</code></pre>");
 	o.push("}}");
 	if ((b.description || "").trim()) {
-		o.push(" " + b.description || "");
+		o.push(b.description || "");
 	}
 	o.push(
 		'<pre><code class="' +
@@ -746,6 +746,111 @@ document.getElementById("file").onchange = (e) => {
 	r.readAsText(f);
 	e.target.value = "";
 };
+
+function normalizePatchPath(path) {
+	return String(path || "")
+	.trim()
+	.replace(/^"|"$/g, "")
+	.replace(/^[ab]\//, "")
+	.replace(/^\.\//, "");
+}
+function patchPathDir(path) {
+	const normalized = normalizePatchPath(path);
+	const i = normalized.lastIndexOf("/");
+	return i >= 0 ? normalized.slice(0, i) : ".";
+}
+function patchPathFileName(path) {
+	const normalized = normalizePatchPath(path);
+	const i = normalized.lastIndexOf("/");
+	return i >= 0 ? normalized.slice(i + 1) : normalized || "patch.diff";
+}
+function parsePatchToImplementationUnits(text) {
+	const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+	const units = [];
+	let current = null;
+
+	function finishCurrent() {
+	if (!current || !current.lines.length) return;
+	let path = current.newPath || current.oldPath || current.gitPath || "patch.diff";
+	if (path === "/dev/null") path = current.oldPath || current.gitPath || "patch.diff";
+	const content = current.lines.join("\n").trim();
+	if (!content) return;
+	units.push(
+		impl(
+		patchPathFileName(path),
+		patchPathDir(path),
+		"diff",
+		content,
+		"",
+		),
+	);
+	}
+
+	lines.forEach((line) => {
+	const gitMatch = line.match(/^diff --git\s+(?:"?a\/(.+?)"?)\s+(?:"?b\/(.+?)"?)\s*$/);
+	if (gitMatch) {
+		finishCurrent();
+		current = {
+		gitPath: normalizePatchPath(gitMatch[2] || gitMatch[1]),
+		oldPath: normalizePatchPath(gitMatch[1]),
+		newPath: normalizePatchPath(gitMatch[2]),
+		lines: [line],
+		};
+		return;
+	}
+
+	if (!current && /^---\s+/.test(line)) {
+		current = { gitPath: "", oldPath: "", newPath: "", lines: [] };
+	}
+	if (!current) return;
+
+	const oldMatch = line.match(/^---\s+(?:"?(.+?)"?)\s*$/);
+	if (oldMatch) {
+		current.oldPath = normalizePatchPath(oldMatch[1]);
+	}
+	const newMatch = line.match(/^\+\+\+\s+(?:"?(.+?)"?)\s*$/);
+	if (newMatch) {
+		current.newPath = normalizePatchPath(newMatch[1]);
+	}
+	current.lines.push(line);
+	});
+	finishCurrent();
+	return units;
+}
+function findOrCreateImplementationSection() {
+	let s = state.sections.find((x) => x.title === "實作流程");
+	if (!s) {
+	s = sec("實作流程", true, []);
+	state.sections.push(s);
+	}
+	s.enabled = true;
+	return s;
+}
+function importPatchText(text, fileName = "patch.diff") {
+	const units = parsePatchToImplementationUnits(text);
+	if (!units.length) {
+	alert("Patch 匯入失敗：找不到可轉換的 diff 區塊");
+	return;
+	}
+	const s = findOrCreateImplementationSection();
+	s.blocks.push(...units);
+	changed();
+	render();
+	alert("已從 " + fileName + " 匯入 " + units.length + " 個 Implementation Unit");
+}
+
+
+document.getElementById("patch").onclick = () =>
+	document.getElementById("patchFile").click();
+document.getElementById("patchFile").onchange = (e) => {
+	const f = e.target.files[0];
+	if (!f) return;
+	const r = new FileReader();
+	r.onload = () => importPatchText(r.result, f.name);
+	r.readAsText(f);
+	e.target.value = "";
+};
+
 document.getElementById("reset").onclick = () => {
 	if (confirm("清除 localStorage 並重設？")) {
 	localStorage.removeItem(KEY);

@@ -404,3 +404,8 @@ body.resizing {
 		display: block;
 	}
 }
+
+.patch-import-note {
+	font-size: 12px;
+	color: var(--muted);
+}
