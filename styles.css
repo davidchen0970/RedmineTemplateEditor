@@ -272,6 +272,13 @@ textarea {
 	flex: 1;
 }
 
+.section-actions-bottom {
+	border-top: 1px solid var(--line);
+	margin-top: 10px;
+	padding-top: 10px;
+	justify-content: flex-end;
+}
+
 @media(max-width:1180px) {
 	.layout {
 		grid-template-columns: 240px 1fr
