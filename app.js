@@ -370,7 +370,7 @@ function renderBlock(sid, b) {
 	.join("");
 	if (b.type === "implementation") {
 	d.innerHTML =
-		'<div class="actions" style="justify-content:space-between"><span class="note">實作流程單位</span><span><button class="small" data-du="' +
+		'<div class="actions" style="justify-content:space-between"><span class="note">implementation</span><span><button class="small" data-du="' +
 		b.id +
 		'">複製</button> <button class="small danger" data-del="' +
 		b.id +
@@ -469,18 +469,18 @@ function renderBlock(sid, b) {
 	return d;
 }
 function label(t) {
-	return (
-	{
-		implementation: "實作流程單位",
-		text: "文字 / Textile",
-		command: "Command block",
-		diff: "Diff block",
-		log: "Log block",
-		mermaid: "Mermaid block",
-		image: "圖片",
+	const labels = {
+		implementation: "Implementation",
+		text: "Text / Textile",
+		command: "Command Block",
+		diff: "Diff Block",
+		log: "Log Block",
+		mermaid: "Mermaid Block",
+		image: "Image",
 		collapse: "Collapse",
-	}[t] || t
-	);
+	};
+
+	return labels[t] || t;
 }
 function findSec(id) {
 	return state.sections.find((s) => s.id === id);
