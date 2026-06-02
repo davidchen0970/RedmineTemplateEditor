@@ -658,15 +658,16 @@ function push(o, b) {
 		);
 		return;
 	}
-	if (title && b.type !== "image") o.push("*" + title + "*");
+	if (title && b.type !== "image") o.push("# " + title);
 	if (["command", "diff", "log"].includes(b.type)) {
-		o.push("{{collapse(" + (title || "detail") + ")");
-		o.push("```");
+		if (["diff", "log"].includes(b.type))
+			o.push(" <pre><code class=\"" + (b.type) + "\">");
+		else
+			o.push(" <pre><code class=\"shell\">");
 		o.push(b.content || "");
-		o.push("```");
-		o.push("}}");
+		o.push("</code></pre>");
 	} else if (b.type === "mermaid") {
-		o.push("{{mermaid");
+		o.push(" {{mermaid");
 		o.push(b.content || "");
 		o.push("}}");
 	} else if (b.type === "image") {
@@ -674,7 +675,7 @@ function push(o, b) {
 			o.push("!" + x.replace(/^!|!$/g, "") + "!"),
 		);
 	} else if (b.type === "collapse") {
-		o.push("{{collapse(" + (title || "detail") + ")");
+		o.push(" {{collapse(" + (title || "detail") + ")");
 		o.push(b.content || "");
 		o.push("}}");
 	} else {
