@@ -908,6 +908,41 @@ document.querySelectorAll("[data-snip]").forEach(
 	}),
 );
 
+function animateCollapse(target, shouldCollapse) {
+	const finish = () => {
+		target.removeEventListener("transitionend", finish);
+
+		if (shouldCollapse) {
+			target.style.height = "";
+		} else {
+			target.style.height = "";
+			target.classList.remove("collapsed");
+		}
+	};
+
+	target.removeEventListener("transitionend", finish);
+
+	if (shouldCollapse) {
+		const height = target.scrollHeight;
+		target.style.height = height + "px";
+
+		requestAnimationFrame(() => {
+			target.classList.add("collapsed");
+			target.style.height = "0px";
+			target.addEventListener("transitionend", finish);
+		});
+	} else {
+		target.classList.remove("collapsed");
+		target.style.height = "0px";
+
+		requestAnimationFrame(() => {
+			const height = target.scrollHeight;
+			target.style.height = height + "px";
+			target.addEventListener("transitionend", finish);
+		});
+	}
+}
+
 function setupCollapsible() {
 	document.addEventListener("click", (e) => {
 		const toggle = e.target.closest("[data-collapse-target]");
@@ -917,10 +952,13 @@ function setupCollapsible() {
 		if (!target) return;
 
 		const expanded = toggle.getAttribute("aria-expanded") !== "false";
-		toggle.setAttribute("aria-expanded", String(!expanded));
-		target.classList.toggle("collapsed", expanded);
+		const nextExpanded = !expanded;
+
+		toggle.setAttribute("aria-expanded", String(nextExpanded));
+		animateCollapse(target, expanded);
 	});
 }
+
 function setupSidebarCollapse() {
 	const layout = document.getElementById("appLayout");
 	const btn = document.getElementById("sidebarCollapse");
