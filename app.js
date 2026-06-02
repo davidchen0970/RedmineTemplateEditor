@@ -109,6 +109,16 @@ function makeState(type = "porting") {
 }
 let state = load() || makeState();
 let view = "raw";
+let exportStatus = { json: false, txt: false };
+let lastSaveText = "";
+function renderSaveStatus() {
+	const el = document.getElementById("save");
+	if (!el) return;
+	el.innerHTML =
+		'<span>' + esc(lastSaveText || "已自動儲存 --") + '</span>' +
+		'<span>JSON ' + (exportStatus.json ? "已匯出" : "未匯出") +
+		' | TXT ' + (exportStatus.txt ? "已匯出" : "未匯出") + '</span>';
+}
 function load() {
 	try {
 		return JSON.parse(localStorage.getItem(KEY));
@@ -119,8 +129,8 @@ function load() {
 function save() {
 	state.updatedAt = new Date().toISOString();
 	localStorage.setItem(KEY, JSON.stringify(state, null, 2));
-	document.getElementById("save").textContent =
-		"已自動儲存 " + new Date().toLocaleTimeString();
+	lastSaveText = "已自動儲存 " + new Date().toLocaleTimeString();
+	renderSaveStatus();
 }
 function esc(s) {
 	return String(s ?? "").replace(
@@ -565,6 +575,8 @@ function moveSec(id, dir) {
 	render();
 }
 function changed() {
+	exportStatus.json = false;
+	exportStatus.txt = false;
 	save();
 	renderOut();
 }
@@ -707,14 +719,20 @@ function safe(s) {
 		.replace(/[\\/:*?"<>|\s]+/g, "_")
 		.slice(0, 80);
 }
-document.getElementById("txt").onclick = () =>
-	download(safe(state.title) + ".txt", textile(), "text/plain");
-document.getElementById("json").onclick = () =>
+document.getElementById("txt").onclick = () => {
+	download(safe(state.title) + ".textile", textile(), "text/plain");
+	exportStatus.txt = true;
+	renderSaveStatus();
+};
+document.getElementById("json").onclick = () => {
 	download(
 		safe(state.title) + ".json",
 		JSON.stringify(state, null, 2),
 		"application/json",
 	);
+	exportStatus.json = true;
+	renderSaveStatus();
+};
 document.getElementById("import").onclick = () =>
 	document.getElementById("file").click();
 document.getElementById("file").onchange = (e) => {
