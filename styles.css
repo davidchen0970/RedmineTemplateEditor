@@ -410,6 +410,14 @@ body.resizing {
 	color: var(--muted);
 }
 
+.save {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	line-height: 1.35;
+	white-space: nowrap;
+}
+
 .output-panel {
 	position: sticky;
 	top: 76px;
