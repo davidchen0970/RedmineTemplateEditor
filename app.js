@@ -3,7 +3,7 @@ const envKeys = [
 	["systemModel", "System Model"],
 	["bios", "BIOS"],
 	["bmcVersion", "BMC 版本"],
-	["cpldVersion", "CPLD 版本 (ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)"],
+	["cpldVersion", "CPLD 版本"],
 	["cpuInformation", "CPU Information"],
 	["osKernel", "OS / Kernel"],
 	["others", "Others"],
@@ -192,11 +192,15 @@ function renderFields() {
 		d.innerHTML =
 			"<label>" +
 			esc(l) +
-			'</label><input type="text" data-env="' +
+			"</label>" +
+			(l === "CPLD 版本"
+				? "<label> (ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)</label>"
+				: "") +
+			'<textarea data-env="' +
 			k +
-			'" value="' +
+			'">' +
 			esc(state.environment[k] || "") +
-			'">';
+			"</textarea>";
 		e.appendChild(d);
 	});
 	e.querySelectorAll("[data-env]").forEach(
