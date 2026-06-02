@@ -20,12 +20,16 @@ function impl(
 	lang = "cpp",
 	content = "",
 	description = "",
+	workPathTitle = "work path",
+	showWorkPath = true,
 ) {
 	return {
 		id: uid(),
 		type: "implementation",
 		title,
 		workPath,
+		workPathTitle,
+		showWorkPath,
 		codeLang: lang,
 		description,
 		content,
@@ -328,7 +332,15 @@ function renderBlock(sid, b) {
 			b.id +
 			'" value="' +
 			esc(b.title || "api.c") +
-			'"></div></div><div class="row"><div class="field"><label>work path，輸出到 collapse(work path)</label><textarea data-work="' +
+			'"></div></div><div class="row"><div class="field"><label><input type="checkbox" data-show-work="' +
+			b.id +
+			'" ' +
+			(b.showWorkPath !== false ? "checked" : "") +
+			'> 輸出 work path block</label><input type="text" data-work-title="' +
+			b.id +
+			'" value="' +
+			esc(b.workPathTitle || "work path") +
+			'" placeholder="collapse 顯示文字，例如 work path / source path"><textarea data-work="' +
 			b.id +
 			'">' +
 			esc(b.workPath || "(docker)$ pwd") +
@@ -371,6 +383,8 @@ function renderBlock(sid, b) {
 		b.type = e.target.value;
 		if (b.type === "implementation") {
 			b.workPath = b.workPath || "(docker)$ pwd";
+			b.workPathTitle = b.workPathTitle || "work path";
+			b.showWorkPath = b.showWorkPath !== false;
 			b.codeLang = b.codeLang || "cpp";
 			b.description = b.description || "";
 			b.title = b.title || "api.c";
@@ -394,6 +408,20 @@ function renderBlock(sid, b) {
 	if (w)
 		w.oninput = (e) => {
 			b.workPath = e.target.value;
+			changed();
+			renderOut();
+		};
+	const wt = d.querySelector("[data-work-title]");
+	if (wt)
+		wt.oninput = (e) => {
+			b.workPathTitle = e.target.value;
+			changed();
+			renderOut();
+		};
+	const sw = d.querySelector("[data-show-work]");
+	if (sw)
+		sw.onchange = (e) => {
+			b.showWorkPath = e.target.checked;
 			changed();
 			renderOut();
 		};
@@ -599,11 +627,13 @@ function push(o, b) {
 	const title = (b.title || "").trim();
 	if (b.type === "implementation") {
 		o.push("# " + (title || "api.c"));
-		o.push("{{collapse(work path)");
-		o.push('<pre><code class="shell">');
-		o.push(b.workPath || "(docker)$ pwd");
-		o.push("</code></pre>");
-		o.push("}}");
+		if (b.showWorkPath !== false) {
+			o.push("{{collapse(" + (b.workPathTitle || "work path") + ")");
+			o.push('<pre><code class="shell">');
+			o.push(b.workPath || "(docker)$ pwd");
+			o.push("</code></pre>");
+			o.push("}}");
+		}
 		if ((b.description || "").trim()) {
 			o.push(b.description || "");
 		}
