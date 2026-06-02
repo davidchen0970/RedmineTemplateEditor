@@ -597,6 +597,51 @@ body.resizing {
 		width: 100%;
 		white-space: normal;
 	}
+
+	.sidebar-head {
+		display: block;
+		padding: 0;
+	}
+
+	.sidebar-head span {
+		display: none;
+	}
+
+	.sidebar-collapse {
+		width: 100%;
+		padding: 11px 13px;
+		font-size: 14px;
+		font-weight: 700;
+		text-align: left;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.sidebar-collapse::after {
+		content: "▾";
+		font-size: 12px;
+		transition: transform 0.15s ease;
+	}
+
+	.sidebar-collapse[aria-expanded="false"]::after {
+		transform: rotate(-90deg);
+	}
+
+	.layout.sidebar-collapsed .sidebar-body {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+
+	.layout.sidebar-collapsed .sidebar-head {
+		justify-content: stretch;
+	}
+
+	.layout.sidebar-collapsed .sidebar-collapse {
+		width: 100%;
+	}
 }
 
 @media (max-width: 480px) {
