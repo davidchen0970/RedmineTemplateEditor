@@ -9,12 +9,16 @@
 </head>
 
 <body>
-	<header>
-		<div>
-			<h1>Redmine Template Editor v3</h1>
-			<div class="hint">Test</div>
+	<header class="site-header" id="siteHeader">
+		<div class="header-main">
+			<div class="header-title">
+				<h1>Redmine Template Editor v3</h1>
+				<div class="hint">Test</div>
+			</div>
+			<button type="button" id="headerMenuToggle" class="header-menu-toggle" aria-controls="headerActions"
+				aria-expanded="false" aria-label="展開頁首選單"></button>
 		</div>
-		<div class="actions">
+		<div class="actions header-collapsible" id="headerActions">
 			<button id="copy" class="primary">Copy Redmine Text</button><button id="txt">下載.txt</button>
 			<button id="json">匯出 JSON</button>
 			<button id="import">匯入 JSON</button>
@@ -28,7 +32,8 @@
 	<main class="layout" id="appLayout">
 		<aside class="panel sidebar-panel" id="sidebarPanel">
 			<h2 class="panel-head sidebar-head">
-				<button type="button" id="sidebarCollapse" class="sidebar-collapse" aria-label="收合模板與段落" title="收合模板與段落">☰</button>
+				<button type="button" id="sidebarCollapse" class="sidebar-collapse" aria-label="收合模板與段落"
+					title="收合模板與段落">☰</button>
 				<span>模板與段落</span>
 			</h2>
 			<div class="body sidebar-body" id="panel-templates">
@@ -45,7 +50,8 @@
 		</aside>
 		<section class="panel form-panel">
 			<h2 class="panel-head">
-				<button type="button" class="collapse-toggle" data-collapse-target="panel-form" aria-expanded="true">互動式表單</button>
+				<button type="button" class="collapse-toggle" data-collapse-target="panel-form"
+					aria-expanded="true">互動式表單</button>
 			</h2>
 			<div class="body" id="panel-form">
 				<div class="row">
@@ -60,7 +66,8 @@
 							<option>FAILED</option>
 							<option>WIP</option>
 							<option>N/A</option>
-						</select></div>
+						</select>
+					</div>
 				</div>
 				<div class="field">
 					<label>簡要說明實做內容</label>
@@ -75,7 +82,8 @@
 				</div>
 				<div class="section">
 					<div class="section-head">
-						<button type="button" class="section-toggle" data-collapse-target="section-env" aria-expanded="true">測試環境</button>
+						<button type="button" class="section-toggle" data-collapse-target="section-env"
+							aria-expanded="true">測試環境</button>
 					</div>
 					<div class="section-body" id="section-env">
 						<div class="row" id="env"></div>
@@ -84,10 +92,12 @@
 				<div id="sections"></div>
 			</div>
 		</section>
-		<div class="resizer" id="formOutputResizer" title="拖曳調整左右寬度" role="separator" aria-label="調整互動式表單與 Redmine 輸出寬度"></div>
+		<div class="resizer" id="formOutputResizer" title="拖曳調整左右寬度" role="separator"
+			aria-label="調整互動式表單與 Redmine 輸出寬度"></div>
 		<section class="panel right output-panel">
 			<h2 class="panel-head">
-				<button type="button" class="collapse-toggle" data-collapse-target="panel-output" aria-expanded="true">Redmine Textile 輸出</button>
+				<button type="button" class="collapse-toggle" data-collapse-target="panel-output"
+					aria-expanded="true">Redmine Textile 輸出</button>
 			</h2>
 			<div class="body" id="panel-output">
 				<div class="actions" style="margin-bottom:10px">
