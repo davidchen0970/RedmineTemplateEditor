@@ -996,19 +996,62 @@ function setupCollapsible() {
 function setupSidebarCollapse() {
 	const layout = document.getElementById("appLayout");
 	const btn = document.getElementById("sidebarCollapse");
-	if (!layout || !btn) return;
-	const saved = localStorage.getItem(KEY + ":sidebarCollapsed") === "1";
-	layout.classList.toggle("sidebar-collapsed", saved);
-	btn.textContent = saved ? "☰" : "‹";
-	btn.title = saved ? "展開模板與段落" : "收合模板與段落";
-	btn.onclick = () => {
-		const collapsed = !layout.classList.contains("sidebar-collapsed");
-		layout.classList.toggle("sidebar-collapsed", collapsed);
-		localStorage.setItem(KEY + ":sidebarCollapsed", collapsed ? "1" : "0");
-		btn.textContent = collapsed ? "☰" : "‹";
-		btn.title = collapsed ? "展開模板與段落" : "收合模板與段落";
+	const body = document.getElementById("panel-templates");
+	if (!layout || !btn || !body) return;
+
+	const mobileQuery = window.matchMedia("(max-width: 760px)");
+
+	const setMobileExpanded = (expanded, animate = false) => {
+		btn.textContent = "模板與段落";
+		btn.setAttribute("aria-expanded", String(expanded));
+		btn.setAttribute("aria-label", expanded ? "收合模板與段落" : "展開模板與段落");
+		btn.title = expanded ? "收合模板與段落" : "展開模板與段落";
+		if (animate) {
+			animateCollapse(body, !expanded);
+		} else {
+			body.classList.toggle("collapsed", !expanded);
+		}
 	};
+
+	const setDesktopCollapsed = (collapsed) => {
+		layout.classList.toggle("sidebar-collapsed", collapsed);
+		btn.textContent = collapsed ? "☰" : "‹";
+		btn.removeAttribute("aria-expanded");
+		btn.setAttribute("aria-label", collapsed ? "展開模板與段落" : "收合模板與段落");
+		btn.title = collapsed ? "展開模板與段落" : "收合模板與段落";
+		body.classList.remove("collapsed");
+	};
+
+	const syncMode = () => {
+		if (mobileQuery.matches) {
+			layout.classList.remove("sidebar-collapsed");
+			setMobileExpanded(true, false);
+			return;
+		}
+		const saved = localStorage.getItem(KEY + ":sidebarCollapsed") === "1";
+		setDesktopCollapsed(saved);
+	};
+
+	btn.onclick = () => {
+		if (mobileQuery.matches) {
+			const expanded = btn.getAttribute("aria-expanded") !== "false";
+			setMobileExpanded(!expanded, true);
+			return;
+		}
+		const collapsed = !layout.classList.contains("sidebar-collapsed");
+		localStorage.setItem(KEY + ":sidebarCollapsed", collapsed ? "1" : "0");
+		setDesktopCollapsed(collapsed);
+	};
+
+	if (typeof mobileQuery.addEventListener === "function") {
+		mobileQuery.addEventListener("change", syncMode);
+	} else {
+		mobileQuery.addListener(syncMode);
+	}
+
+	syncMode();
 }
+
 function setupResizablePanels() {
 	const layout = document.getElementById("appLayout");
 	const resizer = document.getElementById("formOutputResizer");
