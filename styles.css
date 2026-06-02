@@ -409,3 +409,38 @@ body.resizing {
 	font-size: 12px;
 	color: var(--muted);
 }
+
+.output-panel {
+	position: sticky;
+	top: 76px;
+	max-height: calc(100vh - 88px);
+	align-self: start;
+}
+
+.output-panel .body {
+	max-height: calc(100vh - 145px);
+	overflow: hidden;
+}
+
+.output-panel .output {
+	min-height: auto;
+	height: calc(100vh - 195px);
+	overflow: auto;
+}
+
+@media(max-width:760px) {
+	.output-panel {
+		position: static;
+		max-height: none;
+	}
+
+	.output-panel .body {
+		max-height: none;
+		overflow: visible;
+	}
+
+	.output-panel .output {
+		min-height: calc(100vh - 180px);
+		height: auto;
+	}
+}
