@@ -948,6 +948,35 @@ function animateCollapse(target, shouldCollapse) {
 	}
 }
 
+
+function setupMobileHeaderCollapse() {
+	const header = document.getElementById("siteHeader");
+	const toggle = document.getElementById("headerMenuToggle");
+	const actions = document.getElementById("headerActions");
+	if (!header || !toggle || !actions) return;
+
+	const mobileQuery = window.matchMedia("(max-width: 760px)");
+	const setExpanded = (expanded) => {
+		header.classList.toggle("is-collapsed", !expanded);
+		toggle.setAttribute("aria-expanded", String(expanded));
+		toggle.setAttribute("aria-label", expanded ? "收合頁首選單" : "展開頁首選單");
+	};
+	const syncMode = () => setExpanded(!mobileQuery.matches);
+
+	toggle.onclick = () => {
+		const expanded = toggle.getAttribute("aria-expanded") === "true";
+		setExpanded(!expanded);
+	};
+
+	if (typeof mobileQuery.addEventListener === "function") {
+		mobileQuery.addEventListener("change", syncMode);
+	} else {
+		mobileQuery.addListener(syncMode);
+	}
+
+	syncMode();
+}
+
 function setupCollapsible() {
 	document.addEventListener("click", (e) => {
 		const toggle = e.target.closest("[data-collapse-target]");
@@ -1022,6 +1051,7 @@ function setupResizablePanels() {
 	window.addEventListener("mouseup", stop);
 	window.addEventListener("touchend", stop);
 }
+setupMobileHeaderCollapse();
 setupCollapsible();
 setupSidebarCollapse();
 setupResizablePanels();
