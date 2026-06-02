@@ -601,7 +601,7 @@ function push(o, b) {
 		o.push(b.description || "");
 	}
 	o.push(
-		'<pre><code class="' +
+		' <pre><code class="' +
 		(b.codeLang || "cpp") +
 		'">' +
 		(b.content || "") +
