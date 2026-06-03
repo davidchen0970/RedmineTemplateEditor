@@ -1121,6 +1121,46 @@ function animateCollapse(target, shouldCollapse) {
 }
 
 
+
+function setupThemeToggle() {
+	const btn = document.getElementById("themeToggle");
+	const storageKey = KEY + ":theme";
+	const getSystemTheme = () =>
+		window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+			? "dark"
+			: "light";
+	const getSavedTheme = () => localStorage.getItem(storageKey);
+	const applyTheme = (theme) => {
+		const nextTheme = theme === "dark" ? "dark" : "light";
+		document.body.dataset.theme = nextTheme;
+		if (!btn) return;
+		const isDark = nextTheme === "dark";
+		btn.textContent = isDark ? "淺色模式" : "黑暗模式";
+		btn.setAttribute("aria-pressed", String(isDark));
+		btn.setAttribute("aria-label", isDark ? "切換為淺色模式" : "切換為黑暗模式");
+		btn.title = isDark ? "切換為淺色模式" : "切換為黑暗模式";
+	};
+	applyTheme(getSavedTheme() || getSystemTheme());
+	if (btn) {
+		btn.onclick = () => {
+			const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+			localStorage.setItem(storageKey, nextTheme);
+			applyTheme(nextTheme);
+		};
+	}
+	if (window.matchMedia) {
+		const query = window.matchMedia("(prefers-color-scheme: dark)");
+		const syncSystemTheme = () => {
+			if (!getSavedTheme()) applyTheme(getSystemTheme());
+		};
+		if (typeof query.addEventListener === "function") {
+			query.addEventListener("change", syncSystemTheme);
+		} else {
+			query.addListener(syncSystemTheme);
+		}
+	}
+}
+
 function setupMobileHeaderCollapse() {
 	const header = document.getElementById("siteHeader");
 	const toggle = document.getElementById("headerMenuToggle");
@@ -1271,6 +1311,7 @@ if (addSectionButton) {
 	addSectionButton.onclick = () => addSection();
 }
 
+setupThemeToggle();
 setupMobileHeaderCollapse();
 setupCollapsible();
 setupSidebarCollapse();
