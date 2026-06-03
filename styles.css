@@ -1,14 +1,40 @@
 :root {
 	--bg: #f6f7fb;
 	--panel: #fff;
+	--panel-head: #fbfcff;
 	--line: #d7dce5;
 	--text: #1f2937;
 	--muted: #6b7280;
 	--primary: #2563eb;
+	--primary-hover: #1d4ed8;
 	--danger: #dc2626;
 	--code: #0f172a;
+	--code-text: #dbeafe;
 	--soft: #eef2ff;
-	--radius: 12px
+	--field: #fff;
+	--block: #fcfcfd;
+	--shadow: rgba(15, 23, 42, 0.25);
+	--radius: 12px;
+	color-scheme: light
+}
+
+body[data-theme="dark"] {
+	--bg: #0f172a;
+	--panel: #111827;
+	--panel-head: #1f2937;
+	--line: #334155;
+	--text: #e5e7eb;
+	--muted: #94a3b8;
+	--primary: #60a5fa;
+	--primary-hover: #93c5fd;
+	--danger: #f87171;
+	--code: #020617;
+	--code-text: #bfdbfe;
+	--soft: #172554;
+	--field: #0b1220;
+	--block: #172033;
+	--shadow: rgba(0, 0, 0, 0.45);
+	color-scheme: dark
 }
 
 * {
@@ -26,7 +52,7 @@ header {
 	position: sticky;
 	top: 0;
 	z-index: 5;
-	background: #fff;
+	background: var(--panel);
 	border-bottom: 1px solid var(--line);
 	padding: 14px 18px;
 	display: flex;
@@ -54,7 +80,7 @@ select {
 
 button {
 	border: 1px solid var(--line);
-	background: #fff;
+	background: var(--panel);
 	border-radius: 9px;
 	padding: 7px 10px;
 	cursor: pointer
@@ -100,7 +126,7 @@ button.small {
 	font-size: 14px;
 	margin: 0;
 	padding: 11px 13px;
-	background: #fbfcff;
+	background: var(--panel-head);
 	border-bottom: 1px solid var(--line)
 }
 
@@ -125,7 +151,9 @@ select {
 	width: 100%;
 	border: 1px solid var(--line);
 	border-radius: 9px;
-	padding: 8px 9px
+	padding: 8px 9px;
+	background: var(--field);
+	color: var(--text)
 }
 
 textarea {
@@ -176,7 +204,7 @@ textarea {
 	border: 1px solid var(--line);
 	border-radius: 11px;
 	margin-bottom: 12px;
-	background: #fff;
+	background: var(--panel);
 	overflow: hidden
 }
 
@@ -185,7 +213,7 @@ textarea {
 	justify-content: space-between;
 	align-items: center;
 	gap: 8px;
-	background: #fbfcff;
+	background: var(--panel-head);
 	border-bottom: 1px solid var(--line);
 	padding: 9px 10px
 }
@@ -199,7 +227,7 @@ textarea {
 	border-radius: 10px;
 	padding: 9px;
 	margin-top: 9px;
-	background: #fcfcfd
+	background: var(--block)
 }
 
 .output {
@@ -207,7 +235,7 @@ textarea {
 	min-height: calc(100vh - 180px);
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 13px;
-	color: #dbeafe;
+	color: var(--code-text);
 	background: var(--code);
 	border: 0;
 	border-radius: 10px;
@@ -392,7 +420,7 @@ body.resizing {
 	width: min(420px, calc(100vw - 32px));
 	background: var(--panel);
 	color: var(--text);
-	box-shadow: 0 18px 50px rgba(15, 23, 42, 0.25);
+	box-shadow: 0 18px 50px var(--shadow);
 }
 
 .add-block-dialog::backdrop {
@@ -402,7 +430,7 @@ body.resizing {
 .add-block-dialog .dialog-head {
 	padding: 12px 14px;
 	border-bottom: 1px solid var(--line);
-	background: #fbfcff;
+	background: var(--panel-head);
 	font-weight: 700;
 }
 
@@ -416,7 +444,7 @@ body.resizing {
 	gap: 8px;
 	padding: 12px 14px;
 	border-top: 1px solid var(--line);
-	background: #fbfcff;
+	background: var(--panel-head);
 }
 
 @media(max-width:1180px) {
@@ -665,9 +693,44 @@ body.resizing {
 
 .command-content-item {
 	margin-top: 8px;
-	background: #fff;
+	background: var(--panel);
 }
 
 .command-content-item:first-child {
 	margin-top: 0;
+}
+
+
+.theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.theme-toggle[aria-pressed="true"] {
+	background: var(--soft);
+	border-color: var(--primary);
+	color: var(--primary);
+}
+
+body[data-theme="dark"] button.primary {
+	color: #06101f;
+}
+
+body[data-theme="dark"] button:hover {
+	border-color: var(--primary-hover);
+	color: var(--primary-hover);
+}
+
+body[data-theme="dark"] button.primary:hover {
+	color: #06101f;
+}
+
+body[data-theme="dark"] input::placeholder,
+body[data-theme="dark"] textarea::placeholder {
+	color: var(--muted);
+}
+
+body[data-theme="dark"] .add-block-dialog::backdrop {
+	background: rgba(2, 6, 23, 0.72);
 }
