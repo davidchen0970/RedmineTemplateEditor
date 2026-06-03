@@ -792,23 +792,33 @@ function textile() {
 	addH3(o, "結論");
 	o.push("執行狀態: " + status(state.status));
 	lines(state.summary).forEach((x) => o.push("* " + x));
-	o.push("");
-	addH3(o, "修改目標");
-	o.push(
-		state.changeContent === "X"
-			? "修改內容: X"
-			: "修改內容:");
-	o.push(
-		state.changeContent === "X"
-			? ""
-			: state.changeContent || "");
-	o.push("");
-	addH3(o, "測試環境");
-	envKeys.forEach(([k, l]) => {
-		const v = state.environment[k];
-		if (v) o.push("* " + l + ": " + v);
-	});
-	o.push("");
+	const changeContent = String(state.changeContent ?? "").trim();
+	if (changeContent) {
+		o.push("");
+		addH3(o, "修改目標");
+		if (changeContent === "X") {
+			o.push("修改內容: X");
+		} else {
+			o.push("修改內容:");
+			o.push(state.changeContent || "");
+		}
+		o.push("");
+	}
+	else {
+		o.push("");
+	}
+
+	const environmentLines = envKeys
+		.map(([k, l]) => {
+			const v = String(state.environment[k] ?? "").trim();
+			return v ? "* " + l + ": " + v : "";
+		})
+		.filter(Boolean);
+	if (environmentLines.length) {
+		addH3(o, "測試環境");
+		o.push(...environmentLines);
+		o.push("");
+	}
 	state.sections
 		.filter((s) => s.enabled)
 		.forEach((s) => {
