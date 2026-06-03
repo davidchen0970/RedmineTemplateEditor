@@ -659,3 +659,6 @@ body.resizing {
 		width: 100%;
 	}
 }
+.section-manager-actions {
+    margin-top: 8px;
+}
