@@ -8,7 +8,6 @@ const envKeys = [
 	["osKernel", "OS / Kernel"],
 	["others", "Others"],
 ];
-const addSectionButton = document.getElementById("addSection");
 function uid() {
 	return Math.random().toString(36).slice(2, 10);
 }
@@ -255,6 +254,7 @@ function sectionActionsHtml(s, position = "top") {
 	);
 }
 function renderSections() {
+	ensureSections();
 	const r = document.getElementById("sections");
 	r.innerHTML = "";
 	state.sections.forEach((s) => {
@@ -284,7 +284,7 @@ function renderSections() {
 			'</div>';
 		r.appendChild(d);
 		const br = d.querySelector("[data-bs]");
-		s.blocks.forEach((b) => br.appendChild(renderBlock(s.id, b)));
+		(s.blocks || []).forEach((b) => br.appendChild(renderBlock(s.id, b)));
 	});
 	r.querySelectorAll("[data-se]").forEach(
 		(x) =>
@@ -343,21 +343,31 @@ function renderBlock(sid, b) {
 				"</option>",
 		)
 		.join("");
+	const headerHtml =
+		'<div class="actions" style="justify-content:space-between"><span class="note">' +
+		(b.type === "implementation" ? "Implementation Unit" : label(b.type)) +
+		'</span><span><button type="button" class="small" data-du="' +
+		b.id +
+		'">複製</button> <button type="button" class="small danger" data-del="' +
+		b.id +
+		'">刪除</button></span></div>';
+	const typeTitleHtml =
+		'<div class="row"><div class="field"><label>區塊類型</label><select data-btype="' +
+		b.id +
+		'">' +
+		options +
+		'</select></div><div class="field"><label>' +
+		(b.type === "implementation" ? "檔名 / 單位標題，輸出為 # xxx" : "區塊標題") +
+		'</label><input type="text" data-btitle="' +
+		b.id +
+		'" value="' +
+		esc(b.title || (b.type === "implementation" ? "api.c" : "")) +
+		'"></div></div>';
 	if (b.type === "implementation") {
 		d.innerHTML =
-			'<div class="actions" style="justify-content:space-between"><span class="note">Implementation Unit</span><span><button class="small" data-du="' +
-			b.id +
-			'">複製</button> <button class="small danger" data-del="' +
-			b.id +
-			'">刪除</button></span></div><div class="row"><div class="field"><label>區塊類型</label><select data-btype="' +
-			b.id +
-			'">' +
-			options +
-			'</select></div><div class="field"><label>檔名 / 單位標題，輸出為 # xxx</label><input type="text" data-btitle="' +
-			b.id +
-			'" value="' +
-			esc(b.title || "api.c") +
-			'"></div></div><div class="row"><div class="field"><label><input type="checkbox" data-show-work="' +
+			headerHtml +
+			typeTitleHtml +
+			'<div class="row"><div class="field"><label><input type="checkbox" data-show-work="' +
 			b.id +
 			'" ' +
 			(b.showWorkPath !== false ? "checked" : "") +
@@ -382,23 +392,39 @@ function renderBlock(sid, b) {
 			'">' +
 			esc(b.content || "") +
 			"</textarea></div>";
-	} else {
+	} else if (b.type === "command") {
+		ensureCommandContents(b);
+		const commandItemsHtml = b.contents
+			.map(
+				(content, index) =>
+					'<div class="command-content-item block"><div class="actions" style="justify-content:space-between"><span class="note">Command content #' +
+					(index + 1) +
+					'</span><span><button type="button" class="small" data-dup-command-content="' +
+					index +
+					'">複製</button> <button type="button" class="small danger" data-del-command-content="' +
+					index +
+					'">刪除</button></span></div><div class="field"><label>內容</label><textarea style="min-height:130px" data-command-cont="' +
+					index +
+					'">' +
+					esc(content || "") +
+					"</textarea></div></div>",
+			)
+			.join("");
 		d.innerHTML =
-			'<div class="actions" style="justify-content:space-between"><span class="note">' +
-			label(b.type) +
-			'</span><span><button class="small" data-du="' +
+			headerHtml +
+			typeTitleHtml +
+			'<div class="actions" style="margin-bottom:8px"><button type="button" class="small primary" data-add-command-content="' +
 			b.id +
-			'">複製</button> <button class="small danger" data-del="' +
-			b.id +
-			'">刪除</button></span></div><div class="row"><div class="field"><label>區塊類型</label><select data-btype="' +
+			'">新增 command content</button></div><div data-command-contents="' +
 			b.id +
 			'">' +
-			options +
-			'</select></div><div class="field"><label>區塊標題</label><input type="text" data-btitle="' +
-			b.id +
-			'" value="' +
-			esc(b.title || "") +
-			'"></div></div><div class="field"><label>內容</label><textarea style="min-height:130px" data-cont="' +
+			commandItemsHtml +
+			"</div>";
+	} else {
+		d.innerHTML =
+			headerHtml +
+			typeTitleHtml +
+			'<div class="field"><label>內容</label><textarea style="min-height:130px" data-cont="' +
 			b.id +
 			'">' +
 			esc(b.content || "") +
@@ -414,6 +440,7 @@ function renderBlock(sid, b) {
 			b.description = b.description || "";
 			b.title = b.title || "api.c";
 		}
+		if (b.type === "command") ensureCommandContents(b);
 		changed();
 		render();
 	};
@@ -423,12 +450,24 @@ function renderBlock(sid, b) {
 		renderOut();
 	};
 	const c = d.querySelector("[data-cont]");
-	if (c)
-		c.oninput = (e) => {
-			b.content = e.target.value;
+	if (c) c.oninput = (e) => { b.content = e.target.value; changed(); renderOut(); };
+	d.querySelectorAll("[data-command-cont]").forEach((x) => {
+		x.oninput = (e) => {
+			ensureCommandContents(b);
+			b.contents[Number(x.dataset.commandCont)] = e.target.value;
+			syncCommandContent(b);
 			changed();
 			renderOut();
 		};
+	});
+	d.querySelectorAll("[data-del-command-content]").forEach((x) => {
+		x.onclick = () => deleteCommandContent(b, Number(x.dataset.delCommandContent));
+	});
+	d.querySelectorAll("[data-dup-command-content]").forEach((x) => {
+		x.onclick = () => duplicateCommandContent(b, Number(x.dataset.dupCommandContent));
+	});
+	const addCommandContentButton = d.querySelector("[data-add-command-content]");
+	if (addCommandContentButton) addCommandContentButton.onclick = () => addCommandContent(b);
 	const w = d.querySelector("[data-work]");
 	if (w)
 		w.oninput = (e) => {
@@ -533,6 +572,7 @@ function deleteSection(id) {
 }
 
 function duplicateSection(id) {
+	ensureSections();
 	const target = findSec(id);
 	if (!target) return;
 
@@ -546,7 +586,41 @@ function duplicateSection(id) {
 
 	const index = state.sections.findIndex((s) => s.id === id);
 	state.sections.splice(index + 1, 0, copied);
-
+	changed();
+	render();
+}
+function ensureCommandContents(b) {
+	if (b.type !== "command") return;
+	if (!Array.isArray(b.contents)) {
+		const oldContent = String(b.content ?? "");
+		b.contents = oldContent ? [oldContent] : [""];
+	}
+	if (!b.contents.length) b.contents.push("");
+}
+function syncCommandContent(b) {
+	if (b.type !== "command") return;
+	ensureCommandContents(b);
+	b.content = b.contents.join("");
+}
+function addCommandContent(b) {
+	ensureCommandContents(b);
+	b.contents.push("");
+	syncCommandContent(b);
+	changed();
+	render();
+}
+function deleteCommandContent(b, index) {
+	ensureCommandContents(b);
+	if (b.contents.length <= 1) b.contents[0] = "";
+	else b.contents.splice(index, 1);
+	syncCommandContent(b);
+	changed();
+	render();
+}
+function duplicateCommandContent(b, index) {
+	ensureCommandContents(b);
+	b.contents.splice(index + 1, 0, b.contents[index] ?? "");
+	syncCommandContent(b);
 	changed();
 	render();
 }
@@ -729,12 +803,23 @@ function push(o, b) {
 	}
 	if (title && b.type !== "image") o.push("# " + title);
 	if (["command", "diff", "log"].includes(b.type)) {
-		if (["diff", "log"].includes(b.type))
-			o.push(" <pre><code class=\"" + (b.type) + "\">");
-		else
-			o.push(" <pre><code class=\"shell\">");
-		o.push(b.content || "");
-		o.push("</code></pre>");
+		const contents =
+			b.type === "command"
+				? Array.isArray(b.contents)
+					? b.contents
+					: [b.content || ""]
+				: [b.content || ""];
+		contents
+			.map((x) => String(x || ""))
+			.filter((x) => x.trim())
+			.forEach((content) => {
+				if (["diff", "log"].includes(b.type))
+					o.push(" <pre><code class=\"" + b.type + "\">");
+				else
+					o.push(" <pre><code class=\"shell\">");
+				o.push(content);
+				o.push("</code></pre>");
+			});
 	} else if (b.type === "mermaid") {
 		o.push(" {{mermaid");
 		o.push(b.content || "");
@@ -812,7 +897,7 @@ document.getElementById("file").onchange = (e) => {
 	r.onload = () => {
 		try {
 			const obj = JSON.parse(r.result);
-			if (!obj.sections || !obj.environment) throw new Error("格式不符合");
+			if (!obj.environment || !Array.isArray(obj.sections)) throw new Error("格式不符合");
 			state = obj;
 			changed();
 			render();
@@ -1159,6 +1244,7 @@ function setupResizablePanels() {
 	window.addEventListener("mouseup", stop);
 	window.addEventListener("touchend", stop);
 }
+const addSectionButton = document.getElementById("addSection");
 if (addSectionButton) {
 	addSectionButton.onclick = () => addSection();
 }
