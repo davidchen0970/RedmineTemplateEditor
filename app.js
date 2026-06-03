@@ -35,8 +35,8 @@ function impl(
 		content,
 	};
 }
-function sec(title, enabled, blocks = []) {
-	return { id: uid(), title, enabled, blocks };
+function sec(title, enabled, blocks = [], description = "") {
+	return { id: uid(), title, enabled, description, blocks };
 }
 const presets = {
 	hardware: {
@@ -277,7 +277,11 @@ function renderSections() {
 			s.id +
 			'" value="' +
 			esc(s.title) +
-			'"></div><div data-bs="' +
+			'"></div><div class="field"><label>段落說明，輸出時前後各保留一個空白行</label><textarea style="min-height:90px" data-sdesc="' +
+			s.id +
+			'">' +
+			esc(s.description || "") +
+			'</textarea></div><div data-bs="' +
 			s.id +
 			'"></div>' +
 			sectionActionsHtml(s, "bottom") +
@@ -303,21 +307,19 @@ function renderSections() {
 			renderOut();
 		}),
 	);
-	r.querySelectorAll("[data-add]").forEach(
-		(x) => (x.onclick = () => addBlock(x.dataset.add)),
+	r.querySelectorAll("[data-sdesc]").forEach(
+		(x) =>
+		(x.oninput = () => {
+			findSec(x.dataset.sdesc).description = x.value;
+			changed();
+			renderOut();
+		}),
 	);
-	r.querySelectorAll("[data-up]").forEach(
-		(x) => (x.onclick = () => moveSec(x.dataset.up, -1)),
-	);
-	r.querySelectorAll("[data-down]").forEach(
-		(x) => (x.onclick = () => moveSec(x.dataset.down, 1)),
-	);
-	r.querySelectorAll("[data-dup-section]").forEach(
-		(x) => (x.onclick = () => duplicateSection(x.dataset.dupSection)),
-	);
-	r.querySelectorAll("[data-del-section]").forEach(
-		(x) => (x.onclick = () => deleteSection(x.dataset.delSection)),
-	);
+	r.querySelectorAll("[data-add]").forEach((x) => (x.onclick = () => addBlock(x.dataset.add)));
+	r.querySelectorAll("[data-up]").forEach((x) => (x.onclick = () => moveSec(x.dataset.up, -1)));
+	r.querySelectorAll("[data-down]").forEach((x) => (x.onclick = () => moveSec(x.dataset.down, 1)));
+	r.querySelectorAll("[data-dup-section]").forEach((x) => (x.onclick = () => duplicateSection(x.dataset.dupSection)));
+	r.querySelectorAll("[data-del-section]").forEach((x) => (x.onclick = () => deleteSection(x.dataset.delSection)));
 }
 function renderBlock(sid, b) {
 	const d = document.createElement("div");
@@ -346,7 +348,11 @@ function renderBlock(sid, b) {
 	const headerHtml =
 		'<div class="actions" style="justify-content:space-between"><span class="note">' +
 		(b.type === "implementation" ? "Implementation Unit" : label(b.type)) +
-		'</span><span><button type="button" class="small" data-du="' +
+		'</span><span><button type="button" class="small" data-block-up="' +
+		b.id +
+		'">上移</button> <button type="button" class="small" data-block-down="' +
+		b.id +
+		'">下移</button> <button type="button" class="small" data-du="' +
 		b.id +
 		'">複製</button> <button type="button" class="small danger" data-del="' +
 		b.id +
@@ -503,6 +509,8 @@ function renderBlock(sid, b) {
 			changed();
 			renderOut();
 		};
+	d.querySelector("[data-block-up]").onclick = () => moveBlock(sid, b.id, -1);
+	d.querySelector("[data-block-down]").onclick = () => moveBlock(sid, b.id, 1);
 	d.querySelector("[data-del]").onclick = () => {
 		findSec(sid).blocks = findSec(sid).blocks.filter((x) => x.id !== b.id);
 		changed();
@@ -586,6 +594,16 @@ function duplicateSection(id) {
 
 	const index = state.sections.findIndex((s) => s.id === id);
 	state.sections.splice(index + 1, 0, copied);
+	changed();
+	render();
+}
+function moveBlock(sid, bid, dir) {
+	const s = findSec(sid);
+	if (!s || !Array.isArray(s.blocks)) return;
+	const i = s.blocks.findIndex((b) => b.id === bid);
+	const j = i + dir;
+	if (i < 0 || j < 0 || j >= s.blocks.length) return;
+	[s.blocks[i], s.blocks[j]] = [s.blocks[j], s.blocks[i]];
 	changed();
 	render();
 }
@@ -759,7 +777,11 @@ function textile() {
 		.filter((s) => s.enabled)
 		.forEach((s) => {
 			addH3(o, s.title);
-			s.blocks.forEach((b) => push(o, b));
+			if ((s.description || "").trim()) {
+				o.push(s.description || "");
+				o.push("");
+			}
+			(s.blocks || []).forEach((b) => push(o, b));
 			o.push("");
 		});
 	return (
