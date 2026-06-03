@@ -111,6 +111,39 @@ let state = load() || makeState();
 let view = "raw";
 let exportStatus = { json: false, txt: false };
 let lastSaveText = "";
+
+const COLLAPSE_KEY = KEY + ":collapsed";
+function loadCollapsedState() {
+	try {
+		return JSON.parse(localStorage.getItem(COLLAPSE_KEY)) || {};
+	} catch {
+		return {};
+	}
+}
+function saveCollapsedStateMap(map) {
+	localStorage.setItem(COLLAPSE_KEY, JSON.stringify(map));
+}
+function isCollapsedTarget(targetId) {
+	return loadCollapsedState()[targetId] === true;
+}
+function setCollapsedTarget(targetId, collapsed) {
+	const map = loadCollapsedState();
+	if (collapsed) map[targetId] = true;
+	else delete map[targetId];
+	saveCollapsedStateMap(map);
+}
+function applySavedCollapseState(root = document) {
+	root.querySelectorAll("[data-collapse-target]").forEach((toggle) => {
+		const targetId = toggle.dataset.collapseTarget;
+		const target = document.getElementById(targetId);
+		if (!target) return;
+		const collapsed = isCollapsedTarget(targetId);
+		toggle.setAttribute("aria-expanded", String(!collapsed));
+		target.classList.toggle("collapsed", collapsed);
+		target.style.height = "";
+	});
+}
+
 function renderSaveStatus() {
 	const el = document.getElementById("save");
 	if (!el) return;
@@ -267,7 +300,9 @@ function renderSections() {
 			(s.enabled ? "checked" : "") +
 			'></label><button type="button" class="section-toggle" data-collapse-target="section-body-' +
 			s.id +
-			'" aria-expanded="true"><strong>' +
+			'" aria-expanded="' +
+			(isCollapsedTarget('section-body-' + s.id) ? 'false' : 'true') +
+			'"><strong>' +
 			esc(s.title) +
 			'</strong></button>' +
 			sectionActionsHtml(s, "top") +
@@ -320,6 +355,7 @@ function renderSections() {
 	r.querySelectorAll("[data-down]").forEach((x) => (x.onclick = () => moveSec(x.dataset.down, 1)));
 	r.querySelectorAll("[data-dup-section]").forEach((x) => (x.onclick = () => duplicateSection(x.dataset.dupSection)));
 	r.querySelectorAll("[data-del-section]").forEach((x) => (x.onclick = () => deleteSection(x.dataset.delSection)));
+	applySavedCollapseState(r);
 }
 function renderBlock(sid, b) {
 	const d = document.createElement("div");
@@ -1201,8 +1237,10 @@ function setupCollapsible() {
 		const nextExpanded = !expanded;
 
 		toggle.setAttribute("aria-expanded", String(nextExpanded));
+		setCollapsedTarget(toggle.dataset.collapseTarget, !nextExpanded);
 		animateCollapse(target, expanded);
 	});
+	applySavedCollapseState();
 }
 
 function setupSidebarCollapse() {
