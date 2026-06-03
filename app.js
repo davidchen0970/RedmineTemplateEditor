@@ -1183,10 +1183,10 @@ function setupThemeToggle() {
 		document.body.dataset.theme = nextTheme;
 		if (!btn) return;
 		const isDark = nextTheme === "dark";
-		btn.textContent = isDark ? "淺色模式" : "黑暗模式";
+		btn.textContent = isDark ? "淺色模式" : "深色模式";
 		btn.setAttribute("aria-pressed", String(isDark));
-		btn.setAttribute("aria-label", isDark ? "切換為淺色模式" : "切換為黑暗模式");
-		btn.title = isDark ? "切換為淺色模式" : "切換為黑暗模式";
+		btn.setAttribute("aria-label", isDark ? "切換為淺色模式" : "切換為深色模式");
+		btn.title = isDark ? "切換為淺色模式" : "切換為深色模式";
 	};
 	applyTheme(getSavedTheme() || getSystemTheme());
 	if (btn) {

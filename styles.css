@@ -48,6 +48,22 @@ body {
 	color: var(--text)
 }
 
+body,
+button,
+input,
+textarea,
+select,
+.panel,
+.card,
+.section,
+.block {
+	transition:
+		background-color 0.18s ease,
+		border-color 0.18s ease,
+		color 0.18s ease;
+}
+
+
 header {
 	position: sticky;
 	top: 0;
@@ -96,6 +112,13 @@ button.primary {
 	border-color: var(--primary);
 	color: #fff
 }
+
+button.primary:hover {
+	background: var(--primary-hover);
+	border-color: var(--primary-hover);
+	color: #fff;
+}
+
 
 button.danger {
 	color: var(--danger)
@@ -180,7 +203,8 @@ textarea {
 	border-radius: 10px;
 	padding: 9px;
 	margin-bottom: 8px;
-	background: #fff
+	background: var(--panel);
+	color: var(--text)
 }
 
 .card.active {
@@ -687,6 +711,7 @@ body.resizing {
 		width: 100%;
 	}
 }
+
 .section-manager-actions {
 	margin-top: 8px;
 }
@@ -723,6 +748,8 @@ body[data-theme="dark"] button:hover {
 }
 
 body[data-theme="dark"] button.primary:hover {
+	background: var(--primary-hover);
+	border-color: var(--primary-hover);
 	color: #06101f;
 }
 
