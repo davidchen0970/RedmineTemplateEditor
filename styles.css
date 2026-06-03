@@ -660,5 +660,14 @@ body.resizing {
 	}
 }
 .section-manager-actions {
-    margin-top: 8px;
+	margin-top: 8px;
+}
+
+.command-content-item {
+	margin-top: 8px;
+	background: #fff;
+}
+
+.command-content-item:first-child {
+	margin-top: 0;
 }
