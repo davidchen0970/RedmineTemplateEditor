@@ -789,8 +789,10 @@ function textile() {
 		o.push(state.relatedRef);
 	}
 	o.push("");
-	addH3(o, "結論");
-	o.push("執行狀態: " + status(state.status));
+	if (state.status !== "N/A") {
+		addH3(o, "結論");
+		o.push("執行狀態: " + status(state.status));
+	}
 	lines(state.summary).forEach((x) => o.push("* " + x));
 	const changeContent = String(state.changeContent ?? "").trim();
 	if (changeContent) {
