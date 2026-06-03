@@ -360,6 +360,7 @@ function renderSections() {
 function renderBlock(sid, b) {
 	const d = document.createElement("div");
 	d.className = "block";
+	ensureBlockContents(b);
 	const options = [
 		"implementation",
 		"text",
@@ -405,6 +406,36 @@ function renderBlock(sid, b) {
 		'" value="' +
 		esc(b.title || (b.type === "implementation" ? "api.c" : "")) +
 		'"></div></div>';
+	const contentItemsHtml = b.contents
+		.map(
+			(content, index) =>
+				'<div class="content-item block"><div class="actions" style="justify-content:space-between"><span class="note">' +
+				label(b.type) +
+				' content #' +
+				(index + 1) +
+				'</span><span><button type="button" class="small" data-dup-content="' +
+				index +
+				'">複製</button> <button type="button" class="small danger" data-del-content="' +
+				index +
+				'">刪除</button></span></div><div class="field"><label>' +
+				(b.type === "implementation" ? '主要內容，輸出到 &lt;pre&gt;&lt;code class="..."&gt;' : "內容") +
+				'</label><textarea style="min-height:' +
+				(b.type === "implementation" ? "170" : "130") +
+				'px" data-cont-index="' +
+				index +
+				'">' +
+				esc(content || "") +
+				"</textarea></div></div>",
+		)
+		.join("");
+	const addContentHtml =
+		'<div class="actions" style="margin-bottom:8px"><button type="button" class="small primary" data-add-content="' +
+		b.id +
+		'">新增 content</button></div><div data-contents="' +
+		b.id +
+		'">' +
+		contentItemsHtml +
+		"</div>";
 	if (b.type === "implementation") {
 		d.innerHTML =
 			headerHtml +
@@ -429,48 +460,10 @@ function renderBlock(sid, b) {
 			b.id +
 			'">' +
 			esc(b.description || "") +
-			'</textarea></div><div class="field"><label>主要內容，輸出到 &lt;pre&gt;&lt;code class="..."&gt;</label><textarea style="min-height:170px" data-cont="' +
-			b.id +
-			'">' +
-			esc(b.content || "") +
-			"</textarea></div>";
-	} else if (b.type === "command") {
-		ensureCommandContents(b);
-		const commandItemsHtml = b.contents
-			.map(
-				(content, index) =>
-					'<div class="command-content-item block"><div class="actions" style="justify-content:space-between"><span class="note">Command content #' +
-					(index + 1) +
-					'</span><span><button type="button" class="small" data-dup-command-content="' +
-					index +
-					'">複製</button> <button type="button" class="small danger" data-del-command-content="' +
-					index +
-					'">刪除</button></span></div><div class="field"><label>內容</label><textarea style="min-height:130px" data-command-cont="' +
-					index +
-					'">' +
-					esc(content || "") +
-					"</textarea></div></div>",
-			)
-			.join("");
-		d.innerHTML =
-			headerHtml +
-			typeTitleHtml +
-			'<div class="actions" style="margin-bottom:8px"><button type="button" class="small primary" data-add-command-content="' +
-			b.id +
-			'">新增 command content</button></div><div data-command-contents="' +
-			b.id +
-			'">' +
-			commandItemsHtml +
-			"</div>";
+			"</textarea></div>" +
+			addContentHtml;
 	} else {
-		d.innerHTML =
-			headerHtml +
-			typeTitleHtml +
-			'<div class="field"><label>內容</label><textarea style="min-height:130px" data-cont="' +
-			b.id +
-			'">' +
-			esc(b.content || "") +
-			"</textarea></div>";
+		d.innerHTML = headerHtml + typeTitleHtml + addContentHtml;
 	}
 	d.querySelector("[data-btype]").onchange = (e) => {
 		b.type = e.target.value;
@@ -482,7 +475,7 @@ function renderBlock(sid, b) {
 			b.description = b.description || "";
 			b.title = b.title || "api.c";
 		}
-		if (b.type === "command") ensureCommandContents(b);
+		ensureBlockContents(b);
 		changed();
 		render();
 	};
@@ -491,25 +484,23 @@ function renderBlock(sid, b) {
 		changed();
 		renderOut();
 	};
-	const c = d.querySelector("[data-cont]");
-	if (c) c.oninput = (e) => { b.content = e.target.value; changed(); renderOut(); };
-	d.querySelectorAll("[data-command-cont]").forEach((x) => {
+	d.querySelectorAll("[data-cont-index]").forEach((x) => {
 		x.oninput = (e) => {
-			ensureCommandContents(b);
-			b.contents[Number(x.dataset.commandCont)] = e.target.value;
-			syncCommandContent(b);
+			ensureBlockContents(b);
+			b.contents[Number(x.dataset.contIndex)] = e.target.value;
+			syncBlockContent(b);
 			changed();
 			renderOut();
 		};
 	});
-	d.querySelectorAll("[data-del-command-content]").forEach((x) => {
-		x.onclick = () => deleteCommandContent(b, Number(x.dataset.delCommandContent));
+	d.querySelectorAll("[data-del-content]").forEach((x) => {
+		x.onclick = () => deleteBlockContent(b, Number(x.dataset.delContent));
 	});
-	d.querySelectorAll("[data-dup-command-content]").forEach((x) => {
-		x.onclick = () => duplicateCommandContent(b, Number(x.dataset.dupCommandContent));
+	d.querySelectorAll("[data-dup-content]").forEach((x) => {
+		x.onclick = () => duplicateBlockContent(b, Number(x.dataset.dupContent));
 	});
-	const addCommandContentButton = d.querySelector("[data-add-command-content]");
-	if (addCommandContentButton) addCommandContentButton.onclick = () => addCommandContent(b);
+	const addContentButton = d.querySelector("[data-add-content]");
+	if (addContentButton) addContentButton.onclick = () => addBlockContent(b);
 	const w = d.querySelector("[data-work]");
 	if (w)
 		w.oninput = (e) => {
@@ -643,38 +634,41 @@ function moveBlock(sid, bid, dir) {
 	changed();
 	render();
 }
-function ensureCommandContents(b) {
-	if (b.type !== "command") return;
+function ensureBlockContents(b) {
 	if (!Array.isArray(b.contents)) {
 		const oldContent = String(b.content ?? "");
 		b.contents = oldContent ? [oldContent] : [""];
 	}
 	if (!b.contents.length) b.contents.push("");
+	syncBlockContent(b);
 }
-function syncCommandContent(b) {
-	if (b.type !== "command") return;
-	ensureCommandContents(b);
-	b.content = b.contents.join("");
+function getBlockContents(b) {
+	ensureBlockContents(b);
+	return b.contents.map((x) => String(x ?? ""));
 }
-function addCommandContent(b) {
-	ensureCommandContents(b);
+function syncBlockContent(b) {
+	if (!Array.isArray(b.contents)) return;
+	b.content = b.contents.join("\n");
+}
+function addBlockContent(b) {
+	ensureBlockContents(b);
 	b.contents.push("");
-	syncCommandContent(b);
+	syncBlockContent(b);
 	changed();
 	render();
 }
-function deleteCommandContent(b, index) {
-	ensureCommandContents(b);
+function deleteBlockContent(b, index) {
+	ensureBlockContents(b);
 	if (b.contents.length <= 1) b.contents[0] = "";
 	else b.contents.splice(index, 1);
-	syncCommandContent(b);
+	syncBlockContent(b);
 	changed();
 	render();
 }
-function duplicateCommandContent(b, index) {
-	ensureCommandContents(b);
+function duplicateBlockContent(b, index) {
+	ensureBlockContents(b);
 	b.contents.splice(index + 1, 0, b.contents[index] ?? "");
-	syncCommandContent(b);
+	syncBlockContent(b);
 	changed();
 	render();
 }
@@ -850,6 +844,7 @@ function status(s) {
 }
 function push(o, b) {
 	const title = (b.title || "").trim();
+	const contents = getBlockContents(b).filter((x) => String(x || "").trim());
 	if (b.type === "implementation") {
 		o.push("# " + (title || "api.c"));
 		if (b.showWorkPath !== false) {
@@ -862,53 +857,64 @@ function push(o, b) {
 		if ((b.description || "").trim()) {
 			o.push(b.description || "");
 		}
-		o.push(
-			' <pre><code class="' +
-			(b.codeLang || "cpp") +
-			'">' +
-			(b.content || "") +
-			"</code></pre>",
-		);
+		(contents.length ? contents : [""]).forEach((content) => {
+			o.push(
+				' <pre><code class="' +
+				(b.codeLang || "cpp") +
+				'">' +
+				content +
+				"</code></pre>",
+			);
+		});
 		return;
 	}
 	if (title && b.type !== "image") o.push("# " + title);
 	if (["command", "diff", "log"].includes(b.type)) {
-		const contents =
-			b.type === "command"
-				? Array.isArray(b.contents)
-					? b.contents
-					: [b.content || ""]
-				: [b.content || ""];
-		contents
-			.map((x) => String(x || ""))
-			.filter((x) => x.trim())
-			.forEach((content) => {
-				if (["diff", "log"].includes(b.type))
-					o.push(" <pre><code class=\"" + b.type + "\">");
-				else
-					o.push(" <pre><code class=\"shell\">");
-				o.push(content);
-				o.push("</code></pre>");
-			});
+		contents.forEach((content) => {
+			if (["diff", "log"].includes(b.type))
+				o.push(" <pre><code class=\"" + b.type + "\">");
+			else
+				o.push(" <pre><code class=\"shell\">");
+			o.push(content);
+			o.push("</code></pre>");
+		});
 	} else if (b.type === "mermaid") {
-		o.push(" {{mermaid");
-		o.push(b.content || "");
-		o.push("}}");
+		contents.forEach((content) => {
+			o.push(" {{mermaid");
+			o.push(content);
+			o.push("}}");
+		});
 	} else if (b.type === "image") {
-		lines(b.content).forEach((x) =>
-			o.push("!" + x.replace(/^!|!$/g, "") + "!"),
-		);
+		contents.forEach((content) => {
+			lines(content).forEach((x) => o.push("!" + x.replace(/^!|!$/g, "") + "!"));
+		});
 	} else if (b.type === "collapse") {
-		o.push(" {{collapse(" + (title || "detail") + ")");
-		o.push(b.content || "");
-		o.push("}}");
+		contents.forEach((content, index) => {
+			const suffix = contents.length > 1 ? " #" + (index + 1) : "";
+			o.push(" {{collapse(" + (title || "detail") + suffix + ")");
+			o.push(content);
+			o.push("}}");
+		});
 	} else {
-		o.push(b.content || "");
+		contents.forEach((content) => o.push(content));
+	}
+}
+function syncOutputViewButtons() {
+	const rawButton = document.getElementById("raw");
+	const jsonButton = document.getElementById("statebtn");
+	if (rawButton) {
+		rawButton.classList.toggle("primary", view === "raw");
+		rawButton.setAttribute("aria-pressed", String(view === "raw"));
+	}
+	if (jsonButton) {
+		jsonButton.classList.toggle("primary", view === "json");
+		jsonButton.setAttribute("aria-pressed", String(view === "json"));
 	}
 }
 function renderOut() {
 	document.getElementById("out").value =
 		view === "json" ? JSON.stringify(state, null, 2) : textile();
+	syncOutputViewButtons();
 }
 document.getElementById("raw").onclick = () => {
 	view = "raw";
