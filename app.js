@@ -8,6 +8,7 @@ const envKeys = [
 	["osKernel", "OS / Kernel"],
 	["others", "Others"],
 ];
+const addSectionButton = document.getElementById("addSection");
 function uid() {
 	return Math.random().toString(36).slice(2, 10);
 }
@@ -240,13 +241,17 @@ function sectionActionsHtml(s, position = "top") {
 	return (
 		'<div class="actions' +
 		extraClass +
-		'"><button class="small" data-up="' +
+		'"><button type="button" class="small" data-up="' +
 		s.id +
-		'">上移</button><button class="small" data-down="' +
+		'">上移</button><button type="button" class="small" data-down="' +
 		s.id +
-		'">下移</button><button class="small" data-add="' +
+		'">下移</button><button type="button" class="small" data-dup-section="' +
 		s.id +
-		'">新增區塊</button></div>'
+		'">複製段落</button><button type="button" class="small" data-add="' +
+		s.id +
+		'">新增區塊</button><button type="button" class="small danger" data-del-section="' +
+		s.id +
+		'">刪除段落</button></div>'
 	);
 }
 function renderSections() {
@@ -306,6 +311,12 @@ function renderSections() {
 	);
 	r.querySelectorAll("[data-down]").forEach(
 		(x) => (x.onclick = () => moveSec(x.dataset.down, 1)),
+	);
+	r.querySelectorAll("[data-dup-section]").forEach(
+		(x) => (x.onclick = () => duplicateSection(x.dataset.dupSection)),
+	);
+	r.querySelectorAll("[data-del-section]").forEach(
+		(x) => (x.onclick = () => deleteSection(x.dataset.delSection)),
 	);
 }
 function renderBlock(sid, b) {
@@ -484,6 +495,60 @@ function label(t) {
 }
 function findSec(id) {
 	return state.sections.find((s) => s.id === id);
+}
+function ensureSections() {
+	if (!Array.isArray(state.sections)) state.sections = [];
+}
+
+function addSection(title = "") {
+	ensureSections();
+
+	const inputTitle =
+		title ||
+		prompt("段落標題 h3.", "新增段落");
+
+	if (inputTitle === null) return;
+
+	const nextTitle = String(inputTitle).trim() || "新增段落";
+	state.sections.push(sec(nextTitle, true, []));
+
+	changed();
+	render();
+}
+
+function deleteSection(id) {
+	ensureSections();
+
+	const target = findSec(id);
+	if (!target) return;
+
+	if (!confirm("刪除段落「" + target.title + "」？段落內的區塊也會一起刪除。")) {
+		return;
+	}
+
+	state.sections = state.sections.filter((s) => s.id !== id);
+
+	changed();
+	render();
+}
+
+function duplicateSection(id) {
+	const target = findSec(id);
+	if (!target) return;
+
+	const copied = JSON.parse(JSON.stringify(target));
+	copied.id = uid();
+	copied.title = (copied.title || "段落") + " copy";
+	copied.blocks = (copied.blocks || []).map((b) => ({
+		...b,
+		id: uid(),
+	}));
+
+	const index = state.sections.findIndex((s) => s.id === id);
+	state.sections.splice(index + 1, 0, copied);
+
+	changed();
+	render();
 }
 let pendingAddSectionId = null;
 function blockTypeOptionsHtml() {
@@ -1094,6 +1159,10 @@ function setupResizablePanels() {
 	window.addEventListener("mouseup", stop);
 	window.addEventListener("touchend", stop);
 }
+if (addSectionButton) {
+	addSectionButton.onclick = () => addSection();
+}
+
 setupMobileHeaderCollapse();
 setupCollapsible();
 setupSidebarCollapse();
