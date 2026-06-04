@@ -19,21 +19,21 @@
 }
 
 body[data-theme="dark"] {
-	--bg: #0f172a;
-	--panel: #111827;
-	--panel-head: #1f2937;
-	--line: #334155;
-	--text: #e5e7eb;
-	--muted: #94a3b8;
-	--primary: #60a5fa;
-	--primary-hover: #93c5fd;
-	--danger: #f87171;
-	--code: #020617;
-	--code-text: #bfdbfe;
-	--soft: #172554;
-	--field: #0b1220;
-	--block: #172033;
-	--shadow: rgba(0, 0, 0, 0.45);
+	--bg: #303030;
+	--panel: #292a2d;
+	--panel-head: #414141;
+	--line: #3c4043;
+	--text: #e8eaed;
+	--muted: #9aa0a6;
+	--primary: #dadce0;
+	--primary-hover: #f1f3f4;
+	--danger: #d8d8d8;
+	--code: #171717;
+	--code-text: #dedede;
+	--soft: #3a3a3a;
+	--field: #242424;
+	--block: #262626;
+	--shadow: rgba(0, 0, 0, 0.5);
 	color-scheme: dark
 }
 
@@ -735,15 +735,18 @@ body.resizing {
 
 
 .theme-toggle {
-	display: inline-flex;
+	border: 1px solid var(--line);
 	align-items: center;
 	gap: 6px;
 }
 
 .theme-toggle[aria-pressed="true"] {
-	background: var(--soft);
-	border-color: var(--primary);
-	color: var(--primary);
+	border: 1px solid var(--line);
+	background: #292a2d;
+}
+
+.theme-toggle[data-theme=dart]:hover {
+		border-color: var(--primary);
 }
 
 body[data-theme="dark"] button.primary {
