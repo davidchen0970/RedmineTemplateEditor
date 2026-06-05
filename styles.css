@@ -792,7 +792,7 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 .redmine-preview p { margin: 0.45em 0; }
 .redmine-preview ul,
 .redmine-preview ol { margin: 0.45em 0 0.75em 1.4em; padding: 0; }
-.redmine-preview pre { margin: 0.6em 0; padding: 12px; border-radius: 9px; background: var(--code); color: var(--code-text); overflow: auto; white-space: pre-wrap; }
+.redmine-preview pre { margin: 0.6em 0; padding: 12px; border-radius: 9px; background: var(--code); color: var(--code-text); overflow: auto; }
 .redmine-preview code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .redmine-preview :not(pre) > code { padding: 1px 5px; border-radius: 5px; background: var(--soft); color: var(--text); }
 .redmine-preview details { margin: 0.6em 0; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
