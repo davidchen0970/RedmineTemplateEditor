@@ -800,4 +800,26 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 .redmine-preview details > .preview-collapse-body { padding: 10px; }
 .redmine-preview img { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
 .redmine-preview .preview-placeholder { border: 1px dashed var(--line); border-radius: 9px; padding: 10px; color: var(--muted); background: var(--block); }
+.redmine-preview table.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+}
 
+.redmine-preview table.preview-table th,
+.redmine-preview table.preview-table td {
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.redmine-preview table.preview-table th {
+    background: var(--panel-head);
+    font-weight: 700;
+}
+
+.redmine-preview table.preview-table tr:nth-child(even) td {
+    background: var(--soft);
+}

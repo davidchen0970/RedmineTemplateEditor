@@ -905,26 +905,64 @@ function renderInlineTextile(s) {
 	text = text.replace(/"([^"]+)":(https?:\/\/[^\s]+)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 	return text;
 }
+
+function parsePreviewTableRow(trimmed) {
+	const cells = trimmed
+		.slice(1, -1)
+		.split("|")
+		.map((cell) => cell.trim());
+
+	const hasHeaderCell = cells.some((cell) => cell.startsWith("_."));
+
+	return (
+		"<tr>" +
+		cells
+			.map((cell) => {
+				const isHeader = cell.startsWith("_.");
+				const clean = isHeader ? cell.replace(/^_\.\s*/, "") : cell;
+				const tag = isHeader || hasHeaderCell ? "th" : "td";
+				return "<" + tag + ">" + renderInlineTextile(clean) + "</" + tag + ">";
+			})
+			.join("") +
+		"</tr>"
+	);
+}
+
 function textileToPreviewHtml(text) {
 	const inputLines = String(text ?? "")
 		.replace(/\r\n/g, "\n")
 		.replace(/\r/g, "\n")
 		.split("\n");
 	const html = [];
-	let inList = null,
-		inPre = false,
-		preLang = "",
-		preLines = [];
-	let inCollapse = false,
-		collapseTitle = "detail",
-		collapseLines = [];
-	let inMermaid = false,
-		mermaidLines = [];
+	let inList = null;
+	let inTable = false;
+
+	let inPre = false;
+	let preLang = "";
+	let preLines = [];
+
+	let inCollapse = false;
+	let collapseTitle = "detail";
+	let collapseLines = [];
+
+	let inMermaid = false;
+	let mermaidLines = [];
+
 	const closeList = () => {
-		if (inList) {
-			html.push("</" + inList + ">");
-			inList = null;
-		}
+		if (!inList) return;
+		html.push("</" + inList + ">");
+		inList = null;
+	};
+
+	const closeTable = () => {
+		if (!inTable) return;
+		html.push("</table>");
+		inTable = false;
+	};
+
+	const closeFlowBlocks = () => {
+		closeList();
+		closeTable();
 	};
 	const flushPre = () => {
 		html.push(
@@ -948,7 +986,7 @@ function textileToPreviewHtml(text) {
 		}
 		if (inMermaid) {
 			if (trimmed === "}}") {
-				closeList();
+				closeFlowBlocks();
 				html.push(
 					'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
 						escapePreviewHtml(mermaidLines.join("\n")) +
@@ -961,7 +999,7 @@ function textileToPreviewHtml(text) {
 		}
 		if (inCollapse) {
 			if (trimmed === "}}") {
-				closeList();
+				closeFlowBlocks();
 				html.push(
 					"<details><summary>" +
 						renderInlineTextile(collapseTitle) +
@@ -976,14 +1014,32 @@ function textileToPreviewHtml(text) {
 			continue;
 		}
 		if (!trimmed) {
-			closeList();
+			closeFlowBlocks();
 			continue;
 		}
+		const inlinePreMatch = trimmed.match(
+			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i,
+		);
+
+		if (inlinePreMatch) {
+			closeFlowBlocks();
+			html.push(
+				"<pre><code" +
+					(inlinePreMatch[1]
+						? ' class="' + escapePreviewHtml(inlinePreMatch[1]) + '"'
+						: "") +
+					">" +
+					escapePreviewHtml(inlinePreMatch[2]) +
+					"</code></pre>",
+			);
+			continue;
+		}
+
 		const preMatch = trimmed.match(
 			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i,
 		);
 		if (preMatch) {
-			closeList();
+			closeFlowBlocks();
 			inPre = true;
 			preLang = preMatch[1] || "";
 			preLines = [];
@@ -991,33 +1047,46 @@ function textileToPreviewHtml(text) {
 		}
 		const collapseMatch = trimmed.match(/^\{\{collapse\((.*)\)$/);
 		if (collapseMatch) {
-			closeList();
+			closeFlowBlocks();
 			inCollapse = true;
 			collapseTitle = collapseMatch[1] || "detail";
 			collapseLines = [];
 			continue;
 		}
 		if (trimmed === "{{mermaid") {
-			closeList();
+			closeFlowBlocks();
 			inMermaid = true;
 			mermaidLines = [];
 			continue;
 		}
-		if (/^h2\.\s+/.test(trimmed)) {
+		if (/^\|.+\|$/.test(trimmed)) {
 			closeList();
+
+			if (!inTable) {
+				html.push('<table class="preview-table">');
+				inTable = true;
+			}
+
+			html.push(parsePreviewTableRow(trimmed));
+			continue;
+		}
+
+		if (/^h2\.\s+/.test(trimmed)) {
+			closeFlowBlocks();
 			html.push(
 				"<h2>" + renderInlineTextile(trimmed.replace(/^h2\.\s+/, "")) + "</h2>",
 			);
 			continue;
 		}
 		if (/^h3\.\s+/.test(trimmed)) {
-			closeList();
+			closeFlowBlocks();
 			html.push(
 				"<h3>" + renderInlineTextile(trimmed.replace(/^h3\.\s+/, "")) + "</h3>",
 			);
 			continue;
 		}
 		if (/^\*\s+/.test(trimmed)) {
+			closeTable();
 			if (inList !== "ul") {
 				closeList();
 				html.push("<ul>");
@@ -1029,6 +1098,7 @@ function textileToPreviewHtml(text) {
 			continue;
 		}
 		if (/^#\s+/.test(trimmed)) {
+			closeTable();
 			if (inList !== "ol") {
 				closeList();
 				html.push("<ol>");
@@ -1041,7 +1111,7 @@ function textileToPreviewHtml(text) {
 		}
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
-			closeList();
+			closeFlowBlocks();
 			html.push(
 				'<img src="' +
 					escapePreviewHtml(imageMatch[1]) +
@@ -1049,7 +1119,7 @@ function textileToPreviewHtml(text) {
 			);
 			continue;
 		}
-		closeList();
+		closeFlowBlocks();
 		html.push("<p>" + renderInlineTextile(trimmed) + "</p>");
 	}
 	if (inPre) flushPre();
@@ -1067,7 +1137,7 @@ function textileToPreviewHtml(text) {
 				renderPlainBlock(collapseLines) +
 				"</div></details>",
 		);
-	closeList();
+	closeFlowBlocks();
 	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
 }
 
@@ -1079,13 +1149,6 @@ function syncOutputViewButtons() {
 	if (rawButton) {
 		rawButton.classList.toggle("primary", view === "raw");
 		rawButton.setAttribute("aria-pressed", String(view === "raw"));
-	}
-	if (previewButton) {
-		previewButton.onclick = () => {
-			console.log("previewButton is clicked");
-			view = "preview";
-			renderOut();
-		};
 	}
 	if (previewButton) {
 		previewButton.classList.toggle("primary", view === "preview");
@@ -1110,17 +1173,29 @@ function renderOut() {
 	}
 	syncOutputViewButtons();
 }
-document.getElementById("raw").onclick = () => {
-	view = "raw";
-	renderOut();
-};
-document.getElementById("previewbtn").onclick = () => {
-	view = "preview";
-	renderOut();
-};
-document.getElementById("statebtn").onclick = () => {
-	view = "json";
-	renderOut();
+
+const rawButton = document.getElementById("raw");
+if (rawButton) {
+	rawButton.onclick = () => {
+		view = "raw";
+		renderOut();
+	};
+}
+
+const previewButton = document.getElementById("previewbtn");
+if (previewButton) {
+	previewButton.onclick = () => {
+		view = "preview";
+		renderOut();
+	};
+}
+
+const stateButton = document.getElementById("statebtn");
+if (stateButton) {
+	stateButton.onclick = () => {
+		view = "json";
+		renderOut();
+	};
 };
 document.getElementById("copy").onclick = async () => {
 	const t = textile();
