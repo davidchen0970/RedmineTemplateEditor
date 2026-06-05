@@ -858,14 +858,9 @@ function push(o, b) {
 			o.push(b.description || "");
 		}
 		(contents.length ? contents : [""]).forEach((content) => {
-			o.push(
-				' <pre><code class="' +
-				(b.codeLang || "cpp") +
-				'">' +
-				content +
-				"</code></pre>",
-			);
-		});
+			o.push(' <pre><code class="' + (b.codeLang || "cpp") + '">');
+			o.push(content);
+			o.push("</code></pre>");		});
 		return;
 	}
 	if (title && b.type !== "image") o.push("# " + title);
@@ -899,12 +894,63 @@ function push(o, b) {
 		contents.forEach((content) => o.push(content));
 	}
 }
+
+function escapePreviewHtml(s) {
+	return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+}
+function renderInlineTextile(s) {
+	let text = escapePreviewHtml(s);
+	text = text.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>');
+	text = text.replace(/@([^@]+)@/g, '<code>$1</code>');
+	text = text.replace(/"([^"]+)":(https?:\/\/[^\s]+)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+	return text;
+}
+function textileToPreviewHtml(text) {
+	const inputLines = String(text ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+	const html = [];
+	let inList = null, inPre = false, preLang = "", preLines = [];
+	let inCollapse = false, collapseTitle = "detail", collapseLines = [];
+	let inMermaid = false, mermaidLines = [];
+	const closeList = () => { if (inList) { html.push("</" + inList + ">"); inList = null; } };
+	const flushPre = () => { html.push('<pre><code' + (preLang ? ' class="' + escapePreviewHtml(preLang) + '"' : '') + '>' + escapePreviewHtml(preLines.join("\n")) + '</code></pre>'); inPre = false; preLang = ""; preLines = []; };
+	const renderPlainBlock = (lines) => textileToPreviewHtml(lines.join("\n"));
+	for (const rawLine of inputLines) {
+		const trimmed = rawLine.trim();
+		if (inPre) { if (trimmed === "</code></pre>" || trimmed === "</pre>") flushPre(); else preLines.push(rawLine); continue; }
+		if (inMermaid) { if (trimmed === "}}") { closeList(); html.push('<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' + escapePreviewHtml(mermaidLines.join("\n")) + '</code></pre></div>'); inMermaid = false; mermaidLines = []; } else mermaidLines.push(rawLine); continue; }
+		if (inCollapse) { if (trimmed === "}}") { closeList(); html.push('<details><summary>' + renderInlineTextile(collapseTitle) + '</summary><div class="preview-collapse-body">' + renderPlainBlock(collapseLines) + '</div></details>'); inCollapse = false; collapseTitle = "detail"; collapseLines = []; } else collapseLines.push(rawLine); continue; }
+		if (!trimmed) { closeList(); continue; }
+		const preMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
+		if (preMatch) { closeList(); inPre = true; preLang = preMatch[1] || ""; preLines = []; continue; }
+		const collapseMatch = trimmed.match(/^\{\{collapse\((.*)\)$/);
+		if (collapseMatch) { closeList(); inCollapse = true; collapseTitle = collapseMatch[1] || "detail"; collapseLines = []; continue; }
+		if (trimmed === "{{mermaid") { closeList(); inMermaid = true; mermaidLines = []; continue; }
+		if (/^h2\.\s+/.test(trimmed)) { closeList(); html.push("<h2>" + renderInlineTextile(trimmed.replace(/^h2\.\s+/, "")) + "</h2>"); continue; }
+		if (/^h3\.\s+/.test(trimmed)) { closeList(); html.push("<h3>" + renderInlineTextile(trimmed.replace(/^h3\.\s+/, "")) + "</h3>"); continue; }
+		if (/^\*\s+/.test(trimmed)) { if (inList !== "ul") { closeList(); html.push("<ul>"); inList = "ul"; } html.push("<li>" + renderInlineTextile(trimmed.replace(/^\*\s+/, "")) + "</li>"); continue; }
+		if (/^#\s+/.test(trimmed)) { if (inList !== "ol") { closeList(); html.push("<ol>"); inList = "ol"; } html.push("<li>" + renderInlineTextile(trimmed.replace(/^#\s+/, "")) + "</li>"); continue; }
+		const imageMatch = trimmed.match(/^!(.+)!$/);
+		if (imageMatch) { closeList(); html.push('<img src="' + escapePreviewHtml(imageMatch[1]) + '" alt="Redmine image preview">'); continue; }
+		closeList(); html.push("<p>" + renderInlineTextile(trimmed) + "</p>");
+	}
+	if (inPre) flushPre();
+	if (inMermaid) html.push('<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' + escapePreviewHtml(mermaidLines.join("\n")) + '</code></pre></div>');
+	if (inCollapse) html.push('<details><summary>' + renderInlineTextile(collapseTitle) + '</summary><div class="preview-collapse-body">' + renderPlainBlock(collapseLines) + '</div></details>');
+	closeList();
+	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
+}
+
 function syncOutputViewButtons() {
 	const rawButton = document.getElementById("raw");
+	const previewButton = document.getElementById("previewbtn");
 	const jsonButton = document.getElementById("statebtn");
 	if (rawButton) {
 		rawButton.classList.toggle("primary", view === "raw");
 		rawButton.setAttribute("aria-pressed", String(view === "raw"));
+	}
+	if (previewButton) {
+		previewButton.classList.toggle("primary", view === "preview");
+		previewButton.setAttribute("aria-pressed", String(view === "preview"));
 	}
 	if (jsonButton) {
 		jsonButton.classList.toggle("primary", view === "json");
@@ -912,12 +958,25 @@ function syncOutputViewButtons() {
 	}
 }
 function renderOut() {
-	document.getElementById("out").value =
-		view === "json" ? JSON.stringify(state, null, 2) : textile();
+	const out = document.getElementById("out");
+	const preview = document.getElementById("preview");
+	const rawText = textile();
+	if (out) {
+		out.value = view === "json" ? JSON.stringify(state, null, 2) : rawText;
+		out.classList.toggle("hidden", view === "preview");
+	}
+	if (preview) {
+		preview.classList.toggle("hidden", view !== "preview");
+		if (view === "preview") preview.innerHTML = textileToPreviewHtml(rawText);
+	}
 	syncOutputViewButtons();
 }
 document.getElementById("raw").onclick = () => {
 	view = "raw";
+	renderOut();
+};
+document.getElementById("previewbtn").onclick = () => {
+	view = "preview";
 	renderOut();
 };
 document.getElementById("statebtn").onclick = () => {

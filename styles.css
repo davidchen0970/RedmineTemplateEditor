@@ -772,3 +772,32 @@ body[data-theme="dark"] textarea::placeholder {
 body[data-theme="dark"] .add-block-dialog::backdrop {
 	background: rgba(2, 6, 23, 0.72);
 }
+.redmine-preview {
+	width: 100%;
+	height: calc(100vh - 195px);
+	overflow: auto;
+	box-sizing: border-box;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	padding: 14px 16px;
+	background: var(--field);
+	color: var(--text);
+	line-height: 1.55;
+	font-size: 14px;
+}
+.redmine-preview h2,
+.redmine-preview h3 { background: transparent; border: 0; padding: 0; color: var(--text); }
+.redmine-preview h2 { font-size: 20px; margin: 0.9em 0 0.45em; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.redmine-preview h3 { font-size: 16px; margin: 0.9em 0 0.45em; }
+.redmine-preview p { margin: 0.45em 0; }
+.redmine-preview ul,
+.redmine-preview ol { margin: 0.45em 0 0.75em 1.4em; padding: 0; }
+.redmine-preview pre { margin: 0.6em 0; padding: 12px; border-radius: 9px; background: var(--code); color: var(--code-text); overflow: auto; white-space: pre-wrap; }
+.redmine-preview code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.redmine-preview :not(pre) > code { padding: 1px 5px; border-radius: 5px; background: var(--soft); color: var(--text); }
+.redmine-preview details { margin: 0.6em 0; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+.redmine-preview summary { padding: 8px 10px; cursor: pointer; font-weight: 700; background: var(--panel-head); }
+.redmine-preview details > .preview-collapse-body { padding: 10px; }
+.redmine-preview img { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+.redmine-preview .preview-placeholder { border: 1px dashed var(--line); border-radius: 9px; padding: 10px; color: var(--muted); background: var(--block); }
+
