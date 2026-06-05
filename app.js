@@ -906,39 +906,171 @@ function renderInlineTextile(s) {
 	return text;
 }
 function textileToPreviewHtml(text) {
-	const inputLines = String(text ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+	const inputLines = String(text ?? "")
+		.replace(/\r\n/g, "\n")
+		.replace(/\r/g, "\n")
+		.split("\n");
 	const html = [];
-	let inList = null, inPre = false, preLang = "", preLines = [];
-	let inCollapse = false, collapseTitle = "detail", collapseLines = [];
-	let inMermaid = false, mermaidLines = [];
-	const closeList = () => { if (inList) { html.push("</" + inList + ">"); inList = null; } };
-	const flushPre = () => { html.push('<pre><code' + (preLang ? ' class="' + escapePreviewHtml(preLang) + '"' : '') + '>' + escapePreviewHtml(preLines.join("\n")) + '</code></pre>'); inPre = false; preLang = ""; preLines = []; };
+	let inList = null,
+		inPre = false,
+		preLang = "",
+		preLines = [];
+	let inCollapse = false,
+		collapseTitle = "detail",
+		collapseLines = [];
+	let inMermaid = false,
+		mermaidLines = [];
+	const closeList = () => {
+		if (inList) {
+			html.push("</" + inList + ">");
+			inList = null;
+		}
+	};
+	const flushPre = () => {
+		html.push(
+			"<pre><code" +
+				(preLang ? ' class="' + escapePreviewHtml(preLang) + '"' : "") +
+				">" +
+				escapePreviewHtml(preLines.join("\n")) +
+				"</code></pre>",
+		);
+		inPre = false;
+		preLang = "";
+		preLines = [];
+	};
 	const renderPlainBlock = (lines) => textileToPreviewHtml(lines.join("\n"));
 	for (const rawLine of inputLines) {
 		const trimmed = rawLine.trim();
-		if (inPre) { if (trimmed === "</code></pre>" || trimmed === "</pre>") flushPre(); else preLines.push(rawLine); continue; }
-		if (inMermaid) { if (trimmed === "}}") { closeList(); html.push('<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' + escapePreviewHtml(mermaidLines.join("\n")) + '</code></pre></div>'); inMermaid = false; mermaidLines = []; } else mermaidLines.push(rawLine); continue; }
-		if (inCollapse) { if (trimmed === "}}") { closeList(); html.push('<details><summary>' + renderInlineTextile(collapseTitle) + '</summary><div class="preview-collapse-body">' + renderPlainBlock(collapseLines) + '</div></details>'); inCollapse = false; collapseTitle = "detail"; collapseLines = []; } else collapseLines.push(rawLine); continue; }
-		if (!trimmed) { closeList(); continue; }
-		const preMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
-		if (preMatch) { closeList(); inPre = true; preLang = preMatch[1] || ""; preLines = []; continue; }
+		if (inPre) {
+			if (trimmed === "</code></pre>" || trimmed === "</pre>") flushPre();
+			else preLines.push(rawLine);
+			continue;
+		}
+		if (inMermaid) {
+			if (trimmed === "}}") {
+				closeList();
+				html.push(
+					'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
+						escapePreviewHtml(mermaidLines.join("\n")) +
+						"</code></pre></div>",
+				);
+				inMermaid = false;
+				mermaidLines = [];
+			} else mermaidLines.push(rawLine);
+			continue;
+		}
+		if (inCollapse) {
+			if (trimmed === "}}") {
+				closeList();
+				html.push(
+					"<details><summary>" +
+						renderInlineTextile(collapseTitle) +
+						'</summary><div class="preview-collapse-body">' +
+						renderPlainBlock(collapseLines) +
+						"</div></details>",
+				);
+				inCollapse = false;
+				collapseTitle = "detail";
+				collapseLines = [];
+			} else collapseLines.push(rawLine);
+			continue;
+		}
+		if (!trimmed) {
+			closeList();
+			continue;
+		}
+		const preMatch = trimmed.match(
+			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i,
+		);
+		if (preMatch) {
+			closeList();
+			inPre = true;
+			preLang = preMatch[1] || "";
+			preLines = [];
+			continue;
+		}
 		const collapseMatch = trimmed.match(/^\{\{collapse\((.*)\)$/);
-		if (collapseMatch) { closeList(); inCollapse = true; collapseTitle = collapseMatch[1] || "detail"; collapseLines = []; continue; }
-		if (trimmed === "{{mermaid") { closeList(); inMermaid = true; mermaidLines = []; continue; }
-		if (/^h2\.\s+/.test(trimmed)) { closeList(); html.push("<h2>" + renderInlineTextile(trimmed.replace(/^h2\.\s+/, "")) + "</h2>"); continue; }
-		if (/^h3\.\s+/.test(trimmed)) { closeList(); html.push("<h3>" + renderInlineTextile(trimmed.replace(/^h3\.\s+/, "")) + "</h3>"); continue; }
-		if (/^\*\s+/.test(trimmed)) { if (inList !== "ul") { closeList(); html.push("<ul>"); inList = "ul"; } html.push("<li>" + renderInlineTextile(trimmed.replace(/^\*\s+/, "")) + "</li>"); continue; }
-		if (/^#\s+/.test(trimmed)) { if (inList !== "ol") { closeList(); html.push("<ol>"); inList = "ol"; } html.push("<li>" + renderInlineTextile(trimmed.replace(/^#\s+/, "")) + "</li>"); continue; }
+		if (collapseMatch) {
+			closeList();
+			inCollapse = true;
+			collapseTitle = collapseMatch[1] || "detail";
+			collapseLines = [];
+			continue;
+		}
+		if (trimmed === "{{mermaid") {
+			closeList();
+			inMermaid = true;
+			mermaidLines = [];
+			continue;
+		}
+		if (/^h2\.\s+/.test(trimmed)) {
+			closeList();
+			html.push(
+				"<h2>" + renderInlineTextile(trimmed.replace(/^h2\.\s+/, "")) + "</h2>",
+			);
+			continue;
+		}
+		if (/^h3\.\s+/.test(trimmed)) {
+			closeList();
+			html.push(
+				"<h3>" + renderInlineTextile(trimmed.replace(/^h3\.\s+/, "")) + "</h3>",
+			);
+			continue;
+		}
+		if (/^\*\s+/.test(trimmed)) {
+			if (inList !== "ul") {
+				closeList();
+				html.push("<ul>");
+				inList = "ul";
+			}
+			html.push(
+				"<li>" + renderInlineTextile(trimmed.replace(/^\*\s+/, "")) + "</li>",
+			);
+			continue;
+		}
+		if (/^#\s+/.test(trimmed)) {
+			if (inList !== "ol") {
+				closeList();
+				html.push("<ol>");
+				inList = "ol";
+			}
+			html.push(
+				"<li>" + renderInlineTextile(trimmed.replace(/^#\s+/, "")) + "</li>",
+			);
+			continue;
+		}
 		const imageMatch = trimmed.match(/^!(.+)!$/);
-		if (imageMatch) { closeList(); html.push('<img src="' + escapePreviewHtml(imageMatch[1]) + '" alt="Redmine image preview">'); continue; }
-		closeList(); html.push("<p>" + renderInlineTextile(trimmed) + "</p>");
+		if (imageMatch) {
+			closeList();
+			html.push(
+				'<img src="' +
+					escapePreviewHtml(imageMatch[1]) +
+					'" alt="Redmine image preview">',
+			);
+			continue;
+		}
+		closeList();
+		html.push("<p>" + renderInlineTextile(trimmed) + "</p>");
 	}
 	if (inPre) flushPre();
-	if (inMermaid) html.push('<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' + escapePreviewHtml(mermaidLines.join("\n")) + '</code></pre></div>');
-	if (inCollapse) html.push('<details><summary>' + renderInlineTextile(collapseTitle) + '</summary><div class="preview-collapse-body">' + renderPlainBlock(collapseLines) + '</div></details>');
+	if (inMermaid)
+		html.push(
+			'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
+				escapePreviewHtml(mermaidLines.join("\n")) +
+				"</code></pre></div>",
+		);
+	if (inCollapse)
+		html.push(
+			"<details><summary>" +
+				renderInlineTextile(collapseTitle) +
+				'</summary><div class="preview-collapse-body">' +
+				renderPlainBlock(collapseLines) +
+				"</div></details>",
+		);
 	closeList();
 	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
 }
+
 
 function syncOutputViewButtons() {
 	const rawButton = document.getElementById("raw");
@@ -947,6 +1079,13 @@ function syncOutputViewButtons() {
 	if (rawButton) {
 		rawButton.classList.toggle("primary", view === "raw");
 		rawButton.setAttribute("aria-pressed", String(view === "raw"));
+	}
+	if (previewButton) {
+		previewButton.onclick = () => {
+			console.log("previewButton is clicked");
+			view = "preview";
+			renderOut();
+		};
 	}
 	if (previewButton) {
 		previewButton.classList.toggle("primary", view === "preview");
