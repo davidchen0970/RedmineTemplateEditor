@@ -249,7 +249,7 @@ export function textileToPreviewHtml(text) {
 		html.push(
 			'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
 				escapePreviewHtml(mermaidLines.join("\n")) +
-				'</code></pre></div>',
+				"</code></pre></div>",
 		);
 		inMermaid = false;
 		mermaidLines = [];
@@ -271,7 +271,8 @@ export function textileToPreviewHtml(text) {
 		const trimmed = rawLine.trim();
 		if (inPre) {
 			const decodedTrimmed = decodePreviewHtml(trimmed).trim();
-			if (decodedTrimmed === "</code></pre>" || decodedTrimmed === "</pre>") flushPre();
+			if (decodedTrimmed === "</code></pre>" || decodedTrimmed === "</pre>")
+				flushPre();
 			else preLines.push(rawLine);
 			continue;
 		}
@@ -294,7 +295,9 @@ export function textileToPreviewHtml(text) {
 			continue;
 		}
 		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
-		const inlinePreMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i);
+		const inlinePreMatch = decodedTrimmed.match(
+			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i,
+		);
 		if (inlinePreMatch) {
 			closeTable();
 			html.push(
@@ -302,7 +305,9 @@ export function textileToPreviewHtml(text) {
 			);
 			continue;
 		}
-		const preMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
+		const preMatch = decodedTrimmed.match(
+			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i,
+		);
 		if (preMatch) {
 			closeTable();
 			inPre = true;
@@ -335,12 +340,16 @@ export function textileToPreviewHtml(text) {
 		}
 		if (/^h2\.\s+/.test(trimmed)) {
 			closeFlowBlocks();
-			html.push(`<h2>${renderInlineTextile(trimmed.replace(/^h2\.\s+/, ""))}</h2>`);
+			html.push(
+				`<h2>${renderInlineTextile(trimmed.replace(/^h2\.\s+/, ""))}</h2>`,
+			);
 			continue;
 		}
 		if (/^h3\.\s+/.test(trimmed)) {
 			closeFlowBlocks();
-			html.push(`<h3>${renderInlineTextile(trimmed.replace(/^h3\.\s+/, ""))}</h3>`);
+			html.push(
+				`<h3>${renderInlineTextile(trimmed.replace(/^h3\.\s+/, ""))}</h3>`,
+			);
 			continue;
 		}
 		const listMatch = trimmed.match(/^([*#]+)\s+(.+)$/);
@@ -352,7 +361,9 @@ export function textileToPreviewHtml(text) {
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
 			closeTable();
-			html.push(`<img src="${esc(imageMatch[1])}" alt="Redmine image preview">`);
+			html.push(
+				`<img src="${esc(imageMatch[1])}" alt="Redmine image preview">`,
+			);
 			continue;
 		}
 		if (listStack.length) closeTable();

@@ -16,15 +16,87 @@ export function label(t) {
 	);
 }
 
-export function createRenderer(ctx) {
-	const {
-		getState,
-		getView,
-		getExportStatus,
-		getLastSaveText,
-		changed,
-		onPresetClick,
-	} = ctx;
+ export function createRenderer(ctx) {
+ 	const { getState, getView, getExportStatus, getLastSaveText, changed, onPresetClick, } = ctx;
+	let pendingAddSectionId = null;
+
+	function blockTypeOptionsHtml() {
+		return [
+			["implementation", "Implementation Unit"],
+			["text", "Text / Textile"],
+			["command", "Command Block"],
+			["diff", "Diff Block"],
+			["log", "Log Block"],
+			["mermaid", "Mermaid Block"],
+			["image", "Image"],
+			["collapse", "Collapse"],
+		]
+			.map(([value, text]) => `<option value="${value}">${text}</option>`)
+			.join("");
+	}
+
+	function defaultBlockTitle(type) {
+		return type === "implementation" ? "api.c" : label(type);
+	}
+	function ensureAddBlockDialog() {
+		let dialog = document.getElementById("addBlockDialog");
+		if (dialog) return dialog;
+
+		dialog = document.createElement("dialog");
+		dialog.id = "addBlockDialog";
+		dialog.className = "add-block-dialog";
+		dialog.innerHTML = `
+			<form method="dialog" id="addBlockForm">
+				<div class="dialog-head">新增區塊</div>
+				<div class="dialog-body">
+					<div class="field">
+						<label>區塊類型</label>
+						<select id="addBlockType">${blockTypeOptionsHtml()}</select>
+					</div>
+					<div class="field">
+						<label>區塊標題</label>
+						<input id="addBlockTitle" type="text">
+					</div>
+				</div>
+				<div class="dialog-actions">
+					<button type="button" id="addBlockCancel">取消</button>
+					<button type="submit" class="primary">新增</button>
+				</div>
+			</form>`;
+		document.body.appendChild(dialog);
+
+		const type = dialog.querySelector("#addBlockType");
+		const title = dialog.querySelector("#addBlockTitle");
+
+		type.onchange = () => {
+			title.value = defaultBlockTitle(type.value);
+		};
+
+		dialog.querySelector("#addBlockCancel").onclick = () => {
+			pendingAddSectionId = null;
+			dialog.close();
+		};
+
+		dialog.querySelector("#addBlockForm").onsubmit = (e) => {
+			e.preventDefault();
+			if (!pendingAddSectionId) return;
+
+			const selectedType = type.value || "text";
+			const selectedTitle = title.value || defaultBlockTitle(selectedType);
+			findSec(pendingAddSectionId).blocks.push(
+				selectedType === "implementation"
+					? impl(selectedTitle || "api.c")
+					: block(selectedType, selectedTitle, ""),
+			);
+
+			pendingAddSectionId = null;
+			dialog.close();
+			changed();
+			render();
+		};
+
+		return dialog;
+	}
 
 	function findSec(id) {
 		return getState().sections.find((s) => s.id === id);
@@ -325,16 +397,29 @@ export function createRenderer(ctx) {
 	}
 
 	function addBlock(id) {
-		const t =
-			prompt(
+		if (typeof HTMLDialogElement === "undefined") {
+			const t = prompt(
 				"區塊類型：implementation / text / command / diff / log / mermaid / image / collapse",
 				"implementation",
 			) || "text";
-		findSec(id).blocks.push(
-			t === "implementation" ? impl() : block(t, label(t), ""),
-		);
-		changed();
-		render();
+			const title = prompt("區塊標題", defaultBlockTitle(t)) || "";
+			findSec(id).blocks.push(
+				t === "implementation" ? impl(title || "api.c") : block(t, title || label(t), ""),
+			);
+			changed();
+			render();
+			return;
+		}
+
+		pendingAddSectionId = id;
+		const dialog = ensureAddBlockDialog();
+		const type = dialog.querySelector("#addBlockType");
+		const title = dialog.querySelector("#addBlockTitle");
+		type.value = "implementation";
+		title.value = defaultBlockTitle(type.value);
+		dialog.showModal();
+		title.focus();
+		title.select();
 	}
 
 	function renderOut() {
