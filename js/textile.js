@@ -21,48 +21,98 @@ function status(s) {
 				: "N/A";
 }
 
+function cleanEnvListLine(s) {
+	const input = String(s ?? "");
+	const trimmed = input.trim();
+	const noStarHash = trimmed.replace(/^[*#]+\s+/, "");
+	const noNumber = noStarHash.replace(/^\d+[.)]\s+/, "");
+	return noNumber;
+}
+
+function envTextileLines(label, value) {
+	const raw = String(value ?? "");
+	const xs = raw
+		.replace(/\r\n?/g, "\n")
+		.split("\n")
+		.map(cleanEnvListLine)
+		.filter(Boolean);
+	let result;
+
+	if (!xs.length) {
+		result = [];
+	} else if (xs.length === 1) {
+		result = ["* " + label + ": " + xs[0]];
+	} else {
+		result = [
+			"* " + label + ":",
+			...xs.map((x) => "*# " + x)
+		];
+	}
+	return result;
+}
+
 export function textile(state) {
 	const o = [];
 	o.push("h2. " + (state.title || ""));
-	if (state.relatedRef) o.push("", state.relatedRef);
+
+	if (state.relatedRef) {
+		o.push("", state.relatedRef);
+	}
+
 	o.push("");
 	if (state.status !== "N/A") {
 		addH3(o, "結論");
 		o.push("執行狀態: " + status(state.status));
 	}
-	lines(state.summary).forEach((x) => o.push("* " + x));
+	const summaryLines = lines(state.summary);
+	summaryLines.forEach((x) => o.push("* " + x));
 	const change = String(state.changeContent ?? "").trim();
 	if (change) {
 		o.push("");
 		addH3(o, "修改目標");
-		o.push(change === "X" ? "修改內容: X" : "修改內容:");
-		if (change !== "X") o.push(state.changeContent || "");
+
+		const changeLine =
+			change === "X" ? "修改內容: X" : "修改內容:";
+		o.push(changeLine);
+
+		if (change !== "X") {
+			o.push(state.changeContent || "");
+		}
+
 		o.push("");
-	} else o.push("");
+	} else {
+		o.push("");
+	}
 	const env = envKeys
 		.map(([k, l]) => {
-			const v = String(state.environment[k] ?? "").trim();
-			return v ? `* ${l}: ${v}` : "";
+			const v = String(state.environment?.[k] ?? "").trim();
+			const line = v ? `* ${l}: ${v}` : "";
+			return line;
 		})
 		.filter(Boolean);
-	if (env.length) {
+	const environmentLines = envKeys.flatMap(([k, l]) =>
+		envTextileLines(l, state.environment?.[k])
+	);
+	if (environmentLines.length) {
 		addH3(o, "測試環境");
-		o.push(...env, "");
+		o.push(...environmentLines, "");
 	}
 	state.sections
 		.filter((s) => s.enabled)
-		.forEach((s) => {
+		.forEach((s, i) => {
 			addH3(o, s.title);
-			if ((s.description || "").trim()) o.push(s.description, "");
+			if ((s.description || "").trim()) {
+				o.push(s.description, "");
+			}
 			(s.blocks || []).forEach((b) => push(o, b));
 			o.push("");
 		});
-	return (
-		o
-			.join("\n")
-			.replace(/\n{3,}/g, "\n\n")
-			.trim() + "\n"
-	);
+
+	const result = o
+		.join("\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim() + "\n";
+	return result;
 }
 
 function push(o, b) {
