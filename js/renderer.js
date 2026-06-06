@@ -431,7 +431,19 @@ export function label(t) {
 		out.value = view === "json" ? JSON.stringify(state, null, 2) : raw;
 		out.classList.toggle("hidden", view === "preview");
 		preview.classList.toggle("hidden", view !== "preview");
-		if (view === "preview") preview.innerHTML = textileToPreviewHtml(raw);
+		if (view === "preview") {
+    preview.innerHTML = textileToPreviewHtml(raw);
+
+    if (window.mermaid) {
+        window.mermaid
+            .run({
+                querySelector: ".mermaid",
+            })
+            .catch((err) => {
+                console.warn("Mermaid render failed:", err);
+            });
+    }
+}
 		document
 			.querySelectorAll(".segmented button")
 			.forEach((b) => b.classList.remove("active"));

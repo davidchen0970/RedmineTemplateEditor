@@ -314,10 +314,11 @@ export function textileToPreviewHtml(text) {
 	};
 	const flushMermaid = () => {
 		html.push(
-			'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
+			'<div class="mermaid">' +
 				escapePreviewHtml(mermaidLines.join("\n")) +
-				"</code></pre></div>",
+				"</div>",
 		);
+
 		inMermaid = false;
 		mermaidLines = [];
 	};
