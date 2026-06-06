@@ -163,7 +163,7 @@ export function textileToPreviewHtml(text) {
 		.replace(/\r/g, "\n")
 		.split("\n");
 	const html = [];
-	let inList = null,
+	let listStack = [],
 		inTable = false,
 		inPre = false,
 		preLang = "",
@@ -173,10 +173,26 @@ export function textileToPreviewHtml(text) {
 		collapseLines = [],
 		inMermaid = false,
 		mermaidLines = [];
-	const closeList = () => {
-		if (!inList) return;
-		html.push(inList === "ul" ? "</ul>" : "</ol>");
-		inList = null;
+	const closeList = (level = 0) => {
+		while (listStack.length > level) {
+			html.push(listStack.pop() === "ul" ? "</ul>" : "</ol>");
+		}
+	};
+	const syncList = (marker) => {
+		const wanted = marker.split("").map((x) => (x === "*" ? "ul" : "ol"));
+		let common = 0;
+		while (
+			common < listStack.length &&
+			common < wanted.length &&
+			listStack[common] === wanted[common]
+		) {
+			common++;
+		}
+		closeList(common);
+		for (let i = common; i < wanted.length; i++) {
+			html.push(wanted[i] === "ul" ? "<ul>" : "<ol>");
+			listStack.push(wanted[i]);
+		}
 	};
 	const closeTable = () => {
 		if (!inTable) return;
@@ -291,24 +307,11 @@ export function textileToPreviewHtml(text) {
 			html.push(`<h3>${renderInlineTextile(trimmed.replace(/^h3\.\s+/, ""))}</h3>`);
 			continue;
 		}
-		if (/^\*\s+/.test(trimmed)) {
+		const listMatch = trimmed.match(/^([*#]+)\s+(.+)$/);
+		if (listMatch) {
 			closeTable();
-			if (inList !== "ul") {
-				closeList();
-				html.push("<ul>");
-				inList = "ul";
-			}
-			html.push(`<li>${renderInlineTextile(trimmed.replace(/^\*\s+/, ""))}</li>`);
-			continue;
-		}
-		if (/^#\s+/.test(trimmed)) {
-			closeTable();
-			if (inList !== "ol") {
-				closeList();
-				html.push("<ol>");
-				inList = "ol";
-			}
-			html.push(`<li>${renderInlineTextile(trimmed.replace(/^#\s+/, ""))}</li>`);
+			syncList(listMatch[1]);
+			html.push(`<li>${renderInlineTextile(listMatch[2])}</li>`);
 			continue;
 		}
 		const imageMatch = trimmed.match(/^!(.+)!$/);
