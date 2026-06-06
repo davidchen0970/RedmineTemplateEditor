@@ -164,6 +164,7 @@ export function textileToPreviewHtml(text) {
 		.split("\n");
 	const html = [];
 	let listStack = [],
+		listItemOpen = [],
 		listCounters = {},
 		inTable = false,
 		inPre = false,
@@ -174,9 +175,17 @@ export function textileToPreviewHtml(text) {
 		collapseLines = [],
 		inMermaid = false,
 		mermaidLines = [];
+	const closeListItem = (level) => {
+		if (!listItemOpen[level]) return;
+		html.push("</li>");
+		listItemOpen[level] = false;
+	};
 	const closeList = (level = 0) => {
 		while (listStack.length > level) {
+			const currentLevel = listStack.length - 1;
+			closeListItem(currentLevel);
 			html.push(listStack.pop() === "ul" ? "</ul>" : "</ol>");
+			listItemOpen.pop();
 		}
 	};
 	const openListTag = (type, markerPrefix) => {
@@ -199,7 +208,18 @@ export function textileToPreviewHtml(text) {
 			const markerPrefix = marker.slice(0, i + 1);
 			html.push(openListTag(wanted[i], markerPrefix));
 			listStack.push(wanted[i]);
+			listItemOpen.push(false);
 		}
+	};
+	const addListItem = (marker, body) => {
+		syncList(marker);
+		const level = marker.length - 1;
+		closeListItem(level);
+		if (marker.endsWith("#")) {
+			listCounters[marker] = (listCounters[marker] || 0) + 1;
+		}
+		html.push(`<li>${renderInlineTextile(body)}`);
+		listItemOpen[level] = true;
 	};
 	const closeTable = () => {
 		if (!inTable) return;
@@ -257,26 +277,26 @@ export function textileToPreviewHtml(text) {
 		}
 		if (inMermaid) {
 			if (trimmed === "}}") {
-				closeFlowBlocks();
+				closeTable();
 				flushMermaid();
 			} else mermaidLines.push(rawLine);
 			continue;
 		}
 		if (inCollapse) {
 			if (trimmed === "}}") {
-				closeFlowBlocks();
+				closeTable();
 				flushCollapse();
 			} else collapseLines.push(rawLine);
 			continue;
 		}
 		if (!trimmed) {
-			closeFlowBlocks();
+			closeTable();
 			continue;
 		}
 		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
 		const inlinePreMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i);
 		if (inlinePreMatch) {
-			closeFlowBlocks();
+			closeTable();
 			html.push(
 				`<pre><code${inlinePreMatch[1] ? ` class="${esc(inlinePreMatch[1])}"` : ""}>${escapePreviewHtml(inlinePreMatch[2])}</code></pre>`,
 			);
@@ -284,7 +304,7 @@ export function textileToPreviewHtml(text) {
 		}
 		const preMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
 		if (preMatch) {
-			closeFlowBlocks();
+			closeTable();
 			inPre = true;
 			preLang = preMatch[1] || "";
 			preLines = [];
@@ -292,14 +312,14 @@ export function textileToPreviewHtml(text) {
 		}
 		const collapseMatch = trimmed.match(/^\{\{collapse\((.*)\)$/);
 		if (collapseMatch) {
-			closeFlowBlocks();
+			closeTable();
 			inCollapse = true;
 			collapseTitle = collapseMatch[1] || "detail";
 			collapseLines = [];
 			continue;
 		}
 		if (trimmed === "{{mermaid") {
-			closeFlowBlocks();
+			closeTable();
 			inMermaid = true;
 			mermaidLines = [];
 			continue;
@@ -326,20 +346,17 @@ export function textileToPreviewHtml(text) {
 		const listMatch = trimmed.match(/^([*#]+)\s+(.+)$/);
 		if (listMatch) {
 			closeTable();
-			syncList(listMatch[1]);
-			if (listMatch[1].endsWith("#")) {
-				listCounters[listMatch[1]] = (listCounters[listMatch[1]] || 0) + 1;
-			}
-			html.push(`<li>${renderInlineTextile(listMatch[2])}</li>`);
+			addListItem(listMatch[1], listMatch[2]);
 			continue;
 		}
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
-			closeFlowBlocks();
+			closeTable();
 			html.push(`<img src="${esc(imageMatch[1])}" alt="Redmine image preview">`);
 			continue;
 		}
-		closeFlowBlocks();
+		if (listStack.length) closeTable();
+		else closeFlowBlocks();
 		html.push(`<p>${renderInlineTextile(trimmed)}</p>`);
 	}
 	if (inPre) flushPre();
