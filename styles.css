@@ -169,7 +169,7 @@ body[data-theme="dark"] .app-header {
 .output-panel {
 	position: sticky;
 	top: 86px;
-	min-height: calc(100vh - 110px)
+	max-height: calc(100vh - 110px)
 }
 
 .panel-title {
@@ -645,6 +645,115 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 .header-menu-toggle[aria-expanded="true"]::before {
 	content: "×";
 	font-size: 22px;
+}
+
+@media (min-width: 1020px) {
+	.app-header {
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-between;
+		gap: 18px;
+		padding: 12px 18px;
+	}
+
+	.header-main {
+		width: auto;
+		flex: 0 1 auto;
+		min-width: 280px;
+	}
+
+	.brand {
+		min-width: 0;
+		max-width: 430px;
+	}
+
+	.brand h1,
+	.brand p {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.header-menu-toggle {
+		display: none !important;
+	}
+
+	.top-actions.header-collapsible {
+		display: flex !important;
+		flex: 1 1 auto;
+		flex-wrap: nowrap;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 8px;
+		min-width: 0;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
+
+	.top-actions.header-collapsible button {
+		flex: 0 0 auto;
+		min-height: 36px;
+		padding: 8px 13px;
+		border-radius: 999px;
+		font-size: 13px;
+		font-weight: 650;
+		line-height: 1;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+		transition:
+			background-color .16s ease,
+			border-color .16s ease,
+			color .16s ease,
+			box-shadow .16s ease,
+			transform .16s ease;
+	}
+
+	.top-actions.header-collapsible button:hover {
+		box-shadow: 0 6px 16px rgba(15, 23, 42, .10);
+		transform: translateY(-1px);
+	}
+
+	.top-actions.header-collapsible button.primary {
+		background: linear-gradient(135deg, var(--primary), var(--primary-2));
+		border-color: transparent;
+		color: #fff;
+	}
+
+	.top-actions.header-collapsible button.ghost {
+		background: var(--soft);
+		border-color: transparent;
+		color: var(--primary);
+	}
+
+	.top-actions.header-collapsible button.danger {
+		background: transparent;
+		border-color: rgba(220, 38, 38, .28);
+		color: var(--danger);
+	}
+
+	body[data-theme="dark"] .top-actions.header-collapsible button {
+		box-shadow: none;
+	}
+}
+
+@media (min-width: 761px) and (max-width: 1060px) {
+	.app-header {
+		flex-direction: row !important;
+		align-items: center !important;
+	}
+
+	.brand {
+		max-width: 320px;
+	}
+
+	.brand p {
+		display: none;
+	}
+
+	.top-actions.header-collapsible button {
+		padding: 8px 11px;
+		font-size: 12.5px;
+	}
 }
 
 @media (max-width: 760px) {
