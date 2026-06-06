@@ -164,6 +164,7 @@ export function textileToPreviewHtml(text) {
 		.split("\n");
 	const html = [];
 	let listStack = [],
+		listCounters = {},
 		inTable = false,
 		inPre = false,
 		preLang = "",
@@ -178,6 +179,11 @@ export function textileToPreviewHtml(text) {
 			html.push(listStack.pop() === "ul" ? "</ul>" : "</ol>");
 		}
 	};
+	const openListTag = (type, markerPrefix) => {
+		if (type !== "ol") return "<ul>";
+		const start = (listCounters[markerPrefix] || 0) + 1;
+		return start > 1 ? `<ol start="${start}">` : "<ol>";
+	};
 	const syncList = (marker) => {
 		const wanted = marker.split("").map((x) => (x === "*" ? "ul" : "ol"));
 		let common = 0;
@@ -190,7 +196,8 @@ export function textileToPreviewHtml(text) {
 		}
 		closeList(common);
 		for (let i = common; i < wanted.length; i++) {
-			html.push(wanted[i] === "ul" ? "<ul>" : "<ol>");
+			const markerPrefix = marker.slice(0, i + 1);
+			html.push(openListTag(wanted[i], markerPrefix));
 			listStack.push(wanted[i]);
 		}
 	};
@@ -203,6 +210,13 @@ export function textileToPreviewHtml(text) {
 		closeList();
 		closeTable();
 	};
+	const decodePreviewHtml = (s) =>
+		String(s ?? "")
+			.replace(/&lt;/g, "<")
+			.replace(/&gt;/g, ">")
+			.replace(/&quot;/g, '"')
+			.replace(/&#39;/g, "'")
+			.replace(/&amp;/g, "&");
 	const flushPre = () => {
 		html.push(
 			`<pre><code${preLang ? ` class="${esc(preLang)}"` : ""}>${escapePreviewHtml(preLines.join("\n"))}</code></pre>`,
@@ -236,7 +250,8 @@ export function textileToPreviewHtml(text) {
 	for (const rawLine of inputLines) {
 		const trimmed = rawLine.trim();
 		if (inPre) {
-			if (trimmed === "</code></pre>" || trimmed === "</pre>") flushPre();
+			const decodedTrimmed = decodePreviewHtml(trimmed).trim();
+			if (decodedTrimmed === "</code></pre>" || decodedTrimmed === "</pre>") flushPre();
 			else preLines.push(rawLine);
 			continue;
 		}
@@ -258,7 +273,8 @@ export function textileToPreviewHtml(text) {
 			closeFlowBlocks();
 			continue;
 		}
-		const inlinePreMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i);
+		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
+		const inlinePreMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i);
 		if (inlinePreMatch) {
 			closeFlowBlocks();
 			html.push(
@@ -266,7 +282,7 @@ export function textileToPreviewHtml(text) {
 			);
 			continue;
 		}
-		const preMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
+		const preMatch = decodedTrimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
 		if (preMatch) {
 			closeFlowBlocks();
 			inPre = true;
@@ -311,6 +327,9 @@ export function textileToPreviewHtml(text) {
 		if (listMatch) {
 			closeTable();
 			syncList(listMatch[1]);
+			if (listMatch[1].endsWith("#")) {
+				listCounters[listMatch[1]] = (listCounters[listMatch[1]] || 0) + 1;
+			}
 			html.push(`<li>${renderInlineTextile(listMatch[2])}</li>`);
 			continue;
 		}
