@@ -21,6 +21,25 @@ function status(s) {
 				: "N/A";
 }
 
+function cleanInlineListLine(s) {
+	return String(s ?? "")
+		.trim()
+		.replace(/^[*#]+\s+/, "")
+		.replace(/^\d+[.)]\s+/, "");
+}
+
+function labeledTextileLines(label, value) {
+	const xs = String(value ?? "")
+		.replace(/\r\n/g, "\n")
+		.replace(/\r/g, "\n")
+		.split("\n")
+		.map(cleanInlineListLine)
+		.filter(Boolean);
+	if (!xs.length) return [];
+	if (xs.length === 1) return [`${label}: ${xs[0]}`];
+	return [`${label}:`, ...xs.map((x) => `# ${x}`)];
+}
+
 function cleanEnvListLine(s) {
 	const input = String(s ?? "");
 	const trimmed = input.trim();
@@ -43,10 +62,7 @@ function envTextileLines(label, value) {
 	} else if (xs.length === 1) {
 		result = ["* " + label + ": " + xs[0]];
 	} else {
-		result = [
-			"* " + label + ":",
-			...xs.map((x) => "*# " + x)
-		];
+		result = ["* " + label + ":", ...xs.map((x) => "*# " + x)];
 	}
 	return result;
 }
@@ -71,12 +87,12 @@ export function textile(state) {
 		o.push("");
 		addH3(o, "修改目標");
 
-		const changeLine =
-			change === "X" ? "修改內容: X" : "修改內容:";
-		o.push(changeLine);
+		const changeLine = change === "X" ? "修改內容: X" : "修改內容:";
 
-		if (change !== "X") {
-			o.push(state.changeContent || "");
+		if (change === "X") {
+			o.push("修改內容: X");
+		} else {
+			o.push(...labeledTextileLines("修改內容", state.changeContent));
 		}
 
 		o.push("");
@@ -91,7 +107,7 @@ export function textile(state) {
 		})
 		.filter(Boolean);
 	const environmentLines = envKeys.flatMap(([k, l]) =>
-		envTextileLines(l, state.environment?.[k])
+		envTextileLines(l, state.environment?.[k]),
 	);
 	if (environmentLines.length) {
 		addH3(o, "測試環境");
@@ -108,10 +124,11 @@ export function textile(state) {
 			o.push("");
 		});
 
-	const result = o
-		.join("\n")
-		.replace(/\n{3,}/g, "\n\n")
-		.trim() + "\n";
+	const result =
+		o
+			.join("\n")
+			.replace(/\n{3,}/g, "\n\n")
+			.trim() + "\n";
 	return result;
 }
 
