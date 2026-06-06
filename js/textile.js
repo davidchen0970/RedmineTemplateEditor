@@ -1,0 +1,328 @@
+import { envKeys, esc, lines } from "./state.js";
+
+export function ensureBlockContents(b) {
+	if (!Array.isArray(b.contents))
+		b.contents = b.content ? [String(b.content)] : [""];
+	if (!b.contents.length) b.contents.push("");
+	b.content = b.contents.join("\n");
+}
+
+function addH3(o, title) {
+	o.push("h3. " + title, "");
+}
+
+function status(s) {
+	return s === "PASS"
+		? "%{color:green}PASS%"
+		: s === "FAILED"
+			? "%{color:red}FAILED%"
+			: s === "WIP"
+				? "%{color:orange}WIP%"
+				: "N/A";
+}
+
+export function textile(state) {
+	const o = [];
+	o.push("h2. " + (state.title || ""));
+	if (state.relatedRef) o.push("", state.relatedRef);
+	o.push("");
+	if (state.status !== "N/A") {
+		addH3(o, "結論");
+		o.push("執行狀態: " + status(state.status));
+	}
+	lines(state.summary).forEach((x) => o.push("* " + x));
+	const change = String(state.changeContent ?? "").trim();
+	if (change) {
+		o.push("");
+		addH3(o, "修改目標");
+		o.push(change === "X" ? "修改內容: X" : "修改內容:");
+		if (change !== "X") o.push(state.changeContent || "");
+		o.push("");
+	} else o.push("");
+	const env = envKeys
+		.map(([k, l]) => {
+			const v = String(state.environment[k] ?? "").trim();
+			return v ? `* ${l}: ${v}` : "";
+		})
+		.filter(Boolean);
+	if (env.length) {
+		addH3(o, "測試環境");
+		o.push(...env, "");
+	}
+	state.sections
+		.filter((s) => s.enabled)
+		.forEach((s) => {
+			addH3(o, s.title);
+			if ((s.description || "").trim()) o.push(s.description, "");
+			(s.blocks || []).forEach((b) => push(o, b));
+			o.push("");
+		});
+	return (
+		o
+			.join("\n")
+			.replace(/\n{3,}/g, "\n\n")
+			.trim() + "\n"
+	);
+}
+
+function push(o, b) {
+	ensureBlockContents(b);
+	const title = (b.title || "").trim(),
+		contents = b.contents.filter((x) => String(x || "").trim());
+	if (b.type === "implementation") {
+		o.push("# " + (title || "api.c"));
+		if (b.showWorkPath !== false) {
+			o.push(
+				"{{collapse(" + (b.workPathTitle || "work path") + ")",
+				'<pre><code class="shell">',
+				b.workPath || "(docker)$ pwd",
+				"</code></pre>",
+				"}}",
+			);
+		}
+		if ((b.description || "").trim()) o.push(b.description);
+		(contents.length ? contents : [""]).forEach((c) =>
+			o.push(
+				' <pre><code class="' + (b.codeLang || "cpp") + '">',
+				c,
+				"</code></pre>",
+			),
+		);
+		return;
+	}
+	if (title && b.type !== "image") o.push("# " + title);
+	if (["command", "diff", "log"].includes(b.type))
+		contents.forEach((c) =>
+			o.push(
+				' <pre><code class="' +
+					(b.type === "command" ? "shell" : b.type) +
+					'">',
+				c,
+				"</code></pre>",
+			),
+		);
+	else if (b.type === "mermaid")
+		contents.forEach((c) => o.push(" {{mermaid", c, "}}"));
+	else if (b.type === "image")
+		contents.forEach((c) =>
+			lines(c).forEach((x) => o.push("!" + x.replace(/^!|!$/g, "") + "!")),
+		);
+	else if (b.type === "collapse")
+		contents.forEach((c, i) =>
+			o.push(
+				" {{collapse(" +
+					(title || "detail") +
+					(contents.length > 1 ? ` #${i + 1}` : "") +
+					")",
+				c,
+				"}}",
+			),
+		);
+	else contents.forEach((c) => o.push(c));
+}
+
+export function renderInlineTextile(s) {
+	let t = esc(s);
+	t = t
+		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
+		.replace(/@([^@]+)@/g, "<code>$1</code>")
+		.replace(
+			/"([^"]+)":(https?:\/\/[^\s]+)/g,
+			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+		);
+	return t;
+}
+
+function escapePreviewHtml(s) {
+	return esc(s);
+}
+
+function parsePreviewTableRow(trimmed) {
+	const cells = trimmed
+		.slice(1, -1)
+		.split("|")
+		.map((cell) => cell.trim());
+	const hasHeaderCell = cells.some((cell) => cell.startsWith("_."));
+	return (
+		"<tr>" +
+		cells
+			.map((cell) => {
+				const isHeader = cell.startsWith("_.");
+				const clean = isHeader ? cell.replace(/^_\.\s*/, "") : cell;
+				const tag = isHeader || hasHeaderCell ? "th" : "td";
+				return "<" + tag + ">" + renderInlineTextile(clean) + "</" + tag + ">";
+			})
+			.join("") +
+		"</tr>"
+	);
+}
+
+export function textileToPreviewHtml(text) {
+	const inputLines = String(text ?? "")
+		.replace(/\r\n/g, "\n")
+		.replace(/\r/g, "\n")
+		.split("\n");
+	const html = [];
+	let inList = null,
+		inTable = false,
+		inPre = false,
+		preLang = "",
+		preLines = [],
+		inCollapse = false,
+		collapseTitle = "detail",
+		collapseLines = [],
+		inMermaid = false,
+		mermaidLines = [];
+	const closeList = () => {
+		if (!inList) return;
+		html.push(inList === "ul" ? "</ul>" : "</ol>");
+		inList = null;
+	};
+	const closeTable = () => {
+		if (!inTable) return;
+		html.push("</table>");
+		inTable = false;
+	};
+	const closeFlowBlocks = () => {
+		closeList();
+		closeTable();
+	};
+	const flushPre = () => {
+		html.push(
+			`<pre><code${preLang ? ` class="${esc(preLang)}"` : ""}>${escapePreviewHtml(preLines.join("\n"))}</code></pre>`,
+		);
+		inPre = false;
+		preLang = "";
+		preLines = [];
+	};
+	const flushMermaid = () => {
+		html.push(
+			'<div class="preview-placeholder"><strong>Mermaid</strong><pre><code>' +
+				escapePreviewHtml(mermaidLines.join("\n")) +
+				'</code></pre></div>',
+		);
+		inMermaid = false;
+		mermaidLines = [];
+	};
+	const flushCollapse = () => {
+		const collapseBody = textileToPreviewHtml(collapseLines.join("\n"));
+		html.push(
+			"<details><summary>" +
+				renderInlineTextile(collapseTitle) +
+				'</summary><div class="preview-collapse-body">' +
+				collapseBody +
+				"</div></details>",
+		);
+		inCollapse = false;
+		collapseTitle = "detail";
+		collapseLines = [];
+	};
+	for (const rawLine of inputLines) {
+		const trimmed = rawLine.trim();
+		if (inPre) {
+			if (trimmed === "</code></pre>" || trimmed === "</pre>") flushPre();
+			else preLines.push(rawLine);
+			continue;
+		}
+		if (inMermaid) {
+			if (trimmed === "}}") {
+				closeFlowBlocks();
+				flushMermaid();
+			} else mermaidLines.push(rawLine);
+			continue;
+		}
+		if (inCollapse) {
+			if (trimmed === "}}") {
+				closeFlowBlocks();
+				flushCollapse();
+			} else collapseLines.push(rawLine);
+			continue;
+		}
+		if (!trimmed) {
+			closeFlowBlocks();
+			continue;
+		}
+		const inlinePreMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i);
+		if (inlinePreMatch) {
+			closeFlowBlocks();
+			html.push(
+				`<pre><code${inlinePreMatch[1] ? ` class="${esc(inlinePreMatch[1])}"` : ""}>${escapePreviewHtml(inlinePreMatch[2])}</code></pre>`,
+			);
+			continue;
+		}
+		const preMatch = trimmed.match(/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i);
+		if (preMatch) {
+			closeFlowBlocks();
+			inPre = true;
+			preLang = preMatch[1] || "";
+			preLines = [];
+			continue;
+		}
+		const collapseMatch = trimmed.match(/^\{\{collapse\((.*)\)$/);
+		if (collapseMatch) {
+			closeFlowBlocks();
+			inCollapse = true;
+			collapseTitle = collapseMatch[1] || "detail";
+			collapseLines = [];
+			continue;
+		}
+		if (trimmed === "{{mermaid") {
+			closeFlowBlocks();
+			inMermaid = true;
+			mermaidLines = [];
+			continue;
+		}
+		if (/^\|.+\|$/.test(trimmed)) {
+			closeList();
+			if (!inTable) {
+				html.push('<table class="preview-table">');
+				inTable = true;
+			}
+			html.push(parsePreviewTableRow(trimmed));
+			continue;
+		}
+		if (/^h2\.\s+/.test(trimmed)) {
+			closeFlowBlocks();
+			html.push(`<h2>${renderInlineTextile(trimmed.replace(/^h2\.\s+/, ""))}</h2>`);
+			continue;
+		}
+		if (/^h3\.\s+/.test(trimmed)) {
+			closeFlowBlocks();
+			html.push(`<h3>${renderInlineTextile(trimmed.replace(/^h3\.\s+/, ""))}</h3>`);
+			continue;
+		}
+		if (/^\*\s+/.test(trimmed)) {
+			closeTable();
+			if (inList !== "ul") {
+				closeList();
+				html.push("<ul>");
+				inList = "ul";
+			}
+			html.push(`<li>${renderInlineTextile(trimmed.replace(/^\*\s+/, ""))}</li>`);
+			continue;
+		}
+		if (/^#\s+/.test(trimmed)) {
+			closeTable();
+			if (inList !== "ol") {
+				closeList();
+				html.push("<ol>");
+				inList = "ol";
+			}
+			html.push(`<li>${renderInlineTextile(trimmed.replace(/^#\s+/, ""))}</li>`);
+			continue;
+		}
+		const imageMatch = trimmed.match(/^!(.+)!$/);
+		if (imageMatch) {
+			closeFlowBlocks();
+			html.push(`<img src="${esc(imageMatch[1])}" alt="Redmine image preview">`);
+			continue;
+		}
+		closeFlowBlocks();
+		html.push(`<p>${renderInlineTextile(trimmed)}</p>`);
+	}
+	if (inPre) flushPre();
+	if (inMermaid) flushMermaid();
+	if (inCollapse) flushCollapse();
+	closeFlowBlocks();
+	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
+}
