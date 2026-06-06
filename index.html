@@ -7,15 +7,24 @@
 		<link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
-		<header class="app-header">
-			<div class="brand">
-				<div class="brand-mark">R</div>
-				<div>
-					<h1>Redmine Textile 輸出器</h1>
-					<p>以輸出為主，表單輔助整理，模板與段落收在側邊。</p>
+		<header class="app-header" id="siteHeader">
+			<div class="header-main">
+				<div class="brand">
+					<div class="brand-copy">
+						<h1>Redmine Textile 輸出器</h1>
+						<p>以輸出為主，表單輔助整理，模板與段落收在側邊。</p>
+					</div>
 				</div>
+				<button
+					type="button"
+					id="headerMenuToggle"
+					class="header-menu-toggle"
+					aria-controls="headerActions"
+					aria-expanded="false"
+					aria-label="展開頁首選單"
+				></button>
 			</div>
-			<div class="top-actions">
+			<div class="top-actions header-collapsible" id="headerActions">
 				<button id="copy" class="primary">複製 Redmine Textile</button>
 				<button id="txt">下載 .textile</button>
 				<button id="json">匯出 JSON</button>
@@ -138,6 +147,46 @@
 
 		<div id="toast" class="toast" role="status" aria-live="polite"></div>
 		<script type="module" src="./app.js"></script>
+		<script>
+			function setupMobileHeaderCollapse() {
+				const header = document.getElementById("siteHeader");
+				const toggle = document.getElementById("headerMenuToggle");
+				const actions = document.getElementById("headerActions");
+				if (!header || !toggle || !actions) return;
+
+				const mobileQuery = window.matchMedia("(max-width: 760px)");
+
+				const setExpanded = (expanded) => {
+					header.classList.toggle("is-collapsed", !expanded);
+					toggle.setAttribute("aria-expanded", String(expanded));
+					toggle.setAttribute(
+						"aria-label",
+						expanded ? "收合頁首選單" : "展開頁首選單",
+					);
+				};
+
+				const syncMode = () => {
+					// 桌機預設展開；手機預設收合
+					setExpanded(!mobileQuery.matches);
+				};
+
+				toggle.addEventListener("click", () => {
+					const expanded = toggle.getAttribute("aria-expanded") === "true";
+					setExpanded(!expanded);
+				});
+
+				if (typeof mobileQuery.addEventListener === "function") {
+					mobileQuery.addEventListener("change", syncMode);
+				} else {
+					mobileQuery.addListener(syncMode);
+				}
+
+				syncMode();
+			}
+
+			setupMobileHeaderCollapse();
+		</script>
+
 		<script type="module">
 			import mermaid from "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs";
 			mermaid.initialize({
