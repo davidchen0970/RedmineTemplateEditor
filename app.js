@@ -345,6 +345,13 @@ document.addEventListener("click", (e) => {
 	target.classList.toggle("collapsed", expanded);
 });
 
+document.getElementById("source_code").onclick = () => {
+	window.open(
+		"https://github.com/davidchen0970/RedmineTemplateEditor",
+		"_blank",
+		"noopener")
+}
+
 setupTheme();
 setupWorkspaceResize();
 save();
