@@ -248,11 +248,16 @@ document.getElementById("copy").onclick = async () => {
 	const t = textile(state);
 	try {
 		await navigator.clipboard.writeText(t);
+		download(
+			safe(state.title) + ".json",
+			JSON.stringify(state, null, 2),
+			"application/json",
+		);
 	} catch {
 		document.getElementById("out").select();
 		document.execCommand("copy");
 	}
-	renderer.toast("已複製 Redmine Textile");
+	renderer.toast("已複製 Redmine Textile, 強制儲存至 JSON file");
 };
 
 document.getElementById("txt").onclick = () => {
