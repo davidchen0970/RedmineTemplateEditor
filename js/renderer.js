@@ -20,6 +20,20 @@ export function label(t) {
  	const { getState, getView, getExportStatus, getLastSaveText, changed, onPresetClick, } = ctx;
 	let pendingAddSectionId = null;
 
+	function ensureUiState() {
+		const state = getState();
+		state.ui ||= {};
+		state.ui.collapsed ||= {};
+		state.ui.collapsed.sections ||= {};
+		state.ui.collapsed.blocks ||= {};
+		return state.ui;
+	}
+
+	function isCollapsed(scope, id, defaultCollapsed = false) {
+		const ui = ensureUiState();
+		return ui.collapsed[scope]?.[id] ?? defaultCollapsed;
+	}
+
 	function blockTypeOptionsHtml() {
 		return [
 			["implementation", "Implementation Unit"],
@@ -193,7 +207,8 @@ export function label(t) {
 		state.sections.forEach((s) => {
 			const d = document.createElement("div");
 			d.className = "section";
-			d.innerHTML = `<div class="section-head"><label><input type="checkbox" data-se="${s.id}" ${s.enabled ? "checked" : ""}></label><button class="section-title-btn" data-collapse-target="section-body-${s.id}" aria-expanded="false">${esc(s.title)}</button><div class="actions"><button class="small" data-up="${s.id}">上移</button><button class="small" data-down="${s.id}">下移</button><button class="small" data-add="${s.id}">新增區塊</button><button class="small danger" data-del-section="${s.id}">刪除</button></div></div><div class="section-body collapsed" id="section-body-${s.id}"><label class="field">段落標題 h3.<input data-st="${s.id}" value="${esc(s.title)}"></label><label class="field">段落說明<textarea data-sdesc="${s.id}">${esc(s.description || "")}</textarea></label><div data-bs="${s.id}"></div></div>`;
+			const collapsed = isCollapsed("sections", s.id, true);
+			d.innerHTML = `<div class="section-head"><label><input type="checkbox" data-se="${s.id}" ${s.enabled ? "checked" : ""}></label><button class="section-title-btn" data-collapse-target="section-body-${s.id}" data-collapse-scope="sections" data-collapse-key="${s.id}" aria-expanded="${String(!collapsed)}">${esc(s.title)}</button><div class="actions"><button class="small" data-up="${s.id}">上移</button><button class="small" data-down="${s.id}">下移</button><button class="small" data-add="${s.id}">新增區塊</button><button class="small danger" data-del-section="${s.id}">刪除</button></div></div><div class="section-body ${collapsed ? "collapsed" : ""}" id="section-body-${s.id}"><label class="field">段落標題 h3.<input data-st="${s.id}" value="${esc(s.title)}"></label><label class="field">段落說明<textarea data-sdesc="${s.id}">${esc(s.description || "")}</textarea></label><div data-bs="${s.id}"></div></div>`;
 			r.appendChild(d);
 			const br = d.querySelector("[data-bs]");
 			(s.blocks || []).forEach((b) => br.appendChild(renderBlock(s.id, b)));
@@ -349,6 +364,7 @@ export function label(t) {
 		d.querySelector("[data-du]").onclick = () => {
 			const nb = JSON.parse(JSON.stringify(b));
 			nb.id = uid();
+			if (getState().ui?.collapsed?.blocks) delete getState().ui.collapsed.blocks[nb.id];
 			nb.title = (nb.title || "") + " copy";
 			findSec(sid).blocks.push(nb);
 			changed();
@@ -368,6 +384,7 @@ export function label(t) {
 		const s = findSec(id);
 		if (s && confirm(`刪除段落「${s.title}」？`)) {
 			state.sections = state.sections.filter((x) => x.id !== id);
+			if (state.ui?.collapsed?.sections) delete state.ui.collapsed.sections[id];
 			changed();
 			render();
 		}
