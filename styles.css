@@ -150,6 +150,10 @@ body[data-theme="dark"] .app-header {
 	gap: 8px
 }
 
+.top-actions > button {
+	margin-top: 10px;
+}
+
 .workspace {
 	--output-col: minmax(560px, 1fr);
 	--side-col: minmax(340px, 420px);
