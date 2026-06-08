@@ -125,13 +125,33 @@ export function makeState(type = "porting") {
 			others: "N/A",
 		},
 		sections: p.sections,
+		ui: {
+			collapsed: {
+				sections: {},
+				blocks: {},
+			},
+		},
 		updatedAt: new Date().toISOString(),
 	};
 }
 
+export function normalizeState(state) {
+	if (!state) return state;
+	state.environment ||= {};
+	state.sections = Array.isArray(state.sections) ? state.sections : [];
+	state.ui ||= {};
+	state.ui.collapsed ||= {};
+	state.ui.collapsed.sections ||= {};
+	state.ui.collapsed.blocks ||= {};
+	state.sections.forEach((section) => {
+		section.blocks = Array.isArray(section.blocks) ? section.blocks : [];
+	});
+	return state;
+}
+
 export function loadState() {
 	try {
-		return JSON.parse(localStorage.getItem(KEY));
+		return normalizeState(JSON.parse(localStorage.getItem(KEY)));
 	} catch {
 		return null;
 	}

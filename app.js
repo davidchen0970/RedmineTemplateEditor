@@ -6,11 +6,12 @@ import {
 	safe,
 	impl,
 	sec,
+	normalizeState,
 } from "./js/state.js";
 import { textile } from "./js/textile.js";
 import { createRenderer } from "./js/renderer.js";
 
-let state = loadState() || makeState(),
+let state = normalizeState(loadState()) || makeState(),
 	view = "raw",
 	exportStatus = { json: false, txt: false },
 	lastSaveText = "";
@@ -288,7 +289,7 @@ document.getElementById("file").onchange = (e) => {
 			const obj = JSON.parse(r.result);
 			if (!obj.environment || !Array.isArray(obj.sections))
 				throw Error("格式不符合");
-			state = obj;
+			state = normalizeState(obj);
 			changed();
 			renderer.render();
 			renderer.toast("JSON 已匯入");
@@ -346,8 +347,19 @@ document.addEventListener("click", (e) => {
 	const target = document.getElementById(btn.dataset.collapseTarget);
 	if (!target) return;
 	const expanded = btn.getAttribute("aria-expanded") !== "false";
-	btn.setAttribute("aria-expanded", String(!expanded));
-	target.classList.toggle("collapsed", expanded);
+	const nextCollapsed = expanded;
+	btn.setAttribute("aria-expanded", String(!nextCollapsed));
+	target.classList.toggle("collapsed", nextCollapsed);
+
+	const scope = btn.dataset.collapseScope;
+	const key = btn.dataset.collapseKey;
+	if (scope && key) {
+		state.ui ||= {};
+		state.ui.collapsed ||= {};
+		state.ui.collapsed[scope] ||= {};
+		state.ui.collapsed[scope][key] = nextCollapsed;
+		changed();
+	}
 });
 
 document.getElementById("source_code").onclick = () => {
