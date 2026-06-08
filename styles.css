@@ -151,11 +151,53 @@ body[data-theme="dark"] .app-header {
 }
 
 .workspace {
+	--output-col: minmax(560px, 1fr);
+	--side-col: minmax(340px, 420px);
+
 	display: grid;
-	grid-template-columns: minmax(560px, 1fr) minmax(340px, 420px);
-	gap: 16px;
+	grid-template-columns: var(--side-col) 10px var(--output-col);
+	gap: 8px;
 	padding: 16px;
-	align-items: start
+	align-items: start;
+}
+
+.workspace-resizer {
+	position: sticky;
+	top: 86px;
+	height: calc(100vh - 110px);
+	cursor: col-resize;
+	border-radius: 999px;
+	background: transparent;
+	touch-action: none;
+}
+
+.workspace-resizer::before {
+	content: "";
+	display: block;
+	width: 4px;
+	height: 100%;
+	margin: 0 auto;
+	border-radius: 999px;
+	background: var(--line);
+	transition: background 0.15s, width 0.15s;
+}
+
+.workspace-resizer:hover::before,
+.workspace-resizer.is-dragging::before,
+body.is-resizing .workspace-resizer::before {
+	width: 6px;
+	background: var(--primary);
+}
+
+body.is-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+body.is-resizing iframe,
+body.is-resizing textarea,
+body.is-resizing input {
+	pointer-events: none;
 }
 
 .panel {
@@ -819,5 +861,21 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 		width: 100%;
 		font-size: 16px;
 		padding: 12px 14px;
+	}
+}
+
+@media (max-width: 900px) {
+	.workspace {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
+	.workspace-resizer {
+		display: none;
+	}
+
+	.output-panel {
+		position: static;
+		max-height: none;
 	}
 }

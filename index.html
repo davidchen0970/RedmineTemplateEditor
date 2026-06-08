@@ -43,35 +43,6 @@
 		</header>
 
 		<main class="workspace" id="workspace">
-			<section class="panel output-panel">
-				<div class="panel-title output-title">
-					<div>
-						<span class="eyebrow">主要工作區</span>
-						<h2>Redmine 輸出</h2>
-					</div>
-					<div class="segmented" role="group" aria-label="輸出檢視">
-						<button id="raw" class="active">Textile</button>
-						<button id="previewbtn">預覽</button>
-						<button id="statebtn">JSON</button>
-					</div>
-				</div>
-				<div class="output-toolbar">
-					<span id="save" class="save-status"></span>
-					<span id="stats" class="stats"></span>
-				</div>
-				<textarea
-					id="out"
-					class="output"
-					readonly
-					spellcheck="false"
-				></textarea>
-				<div
-					id="preview"
-					class="redmine-preview hidden"
-					aria-live="polite"
-				></div>
-			</section>
-
 			<aside class="side-stack">
 				<section class="panel compact-panel">
 					<button
@@ -143,6 +114,44 @@
 					</div>
 				</section>
 			</aside>
+
+			<div
+				class="workspace-resizer"
+				id="workspaceResizer"
+				role="separator"
+				aria-orientation="vertical"
+				aria-label="調整輸出區與表單區寬度"
+				tabindex="0"
+			></div>
+
+			<section class="panel output-panel">
+				<div class="panel-title output-title">
+					<div>
+						<span class="eyebrow">主要工作區</span>
+						<h2>Redmine 輸出</h2>
+					</div>
+					<div class="segmented" role="group" aria-label="輸出檢視">
+						<button id="raw" class="active">Textile</button>
+						<button id="previewbtn">預覽</button>
+						<button id="statebtn">JSON</button>
+					</div>
+				</div>
+				<div class="output-toolbar">
+					<span id="save" class="save-status"></span>
+					<span id="stats" class="stats"></span>
+				</div>
+				<textarea
+					id="out"
+					class="output"
+					readonly
+					spellcheck="false"
+				></textarea>
+				<div
+					id="preview"
+					class="redmine-preview hidden"
+					aria-live="polite"
+				></div>
+			</section>
 		</main>
 
 		<div id="toast" class="toast" role="status" aria-live="polite"></div>
