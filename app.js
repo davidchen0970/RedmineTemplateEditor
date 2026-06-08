@@ -82,6 +82,126 @@ function findOrCreateImplementationSection() {
 	return s;
 }
 
+function setupWorkspaceResize() {
+	const workspace = document.getElementById("workspace");
+	const resizer = document.getElementById("workspaceResizer");
+
+	if (!workspace || !resizer) return;
+
+	const storageKey = KEY + ":workspaceLayout";
+	const desktopQuery = window.matchMedia("(min-width: 901px)");
+
+	const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+	const applySideWidth = (sideWidth) => {
+		if (!desktopQuery.matches) {
+			workspace.style.removeProperty("--output-col");
+			workspace.style.removeProperty("--side-col");
+			return;
+		}
+
+		const rect = workspace.getBoundingClientRect();
+		const resizerWidth = resizer.getBoundingClientRect().width || 10;
+		const gap = 16;
+		const available = rect.width - resizerWidth - gap;
+		const minOutput = 560;
+		const minSide = 340;
+		const maxSide = Math.max(minSide, available - minOutput);
+		const nextSideWidth = clamp(sideWidth, minSide, maxSide);
+
+		workspace.style.setProperty("--output-col", "minmax(" + minOutput + "px, 1fr)");
+		workspace.style.setProperty("--side-col", nextSideWidth + "px");
+
+		localStorage.setItem(storageKey, String(nextSideWidth));
+	};
+
+	const restore = () => {
+		const saved = Number(localStorage.getItem(storageKey));
+		if (Number.isFinite(saved) && saved > 0) {
+			applySideWidth(saved);
+		} else {
+			applySideWidth(420);
+		}
+	};
+
+	let dragging = false;
+
+	const onPointerMove = (event) => {
+		if (!dragging || !desktopQuery.matches) return;
+
+		const rect = workspace.getBoundingClientRect();
+		const sideWidth = event.clientX - rect.left - 8;
+
+		applySideWidth(sideWidth);
+	};
+
+	const stopDragging = () => {
+		if (!dragging) return;
+
+		dragging = false;
+		resizer.classList.remove("is-dragging");
+		document.body.classList.remove("is-resizing");
+
+		window.removeEventListener("pointermove", onPointerMove);
+		window.removeEventListener("pointerup", stopDragging);
+		window.removeEventListener("pointercancel", stopDragging);
+	};
+
+	resizer.addEventListener("pointerdown", (event) => {
+		if (!desktopQuery.matches) return;
+
+		dragging = true;
+		resizer.classList.add("is-dragging");
+		document.body.classList.add("is-resizing");
+		resizer.setPointerCapture?.(event.pointerId);
+
+		window.addEventListener("pointermove", onPointerMove);
+		window.addEventListener("pointerup", stopDragging);
+		window.addEventListener("pointercancel", stopDragging);
+
+		event.preventDefault();
+	});
+
+	resizer.addEventListener("keydown", (event) => {
+		if (!desktopQuery.matches) return;
+
+		const current = Number(localStorage.getItem(storageKey)) || 420;
+		const step = event.shiftKey ? 40 : 20;
+
+		if (event.key === "ArrowLeft") {
+			applySideWidth(current + step);
+			event.preventDefault();
+		}
+
+		if (event.key === "ArrowRight") {
+			applySideWidth(current - step);
+			event.preventDefault();
+		}
+
+		if (event.key === "Home") {
+			applySideWidth(340);
+			event.preventDefault();
+		}
+
+		if (event.key === "End") {
+			applySideWidth(720);
+			event.preventDefault();
+		}
+	});
+
+	const syncMode = () => restore();
+
+	if (typeof desktopQuery.addEventListener === "function") {
+		desktopQuery.addEventListener("change", syncMode);
+	} else {
+		desktopQuery.addListener(syncMode);
+	}
+
+	window.addEventListener("resize", restore);
+
+	restore();
+}
+
 function setupTheme() {
 	const btn = document.getElementById("themeToggle"),
 		key = KEY + ":theme";
@@ -226,5 +346,6 @@ document.addEventListener("click", (e) => {
 });
 
 setupTheme();
+setupWorkspaceResize();
 save();
 renderer.render();
