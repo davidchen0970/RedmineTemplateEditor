@@ -693,50 +693,6 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 	font-size: 22px;
 }
 
-@media (min-width: 1020px) {
-	.app-header {
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: space-between;
-		gap: 18px;
-		padding: 12px 18px;
-	}
-
-	.header-main {
-		width: auto;
-		flex: 0 1 auto;
-		min-width: 280px;
-	}
-
-	.brand {
-		min-width: 0;
-		max-width: 430px;
-	}
-
-	.brand h1,
-	.brand p {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.header-menu-toggle {
-		display: none !important;
-	}
-
-	.top-actions.header-collapsible {
-		display: flex !important;
-		flex: 1 1 auto;
-		flex-wrap: nowrap;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-		overflow-x: auto;
-		overflow-y: hidden;
-		scrollbar-width: thin;
-	}
-
 	.top-actions.header-collapsible button {
 		flex: 0 0 auto;
 		min-height: 36px;
@@ -780,29 +736,47 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 	body[data-theme="dark"] .top-actions.header-collapsible button {
 		box-shadow: none;
 	}
-}
 
-@media (min-width: 761px) and (max-width: 1060px) {
-	.app-header {
-		flex-direction: row !important;
-		align-items: center !important;
+
+@media (min-width: 1020px) {
+	.header-main {
+		width: auto;
+		flex: 0 1 auto;
+		min-width: 280px;
 	}
 
 	.brand {
-		max-width: 320px;
+		min-width: 0;
+		max-width: 430px;
 	}
 
+	.brand h1,
 	.brand p {
-		display: none;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.top-actions.header-collapsible button {
-		padding: 8px 11px;
-		font-size: 12.5px;
+	.header-menu-toggle {
+		display: none !important;
 	}
+
+	.top-actions.header-collapsible {
+		display: flex ;
+		flex: 1 1 auto;
+		flex-wrap: nowrap;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 8px;
+		min-width: 0;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
+
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1060px) {
 	.app-header {
 		align-items: stretch;
 		flex-direction: column;
