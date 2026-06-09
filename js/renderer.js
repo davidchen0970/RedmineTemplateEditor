@@ -1,5 +1,9 @@
 import { envKeys, presets, esc, block, impl, sec, uid } from "./state.js";
-import { ensureBlockContents, textile, textileToPreviewHtml } from "./textile.js";
+import {
+	ensureBlockContents,
+	textile,
+	textileToPreviewHtml,
+} from "./textile.js";
 
 export function label(t) {
 	return (
@@ -16,8 +20,15 @@ export function label(t) {
 	);
 }
 
- export function createRenderer(ctx) {
- 	const { getState, getView, getExportStatus, getLastSaveText, changed, onPresetClick, } = ctx;
+export function createRenderer(ctx) {
+	const {
+		getState,
+		getView,
+		getExportStatus,
+		getLastSaveText,
+		changed,
+		onPresetClick,
+	} = ctx;
 	let pendingAddSectionId = null;
 
 	function ensureUiState() {
@@ -173,10 +184,10 @@ export function label(t) {
 		});
 		e.querySelectorAll("[data-env]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					state.environment[x.dataset.env] = x.value;
-					changed();
-				}),
+			(x.oninput = () => {
+				state.environment[x.dataset.env] = x.value;
+				changed();
+			}),
 		);
 	}
 
@@ -192,11 +203,11 @@ export function label(t) {
 		});
 		r.querySelectorAll("[data-t]").forEach(
 			(x) =>
-				(x.onchange = () => {
-					findSec(x.dataset.t).enabled = x.checked;
-					changed();
-					render();
-				}),
+			(x.onchange = () => {
+				findSec(x.dataset.t).enabled = x.checked;
+				changed();
+				render();
+			}),
 		);
 	}
 
@@ -208,34 +219,61 @@ export function label(t) {
 			const d = document.createElement("div");
 			d.className = "section";
 			const collapsed = isCollapsed("sections", s.id, true);
-			d.innerHTML = `<div class="section-head"><label><input type="checkbox" data-se="${s.id}" ${s.enabled ? "checked" : ""}></label><button class="section-title-btn" data-collapse-target="section-body-${s.id}" data-collapse-scope="sections" data-collapse-key="${s.id}" aria-expanded="${String(!collapsed)}">${esc(s.title)}</button><div class="actions"><button class="small" data-up="${s.id}">上移</button><button class="small" data-down="${s.id}">下移</button><button class="small" data-add="${s.id}">新增區塊</button><button class="small danger" data-del-section="${s.id}">刪除</button></div></div><div class="section-body ${collapsed ? "collapsed" : ""}" id="section-body-${s.id}"><label class="field">段落標題 h3.<input data-st="${s.id}" value="${esc(s.title)}"></label><label class="field">段落說明<textarea data-sdesc="${s.id}">${esc(s.description || "")}</textarea></label><div data-bs="${s.id}"></div></div>`;
+			d.innerHTML = `
+				<div class="section-head">
+					<label>
+						<input type="checkbox" data-se="${s.id}" ${s.enabled ? "checked" : ""}>
+					</label>
+					<button 
+						class="section-title-btn" 
+						data-collapse-target="section-body-${s.id}" 
+						data-collapse-scope="sections" 
+						data-collapse-key="${s.id}" 
+						aria-expanded="${String(!collapsed)}">${esc(s.title)}</button>
+					<div class="actions">
+						<button class="small" data-up="${s.id}">上移</button>
+						<button class="small" data-down="${s.id}">下移</button>
+						<button class="small" data-add="${s.id}">新增區塊</button>
+						<button class="small" data-dup-section="${s.id}">複製段落</button>
+						<button class="small danger" data-del-section="${s.id}">刪除</button>
+					</div>
+				</div>
+				<div class="section-body ${collapsed ? "collapsed" : ""}" id="section-body-${s.id}">
+					<label class="field">段落標題 h3.
+						<input data-st="${s.id}" value="${esc(s.title)}">
+					</label>
+					<label class="field">段落說明
+						<textarea data-sdesc="${s.id}">${esc(s.description || "")}</textarea>
+					</label>
+					<div data-bs="${s.id}"></div>
+				</div>`;
 			r.appendChild(d);
 			const br = d.querySelector("[data-bs]");
 			(s.blocks || []).forEach((b) => br.appendChild(renderBlock(s.id, b)));
 		});
 		r.querySelectorAll("[data-se]").forEach(
 			(x) =>
-				(x.onchange = () => {
-					findSec(x.dataset.se).enabled = x.checked;
-					changed();
-					render();
-				}),
+			(x.onchange = () => {
+				findSec(x.dataset.se).enabled = x.checked;
+				changed();
+				render();
+			}),
 		);
 		r.querySelectorAll("[data-st]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					findSec(x.dataset.st).title = x.value;
-					changed();
-					renderToggles();
-					renderOut();
-				}),
+			(x.oninput = () => {
+				findSec(x.dataset.st).title = x.value;
+				changed();
+				renderToggles();
+				renderOut();
+			}),
 		);
 		r.querySelectorAll("[data-sdesc]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					findSec(x.dataset.sdesc).description = x.value;
-					changed();
-				}),
+			(x.oninput = () => {
+				findSec(x.dataset.sdesc).description = x.value;
+				changed();
+			}),
 		);
 		r.querySelectorAll("[data-add]").forEach(
 			(x) => (x.onclick = () => addBlock(x.dataset.add)),
@@ -245,6 +283,9 @@ export function label(t) {
 		);
 		r.querySelectorAll("[data-down]").forEach(
 			(x) => (x.onclick = () => moveSec(x.dataset.down, 1)),
+		);
+		r.querySelectorAll("[data-dup-section]").forEach(
+			(x) => (x.onclick = () => duplicateSection(x.dataset.dupSection))
 		);
 		r.querySelectorAll("[data-del-section]").forEach(
 			(x) => (x.onclick = () => deleteSection(x.dataset.delSection)),
@@ -295,32 +336,32 @@ export function label(t) {
 		};
 		d.querySelectorAll("[data-cont-index]").forEach(
 			(x) =>
-				(x.oninput = (e) => {
-					b.contents[Number(x.dataset.contIndex)] = e.target.value;
-					ensureBlockContents(b);
-					changed();
-				}),
+			(x.oninput = (e) => {
+				b.contents[Number(x.dataset.contIndex)] = e.target.value;
+				ensureBlockContents(b);
+				changed();
+			}),
 		);
 		d.querySelectorAll("[data-del-content]").forEach(
 			(x) =>
-				(x.onclick = () => {
-					b.contents.length <= 1
-						? (b.contents[0] = "")
-						: b.contents.splice(Number(x.dataset.delContent), 1);
-					ensureBlockContents(b);
-					changed();
-					render();
-				}),
+			(x.onclick = () => {
+				b.contents.length <= 1
+					? (b.contents[0] = "")
+					: b.contents.splice(Number(x.dataset.delContent), 1);
+				ensureBlockContents(b);
+				changed();
+				render();
+			}),
 		);
 		d.querySelectorAll("[data-dup-content]").forEach(
 			(x) =>
-				(x.onclick = () => {
-					const i = Number(x.dataset.dupContent);
-					b.contents.splice(i + 1, 0, b.contents[i] || "");
-					ensureBlockContents(b);
-					changed();
-					render();
-				}),
+			(x.onclick = () => {
+				const i = Number(x.dataset.dupContent);
+				b.contents.splice(i + 1, 0, b.contents[i] || "");
+				ensureBlockContents(b);
+				changed();
+				render();
+			}),
 		);
 		d.querySelector("[data-add-content]").onclick = () => {
 			b.contents.push("");
@@ -364,7 +405,8 @@ export function label(t) {
 		d.querySelector("[data-du]").onclick = () => {
 			const nb = JSON.parse(JSON.stringify(b));
 			nb.id = uid();
-			if (getState().ui?.collapsed?.blocks) delete getState().ui.collapsed.blocks[nb.id];
+			if (getState().ui?.collapsed?.blocks)
+				delete getState().ui.collapsed.blocks[nb.id];
 			nb.title = (nb.title || "") + " copy";
 			findSec(sid).blocks.push(nb);
 			changed();
@@ -379,6 +421,24 @@ export function label(t) {
 		render();
 	}
 
+	function duplicateSection(id) {
+		const state = getState();
+		const target = findSec(id);
+		if (!target) return;
+
+		const copied = JSON.parse(JSON.stringify(target));
+		copied.id = uid();
+		copied.title = (copied.title || "段落") + " copy";
+		copied.blocks = (copied.blocks || []).map((b) => ({
+			...b,
+			id: uid(),
+		}));
+
+		const index = state.sections.filter((s) => s.id === id);
+		state.sections.splice(index + 1, 0, copied);
+		changed();
+		render();
+	}
 	function deleteSection(id) {
 		const state = getState();
 		const s = findSec(id);
@@ -415,13 +475,16 @@ export function label(t) {
 
 	function addBlock(id) {
 		if (typeof HTMLDialogElement === "undefined") {
-			const t = prompt(
-				"區塊類型：implementation / text / command / diff / log / mermaid / image / collapse",
-				"implementation",
-			) || "text";
+			const t =
+				prompt(
+					"區塊類型：implementation / text / command / diff / log / mermaid / image / collapse",
+					"implementation",
+				) || "text";
 			const title = prompt("區塊標題", defaultBlockTitle(t)) || "";
 			findSec(id).blocks.push(
-				t === "implementation" ? impl(title || "api.c") : block(t, title || label(t), ""),
+				t === "implementation"
+					? impl(title || "api.c")
+					: block(t, title || label(t), ""),
 			);
 			changed();
 			render();
@@ -449,18 +512,18 @@ export function label(t) {
 		out.classList.toggle("hidden", view === "preview");
 		preview.classList.toggle("hidden", view !== "preview");
 		if (view === "preview") {
-    preview.innerHTML = textileToPreviewHtml(raw);
+			preview.innerHTML = textileToPreviewHtml(raw);
 
-    if (window.mermaid) {
-        window.mermaid
-            .run({
-                querySelector: ".mermaid",
-            })
-            .catch((err) => {
-                console.warn("Mermaid render failed:", err);
-            });
-    }
-}
+			if (window.mermaid) {
+				window.mermaid
+					.run({
+						querySelector: ".mermaid",
+					})
+					.catch((err) => {
+						console.warn("Mermaid render failed:", err);
+					});
+			}
+		}
 		document
 			.querySelectorAll(".segmented button")
 			.forEach((b) => b.classList.remove("active"));
