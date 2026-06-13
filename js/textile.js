@@ -157,7 +157,7 @@ function push(o, b) {
 		);
 		return;
 	}
-	if (title && b.type !== "image") o.push("# " + title);
+	if (title && !["image", "plainText"].includes(b.type)) o.push("# " + title);
 	if (["command", "diff", "log"].includes(b.type))
 		contents.forEach((c) =>
 			o.push(

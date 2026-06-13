@@ -8,6 +8,7 @@ import {
 export function label(t) {
 	return (
 		{
+			plainText: "Plain Text (Without Title)",
 			implementation: "Implementation Unit",
 			text: "Text / Textile",
 			command: "Command Block",
@@ -47,6 +48,7 @@ export function createRenderer(ctx) {
 
 	function blockTypeOptionsHtml() {
 		return [
+			["plainText", "Plain Text (Without Title)"],
 			["implementation", "Implementation Unit"],
 			["text", "Text / Textile"],
 			["command", "Command Block"],
@@ -61,7 +63,9 @@ export function createRenderer(ctx) {
 	}
 
 	function defaultBlockTitle(type) {
-		return type === "implementation" ? "api.c" : label(type);
+		if (type === "implementation") return "api.c";
+		if (type === "plainText") return "";
+		return label(type);
 	}
 	function ensureAddBlockDialog() {
 		let dialog = document.getElementById("addBlockDialog");
@@ -297,6 +301,7 @@ export function createRenderer(ctx) {
 		const d = document.createElement("div");
 		d.className = "block";
 		const options = [
+			"plainText",
 			"implementation",
 			"text",
 			"command",
@@ -403,12 +408,14 @@ export function createRenderer(ctx) {
 			render();
 		};
 		d.querySelector("[data-du]").onclick = () => {
+			const section = findSec(sid);
+			const currentIndex = section.blocks.findIndex((x) => x.id === b.id);
 			const nb = JSON.parse(JSON.stringify(b));
 			nb.id = uid();
 			if (getState().ui?.collapsed?.blocks)
 				delete getState().ui.collapsed.blocks[nb.id];
-			nb.title = (nb.title || "") + " copy";
-			findSec(sid).blocks.push(nb);
+			if (nb.type !== "plainText") nb.title = (nb.title || "") + " copy";
+			section.blocks.splice(currentIndex + 1, 0, nb);
 			changed();
 			render();
 		};
@@ -477,7 +484,7 @@ export function createRenderer(ctx) {
 		if (typeof HTMLDialogElement === "undefined") {
 			const t =
 				prompt(
-					"區塊類型：implementation / text / command / diff / log / mermaid / image / collapse",
+					"區塊類型：plainText / implementation / text / command / diff / log / mermaid / image / collapse",
 					"implementation",
 				) || "text";
 			const title = prompt("區塊標題", defaultBlockTitle(t)) || "";
