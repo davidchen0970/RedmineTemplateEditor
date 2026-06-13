@@ -8,9 +8,9 @@ import {
 export function label(t) {
 	return (
 		{
-			plainText: "Plain Text (Without Title)",
 			implementation: "Implementation Unit",
 			text: "Text / Textile",
+			plainText: "純文字（無標題）",
 			command: "Command Block",
 			diff: "Diff Block",
 			log: "Log Block",
@@ -48,9 +48,9 @@ export function createRenderer(ctx) {
 
 	function blockTypeOptionsHtml() {
 		return [
-			["plainText", "Plain Text (Without Title)"],
 			["implementation", "Implementation Unit"],
 			["text", "Text / Textile"],
+			["plainText", "純文字（無標題）"],
 			["command", "Command Block"],
 			["diff", "Diff Block"],
 			["log", "Log Block"],
@@ -129,6 +129,18 @@ export function createRenderer(ctx) {
 
 	function findSec(id) {
 		return getState().sections.find((s) => s.id === id);
+	}
+
+	function normalizeBlockLevel(value, maxLevel = Infinity) {
+		const raw = Number(value);
+		const level = Number.isFinite(raw) ? Math.floor(raw) : 1;
+		return Math.max(1, Math.min(level, maxLevel));
+	}
+
+	function getMaxBlockLevel(section, blockIndex) {
+		if (blockIndex <= 0) return 1;
+		const previous = section.blocks[blockIndex - 1];
+		return normalizeBlockLevel(previous?.level) + 1;
 	}
 
 	function render() {
@@ -253,7 +265,10 @@ export function createRenderer(ctx) {
 				</div>`;
 			r.appendChild(d);
 			const br = d.querySelector("[data-bs]");
-			(s.blocks || []).forEach((b) => br.appendChild(renderBlock(s.id, b)));
+			(s.blocks || []).forEach((b, blockIndex) => {
+				b.level = normalizeBlockLevel(b.level, getMaxBlockLevel(s, blockIndex));
+				br.appendChild(renderBlock(s.id, b, blockIndex));
+			});
 		});
 		r.querySelectorAll("[data-se]").forEach(
 			(x) =>
@@ -296,14 +311,17 @@ export function createRenderer(ctx) {
 		);
 	}
 
-	function renderBlock(sid, b) {
+	function renderBlock(sid, b, blockIndex = 0) {
 		ensureBlockContents(b);
+		const section = findSec(sid);
+		const maxLevel = getMaxBlockLevel(section, blockIndex);
+		b.level = normalizeBlockLevel(b.level, maxLevel);
 		const d = document.createElement("div");
 		d.className = "block";
 		const options = [
-			"plainText",
 			"implementation",
 			"text",
+			"plainText",
 			"command",
 			"diff",
 			"log",
@@ -316,7 +334,7 @@ export function createRenderer(ctx) {
 					`<option value="${t}" ${b.type === t ? "selected" : ""}>${label(t)}</option>`,
 			)
 			.join("");
-		d.innerHTML = `<div class="actions" style="justify-content:space-between"><span class="note">${label(b.type)}</span><span><button class="small" data-bup>上移</button><button class="small" data-bdown>下移</button><button class="small" data-du>複製</button><button class="small danger" data-del>刪除</button></span></div><div class="grid-2"><label class="field">區塊類型<select data-btype>${options}</select></label><label class="field">區塊標題<input data-btitle value="${esc(b.title || "")}"></label></div>${b.type === "implementation" ? `<div class="grid-2"><label class="field"><input type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}> 輸出 work path<input data-work-title value="${esc(b.workPathTitle || "work path")}"><textarea data-work>${esc(b.workPath || "(docker)$ pwd")}</textarea></label><label class="field">主要內容語言 class<input data-lang value="${esc(b.codeLang || "cpp")}"></label></div><label class="field">Description<textarea data-desc>${esc(b.description || "")}</textarea></label>` : ""}<div data-contents></div><button class="small primary" data-add-content>新增 content</button>`;
+		d.innerHTML = `<div class="actions" style="justify-content:space-between"><span class="note">${label(b.type)}</span><span><button class="small" data-bup>上移</button><button class="small" data-bdown>下移</button><button class="small" data-du>複製</button><button class="small danger" data-del>刪除</button></span></div><div class="grid-2"><label class="field">區塊類型<select data-btype>${options}</select></label><label class="field block-level-field">所在層級<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${b.level || 1}" title="最多只能比前一個區塊多 1 層"></label></div><label class="field">區塊標題<input data-btitle value="${esc(b.title || "")}"></label>${b.type === "implementation" ? `<div class="grid-2"><label class="field"><input type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}> 輸出 work path<input data-work-title value="${esc(b.workPathTitle || "work path")}"><textarea data-work>${esc(b.workPath || "(docker)$ pwd")}</textarea></label><label class="field">主要內容語言 class<input data-lang value="${esc(b.codeLang || "cpp")}"></label></div><label class="field">Description<textarea data-desc>${esc(b.description || "")}</textarea></label>` : ""}<div data-contents></div><button class="small primary" data-add-content>新增 content</button>`;
 		const cr = d.querySelector("[data-contents]");
 		b.contents.forEach((c, i) => {
 			const item = document.createElement("div");
@@ -338,6 +356,12 @@ export function createRenderer(ctx) {
 		d.querySelector("[data-btitle]").oninput = (e) => {
 			b.title = e.target.value;
 			changed();
+		};
+		d.querySelector("[data-blevel]").oninput = (e) => {
+			b.level = normalizeBlockLevel(e.target.value, maxLevel);
+			e.target.value = b.level;
+			changed();
+			render();
 		};
 		d.querySelectorAll("[data-cont-index]").forEach(
 			(x) =>
@@ -403,7 +427,7 @@ export function createRenderer(ctx) {
 		d.querySelector("[data-bup]").onclick = () => moveBlock(sid, b.id, -1);
 		d.querySelector("[data-bdown]").onclick = () => moveBlock(sid, b.id, 1);
 		d.querySelector("[data-del]").onclick = () => {
-			findSec(sid).blocks = findSec(sid).blocks.findIndex((x) => x.id !== b.id);
+			findSec(sid).blocks = findSec(sid).blocks.filter((x) => x.id !== b.id);
 			changed();
 			render();
 		};
@@ -484,14 +508,14 @@ export function createRenderer(ctx) {
 		if (typeof HTMLDialogElement === "undefined") {
 			const t =
 				prompt(
-					"區塊類型：plainText / implementation / text / command / diff / log / mermaid / image / collapse",
+					"區塊類型：implementation / text / plainText / command / diff / log / mermaid / image / collapse",
 					"implementation",
 				) || "text";
 			const title = prompt("區塊標題", defaultBlockTitle(t)) || "";
 			findSec(id).blocks.push(
 				t === "implementation"
 					? impl(title || "api.c")
-					: block(t, title || label(t), ""),
+					: block(t, title || defaultBlockTitle(t), ""),
 			);
 			changed();
 			render();

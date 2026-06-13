@@ -132,12 +132,40 @@ export function textile(state) {
 	return result;
 }
 
+function blockLevel(b) {
+	const raw = Number(b?.level || 1);
+	return Math.max(1, Number.isFinite(raw) ? Math.floor(raw) : 1);
+}
+
+function blockMarker(b) {
+	return "#".repeat(blockLevel(b)) + " ";
+}
+
+function pushPlainText(o, b, content) {
+	const marker = blockMarker(b);
+	const rawLines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
+	if (blockLevel(b) <= 1) {
+		o.push(content);
+		return;
+	}
+	let firstTextLine = true;
+	rawLines.forEach((line) => {
+		if (firstTextLine && line.trim()) {
+			o.push(marker + line);
+			firstTextLine = false;
+		} else {
+			o.push(line);
+		}
+	});
+}
+
 function push(o, b) {
 	ensureBlockContents(b);
+	const marker = blockMarker(b);
 	const title = (b.title || "").trim(),
 		contents = b.contents.filter((x) => String(x || "").trim());
 	if (b.type === "implementation") {
-		o.push("# " + (title || "api.c"));
+		o.push(marker + (title || "api.c"));
 		if (b.showWorkPath !== false) {
 			o.push(
 				"{{collapse(" + (b.workPathTitle || "work path") + ")",
@@ -157,8 +185,10 @@ function push(o, b) {
 		);
 		return;
 	}
-	if (title && !["image", "plainText"].includes(b.type)) o.push("# " + title);
-	if (["command", "diff", "log"].includes(b.type))
+	if (title && !["image", "plainText"].includes(b.type)) o.push(marker + title);
+	if (b.type === "plainText") {
+		(contents.length ? contents : [""]).forEach((c) => pushPlainText(o, b, c));
+	} else if (["command", "diff", "log"].includes(b.type))
 		contents.forEach((c) =>
 			o.push(
 				' <pre><code class="' +
@@ -185,7 +215,11 @@ function push(o, b) {
 				"}}",
 			),
 		);
-	else contents.forEach((c) => o.push(c));
+	else
+		contents.forEach((c) => {
+			if (!title && blockLevel(b) > 1) pushPlainText(o, b, c);
+			else o.push(c);
+		});
 }
 
 export function renderInlineTextile(s) {
