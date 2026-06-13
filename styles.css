@@ -145,13 +145,16 @@ body[data-theme="dark"] .app-header {
 
 .top-actions {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	justify-content: flex-end;
-	gap: 8px
+	align-items: center;
+	gap: 8px;
+	min-width: 0
 }
 
 .top-actions > button {
-	margin-top: 10px;
+	margin-top: 0;
+	white-space: nowrap;
 }
 
 .workspace {
@@ -555,33 +558,6 @@ body.is-resizing input {
 	background: var(--panel-2)
 }
 
-@media(max-width:1060px) {
-	.app-header {
-		align-items: flex-start;
-		flex-direction: column
-	}
-
-	.top-actions {
-		justify-content: flex-start
-	}
-
-	.workspace {
-		grid-template-columns: 1fr
-	}
-
-	.output-panel {
-		position: static
-	}
-
-	.output,
-	.redmine-preview {
-		height: 58vh
-	}
-
-	.grid-2 {
-		grid-template-columns: 1fr
-	}
-}
 
 .redmine-preview table.preview-table {
 	width: 100%;
@@ -738,122 +714,97 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 	}
 
 
-@media (min-width: 1020px) {
-	.header-main {
-		width: auto;
-		flex: 0 1 auto;
-		min-width: 280px;
-	}
-
-	.brand {
-		min-width: 0;
-		max-width: 430px;
-	}
-
-	.brand h1,
-	.brand p {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.header-menu-toggle {
-		display: none !important;
-	}
-
-	.top-actions.header-collapsible {
-		display: flex ;
-		flex: 1 1 auto;
-		flex-wrap: nowrap;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-		overflow-x: auto;
-		overflow-y: hidden;
-		scrollbar-width: thin;
-	}
-
-}
-
-@media (max-width: 1060px) {
+@media(max-width:1199px) {
 	.app-header {
 		align-items: stretch;
 		flex-direction: column;
-		gap: 0;
-		padding: 10px 12px;
-	}
-
-	.header-main {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-	}
-
-	.brand {
-		min-width: 0;
-		flex: 1 1 auto;
-	}
-
-	.brand-mark {
-		width: 38px;
-		height: 38px;
-		border-radius: 12px;
-		flex: 0 0 auto;
-	}
-
-	.brand h1,
-	.brand p {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		gap: 10px;
+		padding: 12px 14px
 	}
 
 	.header-menu-toggle {
-		display: flex;
-		flex: 0 0 auto;
-	}
-
-	.header-collapsible {
-		display: none;
-	}
-
-	.app-header.is-collapsed .header-collapsible {
-		display: none;
-	}
-
-	.app-header:not(.is-collapsed) .header-collapsible {
-		display: flex;
+		display: flex !important
 	}
 
 	.top-actions.header-collapsible {
-		flex-direction: column;
-		align-items: stretch;
-		justify-content: flex-start;
+		display: grid;
+		grid-template-columns: 1fr;
+		width: 100%;
 		gap: 8px;
-		padding-top: 10px;
+		justify-content: stretch
+	}
+
+	.app-header.is-collapsed .header-collapsible {
+		display: none !important
 	}
 
 	.top-actions.header-collapsible button {
 		width: 100%;
-		font-size: 16px;
-		padding: 12px 14px;
+		justify-content: center;
+		text-align: center;
+		margin-top: 0
 	}
-}
 
-@media (max-width: 900px) {
 	.workspace {
 		grid-template-columns: 1fr;
-		gap: 16px;
+		gap: 14px;
+		padding: 14px
 	}
 
 	.workspace-resizer {
-		display: none;
+		display: none
 	}
 
 	.output-panel {
 		position: static;
-		max-height: none;
+		max-height: none
 	}
+
+	.output,
+	.redmine-preview {
+		height: 58vh
+	}
+
+	.grid-2 {
+		grid-template-columns: 1fr
+	}
+}
+
+@media(max-width:640px) {
+	.brand {
+		min-width: 0
+	}
+
+	.brand h1 {
+		font-size: 16px
+	}
+
+	.brand p {
+		display: none
+	}
+
+	.panel-title.output-title {
+		align-items: flex-start;
+		flex-direction: column
+	}
+
+	.segmented {
+		width: 100%;
+		justify-content: space-between
+	}
+
+	.segmented button {
+		flex: 1
+	}
+
+	.output,
+	.redmine-preview {
+		width: calc(100% - 24px);
+		margin: 0 12px 12px;
+		padding: 12px
+	}
+}
+
+.block-level-field input {
+	max-width: 90px;
 }
