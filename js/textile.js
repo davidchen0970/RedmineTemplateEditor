@@ -267,7 +267,6 @@ export function textileToPreviewHtml(text) {
 	const html = [];
 	let listStack = [],
 		listItemOpen = [],
-		listCounters = {},
 		inTable = false,
 		inPre = false,
 		preLang = "",
@@ -290,11 +289,7 @@ export function textileToPreviewHtml(text) {
 			listItemOpen.pop();
 		}
 	};
-	const openListTag = (type, markerPrefix) => {
-		if (type !== "ol") return "<ul>";
-		const start = (listCounters[markerPrefix] || 0) + 1;
-		return start > 1 ? `<ol start="${start}">` : "<ol>";
-	};
+	const openListTag = (type) => (type === "ol" ? "<ol>" : "<ul>");
 	const syncList = (marker) => {
 		const wanted = marker.split("").map((x) => (x === "*" ? "ul" : "ol"));
 		let common = 0;
@@ -307,8 +302,7 @@ export function textileToPreviewHtml(text) {
 		}
 		closeList(common);
 		for (let i = common; i < wanted.length; i++) {
-			const markerPrefix = marker.slice(0, i + 1);
-			html.push(openListTag(wanted[i], markerPrefix));
+			html.push(openListTag(wanted[i]));
 			listStack.push(wanted[i]);
 			listItemOpen.push(false);
 		}
@@ -317,9 +311,6 @@ export function textileToPreviewHtml(text) {
 		syncList(marker);
 		const level = marker.length - 1;
 		closeListItem(level);
-		if (marker.endsWith("#")) {
-			listCounters[marker] = (listCounters[marker] || 0) + 1;
-		}
 		html.push(`<li>${renderInlineTextile(body)}`);
 		listItemOpen[level] = true;
 	};
