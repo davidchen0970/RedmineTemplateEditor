@@ -398,7 +398,7 @@ export function createRenderer(ctx) {
 		d.querySelector("[data-bup]").onclick = () => moveBlock(sid, b.id, -1);
 		d.querySelector("[data-bdown]").onclick = () => moveBlock(sid, b.id, 1);
 		d.querySelector("[data-del]").onclick = () => {
-			findSec(sid).blocks = findSec(sid).blocks.filter((x) => x.id !== b.id);
+			findSec(sid).blocks = findSec(sid).blocks.findIndex((x) => x.id !== b.id);
 			changed();
 			render();
 		};
@@ -434,7 +434,7 @@ export function createRenderer(ctx) {
 			id: uid(),
 		}));
 
-		const index = state.sections.filter((s) => s.id === id);
+		const index = state.sections.findIndex((s) => s.id === id);
 		state.sections.splice(index + 1, 0, copied);
 		changed();
 		render();
