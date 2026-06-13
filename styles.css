@@ -808,3 +808,20 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 .block-level-field input {
 	max-width: 90px;
 }
+
+.checkbox-field {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text);
+	font-size: 13px;
+}
+
+.checkbox-field input {
+	width: auto;
+	margin: 0;
+}
+
+.implementation-workpath {
+	margin-bottom: 11px;
+}
