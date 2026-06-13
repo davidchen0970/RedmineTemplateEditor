@@ -226,6 +226,7 @@ export function renderInlineTextile(s) {
 	let t = esc(s);
 	t = t
 		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
+		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(/@([^@]+)@/g, "<code>$1</code>")
 		.replace(
 			/"([^"]+)":(https?:\/\/[^\s]+)/g,
