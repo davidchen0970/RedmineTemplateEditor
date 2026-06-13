@@ -168,7 +168,7 @@ function push(o, b) {
 		o.push(marker + (title || "api.c"));
 		if (b.showWorkPath !== false) {
 			o.push(
-				"{{collapse(" + (b.workPathTitle || "work path") + ")",
+				" {{collapse(" + (b.workPathTitle || "work path") + ")",
 				'<pre><code class="shell">',
 				b.workPath || "(docker)$ pwd",
 				"</code></pre>",
