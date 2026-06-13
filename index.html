@@ -164,7 +164,7 @@
 				const actions = document.getElementById("headerActions");
 				if (!header || !toggle || !actions) return;
 
-				const mobileQuery = window.matchMedia("(max-width: 760px)");
+				const mobileQuery = window.matchMedia("(max-width: 1199px)");
 
 				const setExpanded = (expanded) => {
 					header.classList.toggle("is-collapsed", !expanded);
@@ -176,7 +176,6 @@
 				};
 
 				const syncMode = () => {
-					// 桌機預設展開；手機預設收合
 					setExpanded(!mobileQuery.matches);
 				};
 

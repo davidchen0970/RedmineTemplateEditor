@@ -200,10 +200,10 @@ export function createRenderer(ctx) {
 		});
 		e.querySelectorAll("[data-env]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					state.environment[x.dataset.env] = x.value;
-					changed();
-				}),
+			(x.oninput = () => {
+				state.environment[x.dataset.env] = x.value;
+				changed();
+			}),
 		);
 	}
 
@@ -219,11 +219,11 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-t]").forEach(
 			(x) =>
-				(x.onchange = () => {
-					findSec(x.dataset.t).enabled = x.checked;
-					changed();
-					render();
-				}),
+			(x.onchange = () => {
+				findSec(x.dataset.t).enabled = x.checked;
+				changed();
+				render();
+			}),
 		);
 	}
 
@@ -272,27 +272,27 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-se]").forEach(
 			(x) =>
-				(x.onchange = () => {
-					findSec(x.dataset.se).enabled = x.checked;
-					changed();
-					render();
-				}),
+			(x.onchange = () => {
+				findSec(x.dataset.se).enabled = x.checked;
+				changed();
+				render();
+			}),
 		);
 		r.querySelectorAll("[data-st]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					findSec(x.dataset.st).title = x.value;
-					changed();
-					renderToggles();
-					renderOut();
-				}),
+			(x.oninput = () => {
+				findSec(x.dataset.st).title = x.value;
+				changed();
+				renderToggles();
+				renderOut();
+			}),
 		);
 		r.querySelectorAll("[data-sdesc]").forEach(
 			(x) =>
-				(x.oninput = () => {
-					findSec(x.dataset.sdesc).description = x.value;
-					changed();
-				}),
+			(x.oninput = () => {
+				findSec(x.dataset.sdesc).description = x.value;
+				changed();
+			}),
 		);
 		r.querySelectorAll("[data-add]").forEach(
 			(x) => (x.onclick = () => addBlock(x.dataset.add)),
@@ -549,12 +549,12 @@ export function createRenderer(ctx) {
 			const el = d.querySelector(`[data-${name}]`);
 			if (!el) return;
 
-			el.oninput = (e) => {
+				el.oninput = (e) => {
 				const map = {
-					work: "workPath",
-					"work-title": "workPathTitle",
-					lang: "codeLang",
-					desc: "description",
+								work: "workPath",
+								"work-title": "workPathTitle",
+								lang: "codeLang",
+								desc: "description",
 				};
 
 				b[map[name]] = e.target.value;
@@ -566,7 +566,7 @@ export function createRenderer(ctx) {
 	function renderBlock(sid, b, blockIndex = 0) {
 		ensureBlockContents(b);
 
-		const section = findSec(sid);
+			const section = findSec(sid);
 		const maxLevel = getMaxBlockLevel(section, blockIndex);
 
 		b.level = normalizeBlockLevel(b.level, maxLevel);
