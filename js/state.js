@@ -31,6 +31,7 @@ export function block(type, title, content = "") {
 		title,
 		content,
 		contents: content ? [content] : [""],
+		level: 1,
 	};
 }
 
@@ -54,6 +55,7 @@ export function impl(
 		description,
 		content,
 		contents: content ? [content] : [""],
+		level: 1,
 	};
 }
 
@@ -145,6 +147,12 @@ export function normalizeState(state) {
 	state.ui.collapsed.blocks ||= {};
 	state.sections.forEach((section) => {
 		section.blocks = Array.isArray(section.blocks) ? section.blocks : [];
+		section.blocks.forEach((block, index) => {
+			const previousLevel = index > 0 ? Number(section.blocks[index - 1]?.level || 1) : 0;
+			const maxLevel = index > 0 ? previousLevel + 1 : 1;
+			const rawLevel = Number(block.level || 1);
+			block.level = Math.max(1, Math.min(Number.isFinite(rawLevel) ? Math.floor(rawLevel) : 1, maxLevel));
+		});
 	});
 	return state;
 }
