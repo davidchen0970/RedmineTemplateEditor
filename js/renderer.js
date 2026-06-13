@@ -200,10 +200,10 @@ export function createRenderer(ctx) {
 		});
 		e.querySelectorAll("[data-env]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				state.environment[x.dataset.env] = x.value;
-				changed();
-			}),
+				(x.oninput = () => {
+					state.environment[x.dataset.env] = x.value;
+					changed();
+				}),
 		);
 	}
 
@@ -219,11 +219,11 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-t]").forEach(
 			(x) =>
-			(x.onchange = () => {
-				findSec(x.dataset.t).enabled = x.checked;
-				changed();
-				render();
-			}),
+				(x.onchange = () => {
+					findSec(x.dataset.t).enabled = x.checked;
+					changed();
+					render();
+				}),
 		);
 	}
 
@@ -272,27 +272,27 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-se]").forEach(
 			(x) =>
-			(x.onchange = () => {
-				findSec(x.dataset.se).enabled = x.checked;
-				changed();
-				render();
-			}),
+				(x.onchange = () => {
+					findSec(x.dataset.se).enabled = x.checked;
+					changed();
+					render();
+				}),
 		);
 		r.querySelectorAll("[data-st]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				findSec(x.dataset.st).title = x.value;
-				changed();
-				renderToggles();
-				renderOut();
-			}),
+				(x.oninput = () => {
+					findSec(x.dataset.st).title = x.value;
+					changed();
+					renderToggles();
+					renderOut();
+				}),
 		);
 		r.querySelectorAll("[data-sdesc]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				findSec(x.dataset.sdesc).description = x.value;
-				changed();
-			}),
+				(x.oninput = () => {
+					findSec(x.dataset.sdesc).description = x.value;
+					changed();
+				}),
 		);
 		r.querySelectorAll("[data-add]").forEach(
 			(x) => (x.onclick = () => addBlock(x.dataset.add)),
@@ -304,21 +304,23 @@ export function createRenderer(ctx) {
 			(x) => (x.onclick = () => moveSec(x.dataset.down, 1)),
 		);
 		r.querySelectorAll("[data-dup-section]").forEach(
-			(x) => (x.onclick = () => duplicateSection(x.dataset.dupSection))
+			(x) => (x.onclick = () => duplicateSection(x.dataset.dupSection)),
 		);
 		r.querySelectorAll("[data-del-section]").forEach(
 			(x) => (x.onclick = () => deleteSection(x.dataset.delSection)),
 		);
 	}
+	function applyDefaultBlockValues(b) {
+		if (b.type === "implementation") {
+			b.title ||= "api.c";
+			b.workPath ||= "(docker)$ pwd";
+			b.workPathTitle ||= "work path";
+			b.codeLang ||= "cpp";
+		}
+	}
 
-	function renderBlock(sid, b, blockIndex = 0) {
-		ensureBlockContents(b);
-		const section = findSec(sid);
-		const maxLevel = getMaxBlockLevel(section, blockIndex);
-		b.level = normalizeBlockLevel(b.level, maxLevel);
-		const d = document.createElement("div");
-		d.className = "block";
-		const options = [
+	function buildOptions(b) {
+		return [
 			"implementation",
 			"text",
 			"plainText",
@@ -334,118 +336,248 @@ export function createRenderer(ctx) {
 					`<option value="${t}" ${b.type === t ? "selected" : ""}>${label(t)}</option>`,
 			)
 			.join("");
-		d.innerHTML = `<div class="actions" style="justify-content:space-between"><span class="note">${label(b.type)}</span><span><button class="small" data-bup>上移</button><button class="small" data-bdown>下移</button><button class="small" data-du>複製</button><button class="small danger" data-del>刪除</button></span></div><div class="grid-2"><label class="field">區塊類型<select data-btype>${options}</select></label><label class="field block-level-field">所在層級<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${b.level || 1}" title="最多只能比前一個區塊多 1 層"></label></div><label class="field">區塊標題<input data-btitle value="${esc(b.title || "")}"></label>${b.type === "implementation" ? `<div class="grid-2"><label class="field"><input type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}> 輸出 work path<input data-work-title value="${esc(b.workPathTitle || "work path")}"><textarea data-work>${esc(b.workPath || "(docker)$ pwd")}</textarea></label><label class="field">主要內容語言 class<input data-lang value="${esc(b.codeLang || "cpp")}"></label></div><label class="field">Description<textarea data-desc>${esc(b.description || "")}</textarea></label>` : ""}<div data-contents></div><button class="small primary" data-add-content>新增 content</button>`;
+	}
+
+	function renderActions(b) {
+		return `
+		<div class="actions" style="justify-content:space-between">
+			<span class="note">${label(b.type)}</span>
+			<span>
+				<button class="small" data-bup>上移</button>
+				<button class="small" data-bdown>下移</button>
+				<button class="small" data-du>複製</button>
+				<button class="small danger" data-del>刪除</button>
+			</span>
+		</div>
+	`;
+	}
+
+	function renderBase(b, options, maxLevel) {
+		return `
+		<div class="grid-2">
+			<label class="field">
+				區塊類型
+				<select data-btype>${options}</select>
+			</label>
+
+			<label class="field block-level-field">
+				所在層級
+				<input data-blevel type="number" min="1" max="${maxLevel}"
+					step="1" value="${b.level || 1}">
+			</label>
+		</div>
+
+		<label class="field">
+			區塊標題
+			<input data-btitle value="${esc(b.title || "")}">
+		</label>
+	`;
+	}
+
+	function renderImplementation(b) {
+		if (b.type !== "implementation") return "";
+
+		return `
+		<div class="grid-2">
+			<label class="field">
+				<input type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}>
+				輸出 work path
+
+				<input data-work-title value="${esc(b.workPathTitle || "work path")}">
+				<textarea data-work>${esc(b.workPath || "(docker)$ pwd")}</textarea>
+			</label>
+
+			<label class="field">
+				主要內容語言 class
+				<input data-lang value="${esc(b.codeLang || "cpp")}">
+			</label>
+		</div>
+
+		<label class="field">
+			Description
+			<textarea data-desc>${esc(b.description || "")}</textarea>
+		</label>
+	`;
+	}
+
+	function renderFooter() {
+		return `
+		<div data-contents></div>
+		<button class="small primary" data-add-content>新增 content</button>
+	`;
+	}
+
+	function createBlockDOM(b, maxLevel) {
+		const d = document.createElement("div");
+		d.className = "block";
+
+		const options = buildOptions(b);
+
+		d.innerHTML = `
+		${renderActions(b)}
+		${renderBase(b, options, maxLevel)}
+		${renderImplementation(b)}
+		${renderFooter()}
+	`;
+
+		return d;
+	}
+
+	function renderContents(d, b) {
 		const cr = d.querySelector("[data-contents]");
+		cr.innerHTML = "";
+
 		b.contents.forEach((c, i) => {
 			const item = document.createElement("div");
 			item.className = "block";
-			item.innerHTML = `<div class="actions" style="justify-content:space-between"><span class="note">content #${i + 1}</span><span><button class="small" data-dup-content="${i}">複製</button><button class="small danger" data-del-content="${i}">刪除</button></span></div><label class="field">內容<textarea data-cont-index="${i}" style="min-height:${b.type === "implementation" ? 170 : 120}px">${esc(c)}</textarea></label>`;
+
+			item.innerHTML = `
+			<div class="actions" style="justify-content:space-between">
+				<span class="note">content #${i + 1}</span>
+				<span>
+					<button class="small" data-dup-content="${i}">複製</button>
+					<button class="small danger" data-del-content="${i}">刪除</button>
+				</span>
+			</div>
+
+			<label class="field">
+				內容
+				<textarea data-cont-index="${i}"
+					style="min-height:${b.type === "implementation" ? 170 : 120}px">${esc(c)}</textarea>
+			</label>
+		`;
+
 			cr.appendChild(item);
 		});
+	}
+
+	function duplicateBlock(sid, b) {
+		const section = findSec(sid);
+		const idx = section.blocks.findIndex((x) => x.id === b.id);
+
+		const nb = JSON.parse(JSON.stringify(b));
+		nb.id = uid();
+
+		if (getState().ui?.collapsed?.blocks) {
+			delete getState().ui.collapsed.blocks[nb.id];
+		}
+
+		if (nb.type !== "plainText") {
+			nb.title = (nb.title || "") + " copy";
+		}
+
+		section.blocks.splice(idx + 1, 0, nb);
+
+		changed();
+		render();
+	}
+
+	function bindBlockEvents(d, sid, b, maxLevel) {
 		d.querySelector("[data-btype]").onchange = (e) => {
 			b.type = e.target.value;
-			if (b.type === "implementation") {
-				b.title = b.title || "api.c";
-				b.workPath = b.workPath || "(docker)$ pwd";
-				b.workPathTitle = b.workPathTitle || "work path";
-				b.codeLang = b.codeLang || "cpp";
-			}
+			applyDefaultBlockValues(b);
 			changed();
 			render();
 		};
+
 		d.querySelector("[data-btitle]").oninput = (e) => {
 			b.title = e.target.value;
 			changed();
 		};
+
 		d.querySelector("[data-blevel]").oninput = (e) => {
 			b.level = normalizeBlockLevel(e.target.value, maxLevel);
 			e.target.value = b.level;
 			changed();
 			render();
 		};
-		d.querySelectorAll("[data-cont-index]").forEach(
-			(x) =>
-			(x.oninput = (e) => {
-				b.contents[Number(x.dataset.contIndex)] = e.target.value;
-				ensureBlockContents(b);
-				changed();
-			}),
-		);
-		d.querySelectorAll("[data-del-content]").forEach(
-			(x) =>
-			(x.onclick = () => {
-				b.contents.length <= 1
-					? (b.contents[0] = "")
-					: b.contents.splice(Number(x.dataset.delContent), 1);
-				ensureBlockContents(b);
-				changed();
-				render();
-			}),
-		);
-		d.querySelectorAll("[data-dup-content]").forEach(
-			(x) =>
-			(x.onclick = () => {
-				const i = Number(x.dataset.dupContent);
-				b.contents.splice(i + 1, 0, b.contents[i] || "");
-				ensureBlockContents(b);
-				changed();
-				render();
-			}),
-		);
-		d.querySelector("[data-add-content]").onclick = () => {
-			b.contents.push("");
-			changed();
-			render();
-		};
-		["work", "work-title", "lang", "desc"].forEach((name) => {
-			const el = d.querySelector(`[data-${name}]`);
-			if (el)
-				el.oninput = (e) => {
-					({
-						work: "workPath",
-						"work-title": "workPathTitle",
-						lang: "codeLang",
-						desc: "description",
-					})[name] &&
-						(b[
-							{
-								work: "workPath",
-								"work-title": "workPathTitle",
-								lang: "codeLang",
-								desc: "description",
-							}[name]
-						] = e.target.value);
-					changed();
-				};
-		});
-		const sw = d.querySelector("[data-show-work]");
-		if (sw)
-			sw.onchange = (e) => {
-				b.showWorkPath = e.target.checked;
-				changed();
-			};
+
 		d.querySelector("[data-bup]").onclick = () => moveBlock(sid, b.id, -1);
 		d.querySelector("[data-bdown]").onclick = () => moveBlock(sid, b.id, 1);
+
 		d.querySelector("[data-del]").onclick = () => {
 			findSec(sid).blocks = findSec(sid).blocks.filter((x) => x.id !== b.id);
 			changed();
 			render();
 		};
-		d.querySelector("[data-du]").onclick = () => {
-			const section = findSec(sid);
-			const currentIndex = section.blocks.findIndex((x) => x.id === b.id);
-			const nb = JSON.parse(JSON.stringify(b));
-			nb.id = uid();
-			if (getState().ui?.collapsed?.blocks)
-				delete getState().ui.collapsed.blocks[nb.id];
-			if (nb.type !== "plainText") nb.title = (nb.title || "") + " copy";
-			section.blocks.splice(currentIndex + 1, 0, nb);
+
+		d.querySelector("[data-du]").onclick = () => duplicateBlock(sid, b);
+
+		d.querySelector("[data-add-content]").onclick = () => {
+			b.contents.push("");
 			changed();
 			render();
 		};
-		return d;
+
+		const sw = d.querySelector("[data-show-work]");
+		if (sw) {
+			sw.onchange = (e) => {
+				b.showWorkPath = e.target.checked;
+				changed();
+			};
+		}
+
+		d.querySelectorAll("[data-cont-index]").forEach((x) => {
+			x.oninput = (e) => {
+				b.contents[Number(x.dataset.contIndex)] = e.target.value;
+				ensureBlockContents(b);
+				changed();
+			};
+		});
+
+		d.querySelectorAll("[data-del-content]").forEach((x) => {
+			x.onclick = () => {
+				const i = Number(x.dataset.delContent);
+				b.contents.length <= 1 ? (b.contents[0] = "") : b.contents.splice(i, 1);
+				ensureBlockContents(b);
+				changed();
+				render();
+			};
+		});
+
+		d.querySelectorAll("[data-dup-content]").forEach((x) => {
+			x.onclick = () => {
+				const i = Number(x.dataset.dupContent);
+				b.contents.splice(i + 1, 0, b.contents[i] || "");
+				ensureBlockContents(b);
+				changed();
+				render();
+			};
+		});
+
+		["work", "work-title", "lang", "desc"].forEach((name) => {
+			const el = d.querySelector(`[data-${name}]`);
+			if (!el) return;
+
+			el.oninput = (e) => {
+				const map = {
+					work: "workPath",
+					"work-title": "workPathTitle",
+					lang: "codeLang",
+					desc: "description",
+				};
+
+				b[map[name]] = e.target.value;
+				changed();
+			};
+		});
 	}
 
+	function renderBlock(sid, b, blockIndex = 0) {
+		ensureBlockContents(b);
+
+		const section = findSec(sid);
+		const maxLevel = getMaxBlockLevel(section, blockIndex);
+
+		b.level = normalizeBlockLevel(b.level, maxLevel);
+		applyDefaultBlockValues(b);
+
+		const d = createBlockDOM(b, maxLevel);
+		renderContents(d, b);
+		bindBlockEvents(d, sid, b, maxLevel);
+
+		return d;
+	}
 	function addSection(title = "新增段落") {
 		getState().sections.push(sec(prompt("段落標題 h3.", title) || title, true));
 		changed();
