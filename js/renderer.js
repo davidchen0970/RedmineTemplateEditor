@@ -195,7 +195,18 @@ export function createRenderer(ctx) {
 		envKeys.forEach(([k, l]) => {
 			const d = document.createElement("label");
 			d.className = "field";
-			d.innerHTML = `${esc(l)}<textarea data-env="${k}">${esc(state.environment[k] || "")}</textarea>`;
+			d.innerHTML =
+				"<label>" +
+				esc(l) +
+				"</label>" +
+				(k === "cpldVersion"
+					? "<br><label> (ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)</label>"
+					: "") +
+				'<textarea data-env="' +
+				k +
+				'">' +
+				esc(state.environment[k] || "") +
+				"</textarea>";
 			e.appendChild(d);
 		});
 		e.querySelectorAll("[data-env]").forEach(
@@ -380,9 +391,10 @@ export function createRenderer(ctx) {
 		return `
 		<div class="grid-2">
 			<label class="field">
-				<input type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}>
-				輸出 work path
-
+				<div class="field-header">
+					<span>輸出 work path</span>
+					<input id="workPath" type="checkbox" data-show-work ${b.showWorkPath !== false ? "checked" : ""}>
+				</div>
 				<input data-work-title value="${esc(b.workPathTitle || "work path")}">
 				<textarea data-work>${esc(b.workPath || "(docker)$ pwd")}</textarea>
 			</label>
@@ -549,12 +561,12 @@ export function createRenderer(ctx) {
 			const el = d.querySelector(`[data-${name}]`);
 			if (!el) return;
 
-				el.oninput = (e) => {
+			el.oninput = (e) => {
 				const map = {
-								work: "workPath",
-								"work-title": "workPathTitle",
-								lang: "codeLang",
-								desc: "description",
+					work: "workPath",
+					"work-title": "workPathTitle",
+					lang: "codeLang",
+					desc: "description",
 				};
 
 				b[map[name]] = e.target.value;
@@ -566,7 +578,7 @@ export function createRenderer(ctx) {
 	function renderBlock(sid, b, blockIndex = 0) {
 		ensureBlockContents(b);
 
-			const section = findSec(sid);
+		const section = findSec(sid);
 		const maxLevel = getMaxBlockLevel(section, blockIndex);
 
 		b.level = normalizeBlockLevel(b.level, maxLevel);
