@@ -385,7 +385,7 @@ export function textileToPreviewHtml(text) {
 			continue;
 		}
 		if (!trimmed) {
-			closeTable();
+			closeFlowBlocks();
 			continue;
 		}
 		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
