@@ -25,6 +25,13 @@
 				></button>
 			</div>
 			<div class="top-actions header-collapsible" id="headerActions">
+				<div class="storage-actions" aria-label="localStorage 文件管理">
+					<select id="storageDocSelect" title="讀取 localStorage 文件"></select>
+					<input id="storageDocName" type="text" placeholder="文件名稱" title="目前文件名稱" />
+					<button id="storageRename" type="button">改名</button>
+					<button id="storageNew" type="button">新增儲存</button>
+					<button id="storageDelete" type="button" class="danger">刪除儲存</button>
+				</div>
 				<button id="copy" class="primary">複製 Redmine Textile</button>
 				<button id="txt">下載 .textile</button>
 				<button id="json">匯出 JSON</button>
