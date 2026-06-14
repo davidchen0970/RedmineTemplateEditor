@@ -7,19 +7,28 @@ import {
 	impl,
 	sec,
 	normalizeState,
+	getActiveDocument,
+	getActiveDocumentId,
+	setActiveDocumentId,
+	ensureDocumentIndex,
+	renameDocument,
+	createDocument,
+	deleteDocument,
 } from "./js/state.js";
 import { textile } from "./js/textile.js";
 import { createRenderer } from "./js/renderer.js";
 
-let state = normalizeState(loadState()) || makeState(),
+let activeDocumentId = getActiveDocumentId(),
+	state = normalizeState(loadState(activeDocumentId)) || makeState(),
 	view = "raw",
 	exportStatus = { json: false, txt: false },
 	lastSaveText = "";
 
 function save() {
-	saveState(state);
+	saveState(state, activeDocumentId);
 	lastSaveText = "已自動儲存 " + new Date().toLocaleTimeString();
 	renderer.renderSaveStatus();
+	renderDocumentPicker();
 }
 
 function changed() {
@@ -52,6 +61,82 @@ function download(fn, txt, type) {
 	a.click();
 	a.remove();
 	URL.revokeObjectURL(u);
+}
+
+function renderDocumentPicker() {
+	const select = document.getElementById("storageDocSelect");
+	const nameInput = document.getElementById("storageDocName");
+	if (!select) return;
+	const docs = ensureDocumentIndex().sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+	select.innerHTML = "";
+	docs.forEach((doc) => {
+		const option = document.createElement("option");
+		option.value = doc.id;
+		option.textContent = doc.name || "未命名";
+		select.appendChild(option);
+	});
+	select.value = activeDocumentId;
+	if (nameInput && document.activeElement !== nameInput) {
+		const active = docs.find((d) => d.id === activeDocumentId);
+		nameInput.value = active?.name || "";
+	}
+}
+
+function loadDocument(id) {
+	if (!id || id === activeDocumentId) return;
+	activeDocumentId = id;
+	setActiveDocumentId(id);
+	state = normalizeState(loadState(activeDocumentId)) || makeState();
+	exportStatus = { json: false, txt: false };
+	lastSaveText = "已讀取 " + (getActiveDocument()?.name || "文件");
+	renderer.render();
+	renderDocumentPicker();
+	renderer.toast(lastSaveText);
+}
+
+function setupDocumentStorageUi() {
+	const select = document.getElementById("storageDocSelect");
+	const nameInput = document.getElementById("storageDocName");
+	const newBtn = document.getElementById("storageNew");
+	const renameBtn = document.getElementById("storageRename");
+	const deleteBtn = document.getElementById("storageDelete");
+	if (!select || !nameInput || !newBtn || !renameBtn || !deleteBtn) return;
+	select.onchange = () => loadDocument(select.value);
+	nameInput.onkeydown = (event) => { if (event.key === "Enter") renameBtn.click(); };
+	renameBtn.onclick = () => {
+		const doc = renameDocument(activeDocumentId, nameInput.value);
+		renderDocumentPicker();
+		renderer.toast(doc ? "名稱已更新" : "找不到目前文件");
+	};
+	newBtn.onclick = () => {
+		const name = prompt("新文件名稱", state.title || "新文件") || "新文件";
+		const nextState = makeState(state.noteType || "porting");
+		nextState.title = name;
+		const doc = createDocument(name, nextState);
+		activeDocumentId = doc.id;
+		state = normalizeState(loadState(activeDocumentId)) || nextState;
+		exportStatus = { json: false, txt: false };
+		lastSaveText = "已建立 " + doc.name;
+		renderer.render();
+		renderDocumentPicker();
+		renderer.toast(lastSaveText);
+	};
+	deleteBtn.onclick = () => {
+		const doc = getActiveDocument();
+		if (!doc) return;
+		if (!confirm(`刪除 localStorage 文件「${doc.name}」？`)) return;
+		if (!deleteDocument(activeDocumentId)) {
+			renderer.toast("至少需要保留一份文件");
+			return;
+		}
+		activeDocumentId = getActiveDocumentId();
+		state = normalizeState(loadState(activeDocumentId)) || makeState();
+		lastSaveText = "已刪除文件";
+		renderer.render();
+		renderDocumentPicker();
+		renderer.toast(lastSaveText);
+	};
+	renderDocumentPicker();
 }
 
 function parsePatchToImplementationUnits(text) {
@@ -324,8 +409,9 @@ document.getElementById("patchFile").onchange = (e) => {
 };
 
 document.getElementById("reset").onclick = () => {
-	if (confirm("清除 localStorage 並重設？")) {
-		localStorage.removeItem(KEY);
+	const doc = getActiveDocument();
+	if (confirm(`清除目前文件「${doc?.name || "預設文件"}」並重設？`)) {
+		localStorage.removeItem(documentStateKey(activeDocumentId));
 		state = makeState();
 		changed();
 		renderer.render();
@@ -371,5 +457,6 @@ document.getElementById("source_code").onclick = () => {
 
 setupTheme();
 setupWorkspaceResize();
+setupDocumentStorageUi();
 save();
 renderer.render();

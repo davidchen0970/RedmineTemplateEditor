@@ -157,17 +157,123 @@ export function normalizeState(state) {
 	return state;
 }
 
-export function loadState() {
+
+export function pageStoragePrefix() {
+	const path = ([location.origin, location.pathname].join("").replace(/\/$/, "")) || "local-page";
+	return KEY + ":page:" + encodeURIComponent(path);
+}
+
+export const DOCUMENT_INDEX_KEY = () => pageStoragePrefix() + ":documents";
+export const ACTIVE_DOCUMENT_KEY = () => pageStoragePrefix() + ":activeDocument";
+export const DEFAULT_DOCUMENT_ID = "default";
+
+export function makeDocumentId() {
+	return Date.now().toString(36) + "-" + uid();
+}
+
+export function safeDocumentName(name) {
+	return String(name || "未命名").trim().replace(/\s+/g, " ").slice(0, 80) || "未命名";
+}
+
+export function documentStateKey(id = DEFAULT_DOCUMENT_ID) {
+	return pageStoragePrefix() + ":state:" + id;
+}
+
+export function readDocumentIndex() {
 	try {
-		return normalizeState(JSON.parse(localStorage.getItem(KEY)));
+		const docs = JSON.parse(localStorage.getItem(DOCUMENT_INDEX_KEY())) || [];
+		return Array.isArray(docs) ? docs : [];
+	} catch {
+		return [];
+	}
+}
+
+export function writeDocumentIndex(docs) {
+	localStorage.setItem(DOCUMENT_INDEX_KEY(), JSON.stringify(docs, null, 2));
+}
+
+export function ensureDocumentIndex() {
+	let docs = readDocumentIndex();
+	if (!docs.length) {
+		docs = [{ id: DEFAULT_DOCUMENT_ID, name: "預設文件", updatedAt: new Date().toISOString() }];
+		writeDocumentIndex(docs);
+	}
+	return docs;
+}
+
+export function getActiveDocumentId() {
+	const docs = ensureDocumentIndex();
+	const saved = localStorage.getItem(ACTIVE_DOCUMENT_KEY());
+	return docs.some((d) => d.id === saved) ? saved : docs[0].id;
+}
+
+export function setActiveDocumentId(id) {
+	localStorage.setItem(ACTIVE_DOCUMENT_KEY(), id);
+}
+
+export function getActiveDocument() {
+	const docs = ensureDocumentIndex();
+	return docs.find((d) => d.id === getActiveDocumentId()) || docs[0];
+}
+
+export function renameDocument(id, name) {
+	const docs = ensureDocumentIndex();
+	const target = docs.find((d) => d.id === id);
+	if (!target) return null;
+	target.name = safeDocumentName(name);
+	target.updatedAt = new Date().toISOString();
+	writeDocumentIndex(docs);
+	return target;
+}
+
+export function createDocument(name, initialState = makeState()) {
+	const docs = ensureDocumentIndex();
+	const id = makeDocumentId();
+	const doc = { id, name: safeDocumentName(name), updatedAt: new Date().toISOString() };
+	docs.unshift(doc);
+	writeDocumentIndex(docs);
+	setActiveDocumentId(id);
+	saveState(initialState, id);
+	return doc;
+}
+
+export function deleteDocument(id) {
+	let docs = ensureDocumentIndex();
+	if (docs.length <= 1) return false;
+	localStorage.removeItem(documentStateKey(id));
+	docs = docs.filter((d) => d.id !== id);
+	writeDocumentIndex(docs);
+	if (getActiveDocumentId() === id) setActiveDocumentId(docs[0].id);
+	return true;
+}
+
+export function loadState(id = getActiveDocumentId()) {
+	try {
+		const state = JSON.parse(localStorage.getItem(documentStateKey(id)));
+		if (state) return normalizeState(state);
+		if (id === DEFAULT_DOCUMENT_ID) {
+			const legacy = JSON.parse(localStorage.getItem(KEY));
+			if (legacy) {
+				const normalized = normalizeState(legacy);
+				saveState(normalized, DEFAULT_DOCUMENT_ID);
+				return normalized;
+			}
+		}
+		return null;
 	} catch {
 		return null;
 	}
 }
 
-export function saveState(state) {
+export function saveState(state, id = getActiveDocumentId()) {
 	state.updatedAt = new Date().toISOString();
-	localStorage.setItem(KEY, JSON.stringify(state, null, 2));
+	localStorage.setItem(documentStateKey(id), JSON.stringify(state, null, 2));
+	const docs = ensureDocumentIndex();
+	const target = docs.find((d) => d.id === id);
+	if (target) {
+		target.updatedAt = state.updatedAt;
+		writeDocumentIndex(docs);
+	}
 }
 
 export function safe(s) {

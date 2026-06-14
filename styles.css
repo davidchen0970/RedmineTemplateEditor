@@ -825,3 +825,30 @@ body[data-theme="dark"] .add-block-dialog::backdrop {
 .implementation-workpath {
 	margin-bottom: 11px;
 }
+
+.storage-actions {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	padding: 6px;
+	border: 1px solid var(--line);
+	border-radius: 13px;
+	background: var(--panel-2);
+}
+.storage-actions select,
+.storage-actions input {
+	min-width: 140px;
+	max-width: 220px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	background: var(--field);
+	color: var(--text);
+	padding: 8px 10px;
+}
+.storage-actions button { white-space: nowrap; }
+@media(max-width:1199px) {
+	.storage-actions { width: 100%; flex-wrap: wrap; }
+	.storage-actions select,
+	.storage-actions input { flex: 1 1 180px; max-width: none; }
+}
+
