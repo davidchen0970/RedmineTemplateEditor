@@ -344,6 +344,8 @@ document.getElementById("copy").onclick = async () => {
 		document.execCommand("copy");
 	}
 	renderer.toast("已複製 Redmine Textile, 強制儲存至 JSON file");
+	exportStatus.json = true;
+	renderer.renderSaveStatus();
 };
 
 document.getElementById("txt").onclick = () => {
