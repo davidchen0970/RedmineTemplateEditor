@@ -223,8 +223,7 @@ function push(o, b) {
 }
 
 export function renderInlineTextile(s) {
-	let t = esc(s);
-	t = t
+	s = s
 		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(/@([^@]+)@/g, "<code>$1</code>")
@@ -232,7 +231,7 @@ export function renderInlineTextile(s) {
 			/"([^"]+)":(https?:\/\/[^\s]+)/g,
 			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
 		);
-	return t;
+	return s;
 }
 
 function escapePreviewHtml(s) {
