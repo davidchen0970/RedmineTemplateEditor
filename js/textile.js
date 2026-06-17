@@ -143,7 +143,9 @@ function blockMarker(b) {
 
 function pushPlainText(o, b, content) {
 	const marker = blockMarker(b);
-	const rawLines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
+	const rawLines = String(content || "")
+		.replace(/\r\n?/g, "\n")
+		.split("\n");
 	if (blockLevel(b) <= 1) {
 		o.push(content);
 		return;
@@ -194,8 +196,7 @@ function push(o, b) {
 				' <pre><code class="' +
 					(b.type === "command" ? "shell" : b.type) +
 					'">',
-				c,
-				"</code></pre>",
+				c + "</code></pre>",
 			),
 		);
 	else if (b.type === "mermaid")
@@ -363,10 +364,22 @@ export function textileToPreviewHtml(text) {
 	for (const rawLine of inputLines) {
 		const trimmed = rawLine.trim();
 		if (inPre) {
-			const decodedTrimmed = decodePreviewHtml(trimmed).trim();
-			if (decodedTrimmed === "</code></pre>" || decodedTrimmed === "</pre>")
+			const decodedLine = decodePreviewHtml(rawLine);
+			const closeTag = "</code></pre>";
+			const closeIndex = decodedLine.indexOf(closeTag);
+
+			if (closeIndex >= 0) {
+				const beforeClose = decodedLine.slice(0, closeIndex);
+
+				if (beforeClose) {
+					preLines.push(beforeClose);
+				}
+
 				flushPre();
-			else preLines.push(rawLine);
+				continue;
+			}
+
+			preLines.push(rawLine);
 			continue;
 		}
 		if (inMermaid) {
