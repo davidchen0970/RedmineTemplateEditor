@@ -63,11 +63,26 @@ function download(fn, txt, type) {
 	URL.revokeObjectURL(u);
 }
 
+function asciiCompare(a, b) {
+	const left = String(a || "");
+	const right = String(b || "");
+	const length = Math.min(left.length, right.length);
+
+	for (let i = 0; i < length; i++) {
+		const diff = left.charCodeAt(i) - right.charCodeAt(i);
+		if (diff !== 0) return diff;
+	}
+
+	return left.length - right.length;
+}
+
 function renderDocumentPicker() {
 	const select = document.getElementById("storageDocSelect");
 	const nameInput = document.getElementById("storageDocName");
 	if (!select) return;
-	const docs = ensureDocumentIndex().sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+	const docs = ensureDocumentIndex().sort((a, b) =>
+		asciiCompare(a.name, b.name),
+	);
 	select.innerHTML = "";
 	docs.forEach((doc) => {
 		const option = document.createElement("option");
