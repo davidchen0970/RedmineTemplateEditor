@@ -303,7 +303,7 @@ function setupWorkspaceResize() {
 	restore();
 }
 
-function wrapSelectionWithColor(el, color) {
+function applyColorToTextareaSelection(el, color) {
 	const start = el.selectionStart;
 	const end = el.selectionEnd;
 
@@ -318,16 +318,72 @@ function wrapSelectionWithColor(el, color) {
 	const value = el.value;
 	const selected = value.slice(start, end);
 
-	const wrapped = `%{color:${color}}${selected}%`;
+	const whole = selected.match(/^%\{color:[^}]+\}([\s\S]*)%$/);
+
+	if (whole) {
+		const wrapped = buildColored(color, whole[1]);
+
+		el.value = value.slice(0, start) + wrapped + value.slice(end);
+		el.focus();
+		el.setSelectionRange(start, start + wrapped.length);
+		el.dispatchEvent(
+			new InputEvent("input", {
+				bubbles: true,
+				inputType: "insertText",
+				data: wrapped,
+			}),
+		);
+
+		return true;
+	}
+
+	const range = findColorRange(value, start, end);
+
+	if (range && start >= range.contentStart && end <= range.contentEnd) {
+		const beforeInner = value.slice(range.contentStart, start);
+		const selectedInner = value.slice(start, end);
+		const afterInner = value.slice(end, range.contentEnd);
+
+		let replacement = "";
+
+		if (beforeInner) {
+			replacement += buildColored(range.oldColor, beforeInner);
+		}
+
+		replacement += buildColored(color, selectedInner);
+
+		if (afterInner) {
+			replacement += buildColored(range.oldColor, afterInner);
+		}
+
+		el.value =
+			value.slice(0, range.matchStart) +
+			replacement +
+			value.slice(range.matchEnd);
+
+		const newStart =
+			range.matchStart +
+			(beforeInner ? buildColored(range.oldColor, beforeInner).length : 0);
+		const newEnd = newStart + buildColored(color, selectedInner).length;
+
+		el.focus();
+		el.setSelectionRange(newStart, newEnd);
+		el.dispatchEvent(
+			new InputEvent("input", {
+				bubbles: true,
+				inputType: "insertText",
+				data: replacement,
+			}),
+		);
+
+		return true;
+	}
+
+	const wrapped = buildColored(color, selected);
 
 	el.value = value.slice(0, start) + wrapped + value.slice(end);
-
-	const nextStart = start;
-	const nextEnd = start + wrapped.length;
-
 	el.focus();
-	el.setSelectionRange(nextStart, nextEnd);
-
+	el.setSelectionRange(start, start + wrapped.length);
 	el.dispatchEvent(
 		new InputEvent("input", {
 			bubbles: true,
@@ -339,7 +395,7 @@ function wrapSelectionWithColor(el, color) {
 	return true;
 }
 
-function clearSelectionColor(el) {
+function clearColorFromTextareaSelection(el) {
 	const start = el.selectionStart;
 	const end = el.selectionEnd;
 
@@ -352,18 +408,53 @@ function clearSelectionColor(el) {
 	}
 
 	const value = el.value;
-	const selected = value.slice(start, end);
+	const range = findColorRange(value, start, end);
 
-	const cleaned = selected.replace(
-		/%\{color:(red|green|orange)\}([\s\S]*?)%/g,
-		"$2",
-	);
+	if (range && start >= range.contentStart && end <= range.contentEnd) {
+		const before = value.slice(range.contentStart, start);
+		const selected = value.slice(start, end);
+		const after = value.slice(end, range.contentEnd);
+
+		let replacement = "";
+
+		if (before) {
+			replacement += buildColored(range.oldColor, before);
+		}
+
+		replacement += selected;
+
+		if (after) {
+			replacement += buildColored(range.oldColor, after);
+		}
+
+		el.value =
+			value.slice(0, range.matchStart) +
+			replacement +
+			value.slice(range.matchEnd);
+
+		const newStart =
+			range.matchStart +
+			(before ? buildColored(range.oldColor, before).length : 0);
+
+		el.focus();
+		el.setSelectionRange(newStart, newStart + selected.length);
+		el.dispatchEvent(
+			new InputEvent("input", {
+				bubbles: true,
+				inputType: "insertText",
+				data: replacement,
+			}),
+		);
+
+		return true;
+	}
+
+	const selected = value.slice(start, end);
+	const cleaned = selected.replace(/%\{color:[^}]+\}([\s\S]*?)%/g, "$1");
 
 	el.value = value.slice(0, start) + cleaned + value.slice(end);
-
 	el.focus();
 	el.setSelectionRange(start, start + cleaned.length);
-
 	el.dispatchEvent(
 		new InputEvent("input", {
 			bubbles: true,
@@ -375,6 +466,34 @@ function clearSelectionColor(el) {
 	return true;
 }
 
+function buildColored(color, text) {
+	return `%{color:${color}}${text}%`;
+}
+
+function findColorRange(value, start, end) {
+	const re = /%\{color:([^}]+)\}([\s\S]*?)%/g;
+	let m;
+
+	while ((m = re.exec(value))) {
+		const matchStart = m.index;
+		const contentStart = matchStart + m[0].indexOf("}") + 1;
+		const contentEnd = matchStart + m[0].length - 1;
+		const matchEnd = matchStart + m[0].length;
+
+		if (start >= matchStart && end <= matchEnd) {
+			return {
+				oldColor: m[1],
+				matchStart,
+				contentStart,
+				contentEnd,
+				matchEnd,
+				inner: m[2],
+			};
+		}
+	}
+
+	return null;
+}
 
 function setupTextColorContextMenu() {
 	let targetInput = null;
@@ -433,11 +552,11 @@ function setupTextColorContextMenu() {
 		if (!btn || !targetInput) return;
 
 		if (btn.dataset.color) {
-			wrapSelectionWithColor(targetInput, btn.dataset.color);
+			applyColorToTextareaSelection(targetInput, btn.dataset.color);
 		}
 
 		if (btn.dataset.clearColor) {
-			clearSelectionColor(targetInput);
+			clearColorFromTextareaSelection(targetInput);
 		}
 
 		hideMenu();
