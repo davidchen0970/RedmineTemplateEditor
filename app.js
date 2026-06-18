@@ -303,6 +303,162 @@ function setupWorkspaceResize() {
 	restore();
 }
 
+function wrapSelectionWithColor(el, color) {
+	const start = el.selectionStart;
+	const end = el.selectionEnd;
+
+	if (
+		typeof start !== "number" ||
+		typeof end !== "number" ||
+		start === end
+	) {
+		return false;
+	}
+
+	const value = el.value;
+	const selected = value.slice(start, end);
+
+	const wrapped = `%{color:${color}}${selected}%`;
+
+	el.value = value.slice(0, start) + wrapped + value.slice(end);
+
+	const nextStart = start;
+	const nextEnd = start + wrapped.length;
+
+	el.focus();
+	el.setSelectionRange(nextStart, nextEnd);
+
+	el.dispatchEvent(
+		new InputEvent("input", {
+			bubbles: true,
+			inputType: "insertText",
+			data: wrapped,
+		}),
+	);
+
+	return true;
+}
+
+function clearSelectionColor(el) {
+	const start = el.selectionStart;
+	const end = el.selectionEnd;
+
+	if (
+		typeof start !== "number" ||
+		typeof end !== "number" ||
+		start === end
+	) {
+		return false;
+	}
+
+	const value = el.value;
+	const selected = value.slice(start, end);
+
+	const cleaned = selected.replace(
+		/%\{color:(red|green|orange)\}([\s\S]*?)%/g,
+		"$2",
+	);
+
+	el.value = value.slice(0, start) + cleaned + value.slice(end);
+
+	el.focus();
+	el.setSelectionRange(start, start + cleaned.length);
+
+	el.dispatchEvent(
+		new InputEvent("input", {
+			bubbles: true,
+			inputType: "insertText",
+			data: cleaned,
+		}),
+	);
+
+	return true;
+}
+
+
+function setupTextColorContextMenu() {
+	let targetInput = null;
+
+	const menu = document.createElement("div");
+	menu.id = "textColorMenu";
+	menu.className = "text-color-menu";
+	menu.innerHTML = `
+		<button type="button" class="red" data-color="red">標成紅色</button>
+		<button type="button" class="green" data-color="green">標成綠色</button>
+		<button type="button" class="orange" data-color="orange">標成橘色</button>
+		<button type="button" data-clear-color="true">清除顏色</button>
+	`;
+	document.body.appendChild(menu);
+
+	const hideMenu = () => {
+		menu.classList.remove("show");
+	};
+
+	const isEditableTextField = (el) =>
+		el &&
+		(el.tagName === "TEXTAREA" ||
+			(el.tagName === "INPUT" &&
+				["text", "search", "url", "email"].includes(el.type)));
+
+	document.addEventListener("contextmenu", (event) => {
+		const el = event.target;
+
+		if (!isEditableTextField(el)) {
+			hideMenu();
+			return;
+		}
+
+		const start = el.selectionStart;
+		const end = el.selectionEnd;
+
+		if (
+			typeof start !== "number" ||
+			typeof end !== "number" ||
+			start === end
+		) {
+			hideMenu();
+			return;
+		}
+
+		targetInput = el;
+		event.preventDefault();
+
+		menu.style.left = `${event.clientX}px`;
+		menu.style.top = `${event.clientY}px`;
+		menu.classList.add("show");
+	});
+
+	menu.addEventListener("click", (event) => {
+		const btn = event.target.closest("button");
+		if (!btn || !targetInput) return;
+
+		if (btn.dataset.color) {
+			wrapSelectionWithColor(targetInput, btn.dataset.color);
+		}
+
+		if (btn.dataset.clearColor) {
+			clearSelectionColor(targetInput);
+		}
+
+		hideMenu();
+	});
+
+	document.addEventListener("click", (event) => {
+		if (!menu.contains(event.target)) {
+			hideMenu();
+		}
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") {
+			hideMenu();
+		}
+	});
+
+	window.addEventListener("scroll", hideMenu, true);
+	window.addEventListener("resize", hideMenu);
+}
+
 function setupTheme() {
 	const btn = document.getElementById("themeToggle"),
 		key = KEY + ":theme";
@@ -475,5 +631,6 @@ document.getElementById("source_code").onclick = () => {
 setupTheme();
 setupWorkspaceResize();
 setupDocumentStorageUi();
+setupTextColorContextMenu();
 save();
 renderer.render();
