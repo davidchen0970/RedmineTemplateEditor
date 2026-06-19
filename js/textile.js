@@ -224,15 +224,24 @@ function push(o, b) {
 }
 
 export function renderInlineTextile(s) {
-	s = s
+	let t = esc(s);
+	const inlineCodes = [];
+	t = t.replace(/@([^@]+)@/g, (_, code) => {
+		const key = `@@INLINE_CODE_${inlineCodes.length}@@`;
+		inlineCodes.push(`<code>${code}</code>`);
+		return key;
+	});
+	t = t
 		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
-		.replace(/@([^@]+)@/g, "<code>$1</code>")
 		.replace(
 			/"([^"]+)":(https?:\/\/[^\s]+)/g,
 			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
 		);
-	return s;
+	inlineCodes.forEach((html, index) => {
+		t = t.replace(`@@INLINE_CODE_${index}@@`, html);
+	});
+	return t;
 }
 
 function escapePreviewHtml(s) {
@@ -269,6 +278,7 @@ export function textileToPreviewHtml(text) {
 		listItemOpen = [],
 		inTable = false,
 		inPre = false,
+		inPreCode = false,  
 		preLang = "",
 		preLines = [],
 		inCollapse = false,
@@ -330,11 +340,53 @@ export function textileToPreviewHtml(text) {
 			.replace(/&quot;/g, '"')
 			.replace(/&#39;/g, "'")
 			.replace(/&amp;/g, "&");
+	const pushInlineParagraph = (text) => {
+		const body = String(text ?? "").trim();
+		if (!body) return;
+		closeFlowBlocks();
+		html.push(`<p>${renderInlineTextile(body)}</p>`);
+	};
+	const pushPreBlock = (content, lang = "", isCode = false) => {
+		closeFlowBlocks();
+		if (isCode) {
+			html.push(
+				`<pre><code${lang ? ` class="${esc(lang)}"` : ""}>${escapePreviewHtml(content)}</code></pre>`,
+			);
+		} else {
+			html.push(`<pre>${renderInlineTextile(content)}</pre>`);
+		}
+	};
+	const processInlinePreSegments = (line) => {
+		const decodedLine = decodePreviewHtml(line);
+		const prePattern = /<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*?)<\/code><\/pre>|<pre>([\s\S]*?)<\/pre>/gi;
+		let lastIndex = 0;
+		let matched = false;
+		let match;
+		while ((match = prePattern.exec(decodedLine))) {
+			matched = true;
+			pushInlineParagraph(decodedLine.slice(lastIndex, match.index));
+			if (match[2] !== undefined) {
+				pushPreBlock(match[2], match[1] || "", true);
+			} else {
+				pushPreBlock(match[3] || "", "", false);
+			}
+			lastIndex = prePattern.lastIndex;
+		}
+		if (!matched) return false;
+		pushInlineParagraph(decodedLine.slice(lastIndex));
+		return true;
+	};
 	const flushPre = () => {
-		html.push(
-			`<pre><code${preLang ? ` class="${esc(preLang)}"` : ""}>${escapePreviewHtml(preLines.join("\n"))}</code></pre>`,
-		);
+		const preContent = preLines.join("\n");
+		if (inPreCode) {
+			html.push(
+				`<pre><code${preLang ? ` class="${esc(preLang)}"` : ""}>${escapePreviewHtml(preContent)}</code></pre>`,
+			);
+		} else {
+			html.push(`<pre>${renderInlineTextile(preContent)}</pre>`);
+		}
 		inPre = false;
+		inPreCode = false;
 		preLang = "";
 		preLines = [];
 	};
@@ -364,22 +416,15 @@ export function textileToPreviewHtml(text) {
 	for (const rawLine of inputLines) {
 		const trimmed = rawLine.trim();
 		if (inPre) {
-			const decodedLine = decodePreviewHtml(rawLine);
-			const closeTag = "</code></pre>";
-			const closeIndex = decodedLine.indexOf(closeTag);
-
-			if (closeIndex >= 0) {
-				const beforeClose = decodedLine.slice(0, closeIndex);
-
-				if (beforeClose) {
-					preLines.push(beforeClose);
-				}
-
+			const decodedTrimmed = decodePreviewHtml(trimmed).trim();
+			if (
+				(inPreCode && decodedTrimmed === "</code></pre>") ||
+				decodedTrimmed === "</pre>"
+			) {
 				flushPre();
-				continue;
+			} else {
+				preLines.push(rawLine);
 			}
-
-			preLines.push(rawLine);
 			continue;
 		}
 		if (inMermaid) {
@@ -401,23 +446,41 @@ export function textileToPreviewHtml(text) {
 			continue;
 		}
 		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
-		const inlinePreMatch = decodedTrimmed.match(
+		if (/<pre>/i.test(decodedTrimmed) && processInlinePreSegments(rawLine)) {
+			continue;
+		}
+		const inlinePreCodeMatch = decodedTrimmed.match(
 			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>([\s\S]*)<\/code><\/pre>$/i,
 		);
-		if (inlinePreMatch) {
+		if (inlinePreCodeMatch) {
 			closeTable();
 			html.push(
-				`<pre><code${inlinePreMatch[1] ? ` class="${esc(inlinePreMatch[1])}"` : ""}>${escapePreviewHtml(inlinePreMatch[2])}</code></pre>`,
+				`<pre><code${inlinePreCodeMatch[1] ? ` class="${esc(inlinePreCodeMatch[1])}"` : ""}>${escapePreviewHtml(inlinePreCodeMatch[2])}</code></pre>`,
 			);
 			continue;
 		}
-		const preMatch = decodedTrimmed.match(
+		const inlinePreMatch = decodedTrimmed.match(/^<pre>([\s\S]*)<\/pre>$/i);
+		if (inlinePreMatch) {
+			closeTable();
+			html.push(`<pre>${renderInlineTextile(inlinePreMatch[1])}</pre>`);
+			continue;
+		}
+		const preCodeMatch = decodedTrimmed.match(
 			/^<pre><code(?: class=["']?([^"'>]+)["']?)?>$/i,
 		);
-		if (preMatch) {
+		if (preCodeMatch) {
 			closeTable();
 			inPre = true;
-			preLang = preMatch[1] || "";
+			inPreCode = true;
+			preLang = preCodeMatch[1] || "";
+			preLines = [];
+			continue;
+		}
+		if (/^<pre>$/i.test(decodedTrimmed)) {
+			closeTable();
+			inPre = true;
+			inPreCode = false;
+			preLang = "";
 			preLines = [];
 			continue;
 		}
