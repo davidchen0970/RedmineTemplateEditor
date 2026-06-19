@@ -3,6 +3,7 @@ import {
 	ensureBlockContents,
 	textile,
 	textileToPreviewHtml,
+	renderInlineTextile,
 } from "./textile.js";
 
 export function label(t) {
@@ -211,10 +212,10 @@ export function createRenderer(ctx) {
 		});
 		e.querySelectorAll("[data-env]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				state.environment[x.dataset.env] = x.value;
-				changed();
-			}),
+				(x.oninput = () => {
+					state.environment[x.dataset.env] = x.value;
+					changed();
+				}),
 		);
 	}
 
@@ -230,11 +231,11 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-t]").forEach(
 			(x) =>
-			(x.onchange = () => {
-				findSec(x.dataset.t).enabled = x.checked;
-				changed();
-				render();
-			}),
+				(x.onchange = () => {
+					findSec(x.dataset.t).enabled = x.checked;
+					changed();
+					render();
+				}),
 		);
 	}
 
@@ -283,27 +284,27 @@ export function createRenderer(ctx) {
 		});
 		r.querySelectorAll("[data-se]").forEach(
 			(x) =>
-			(x.onchange = () => {
-				findSec(x.dataset.se).enabled = x.checked;
-				changed();
-				render();
-			}),
+				(x.onchange = () => {
+					findSec(x.dataset.se).enabled = x.checked;
+					changed();
+					render();
+				}),
 		);
 		r.querySelectorAll("[data-st]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				findSec(x.dataset.st).title = x.value;
-				changed();
-				renderToggles();
-				renderOut();
-			}),
+				(x.oninput = () => {
+					findSec(x.dataset.st).title = x.value;
+					changed();
+					renderToggles();
+					renderOut();
+				}),
 		);
 		r.querySelectorAll("[data-sdesc]").forEach(
 			(x) =>
-			(x.oninput = () => {
-				findSec(x.dataset.sdesc).description = x.value;
-				changed();
-			}),
+				(x.oninput = () => {
+					findSec(x.dataset.sdesc).description = x.value;
+					changed();
+				}),
 		);
 		r.querySelectorAll("[data-add]").forEach(
 			(x) => (x.onclick = () => addBlock(x.dataset.add)),
@@ -677,6 +678,385 @@ export function createRenderer(ctx) {
 		title.select();
 	}
 
+	function hasPreviewText(value) {
+		return String(value ?? "").trim().length > 0;
+	}
+
+	function previewBlockLevel(b) {
+		const raw = Number(b?.level || 1);
+		return Math.max(1, Number.isFinite(raw) ? Math.floor(raw) : 1);
+	}
+
+	function previewDisplayHtml(value, mode = "inline") {
+		const text = String(value ?? "");
+		return mode === "code" ? esc(text) : renderInlineTextile(text);
+	}
+
+	function previewTargetAttrs(
+		path,
+		value,
+		editor = "textarea",
+		mode = "inline",
+	) {
+		return `tabindex="0" data-preview-edit="${esc(path)}" data-preview-editor="${editor}" data-preview-mode="${mode}" data-preview-value="${esc(value || "")}"`;
+	}
+
+	function previewTargetTag(
+		tag,
+		path,
+		value,
+		className = "",
+		editor = "textarea",
+		mode = "inline",
+	) {
+		if (!hasPreviewText(value)) return "";
+		const cls = `preview-edit-target${className ? " " + className : ""}`;
+		return `<${tag} class="${cls}" ${previewTargetAttrs(path, value, editor, mode)}>${previewDisplayHtml(value, mode)}</${tag}>`;
+	}
+
+	function statusTextile(value) {
+		if (value === "PASS") return "%{color:green}PASS%";
+		if (value === "FAILED") return "%{color:red}FAILED%";
+		if (value === "WIP") return "%{color:orange}WIP%";
+		return "N/A";
+	}
+
+	function renderStatusPreview(value) {
+		return `<span class="preview-status-display preview-edit-target" tabindex="0" data-preview-status="true" data-preview-value="${esc(value || "N/A")}">${renderInlineTextile(statusTextile(value))}</span>`;
+	}
+
+	function renderEditablePreview(state) {
+		const html = [];
+		html.push(`<div class="editable-preview-note">`);
+		html.push(
+			previewTargetTag(
+				"h2",
+				"top:title",
+				state.title,
+				"preview-edit-heading",
+				"input",
+			),
+		);
+
+		if (hasPreviewText(state.relatedRef)) {
+			html.push(
+				previewTargetTag(
+					"div",
+					"top:relatedRef",
+					state.relatedRef,
+					"preview-edit-text",
+					"textarea",
+				),
+			);
+		}
+
+		if (state.status !== "N/A" || hasPreviewText(state.summary)) {
+			html.push(`<h3>結論</h3>`);
+			if (state.status !== "N/A")
+				html.push(`<p>執行狀態: ${renderStatusPreview(state.status)}</p>`);
+			const summaryLines = String(state.summary || "")
+				.split("\n")
+				.filter((x) => x.trim());
+			if (summaryLines.length) {
+				html.push("<ul>");
+				summaryLines.forEach((line, index) => {
+					html.push(
+						`<li class="preview-edit-target" ${previewTargetAttrs("summary:" + index, line, "input")}>${previewDisplayHtml(line)}</li>`,
+					);
+				});
+				html.push("</ul>");
+			}
+		}
+
+		if (hasPreviewText(state.changeContent)) {
+			html.push(`<h3>修改目標</h3>`);
+			html.push(
+				`<div class="preview-field-row"><span>修改內容:</span>${previewTargetTag("div", "top:changeContent", state.changeContent, "preview-edit-text", "textarea")}</div>`,
+			);
+		}
+
+		const envRows = envKeys
+			.map(([key, label]) => [key, label, state.environment?.[key] || ""])
+			.filter(([, , value]) => hasPreviewText(value));
+		if (envRows.length) {
+			html.push(`<h3>測試環境</h3><ul>`);
+			envRows.forEach(([key, label, value]) => {
+				html.push(
+					`<li><strong>${esc(label)}:</strong> ${previewTargetTag("span", "env:" + key, value, "preview-edit-inline", "textarea")}</li>`,
+				);
+			});
+			html.push(`</ul>`);
+		}
+
+		(state.sections || [])
+			.filter((section) => section.enabled)
+			.forEach((section) => {
+				const sectionTitle = previewTargetTag(
+					"h3",
+					`section:${section.id}:title`,
+					section.title,
+					"preview-edit-heading",
+					"input",
+				);
+				if (sectionTitle) html.push(sectionTitle);
+				const sectionDesc = previewTargetTag(
+					"div",
+					`section:${section.id}:description`,
+					section.description,
+					"preview-edit-text",
+					"textarea",
+				);
+				if (sectionDesc) html.push(sectionDesc);
+
+				(section.blocks || []).forEach((b) => {
+					ensureBlockContents(b);
+					const blockParts = [];
+					if (b.type !== "plainText" && b.type !== "image") {
+						const title = previewTargetTag(
+							"div",
+							`block:${section.id}:${b.id}:title`,
+							b.title,
+							"preview-edit-block-title",
+							"input",
+						);
+						if (title) blockParts.push(title);
+					}
+
+					if (b.type === "implementation") {
+						if (b.showWorkPath !== false && hasPreviewText(b.workPath)) {
+							const summary = hasPreviewText(b.workPathTitle)
+								? previewTargetTag(
+										"span",
+										`block:${section.id}:${b.id}:workPathTitle`,
+										b.workPathTitle,
+										"preview-edit-inline",
+										"input",
+									)
+								: esc("work path");
+							blockParts.push(
+								`<details><summary>${summary}</summary>${previewTargetTag(
+									"pre",
+									`block:${section.id}:${b.id}:workPath`,
+									b.workPath,
+									"preview-edit-code",
+									"textarea",
+									"code",
+								)}</details>`,
+							);
+						}
+						const desc = previewTargetTag(
+							"div",
+							`block:${section.id}:${b.id}:description`,
+							b.description,
+							"preview-edit-text",
+							"textarea",
+						);
+						if (desc) blockParts.push(desc);
+					}
+
+					(b.contents || []).forEach((content, index) => {
+						if (!hasPreviewText(content)) return;
+						const path = `block:${section.id}:${b.id}:content:${index}`;
+						if (
+							["command", "diff", "log", "implementation", "mermaid"].includes(
+								b.type,
+							)
+						) {
+							blockParts.push(
+								previewTargetTag(
+									"pre",
+									path,
+									content,
+									"preview-edit-code",
+									"textarea",
+									"code",
+								),
+							);
+						} else if (b.type === "image") {
+							blockParts.push(
+								`<div class="preview-placeholder">Image: ${previewTargetTag("span", path, content, "preview-edit-inline", "textarea", "code")}</div>`,
+							);
+						} else {
+							blockParts.push(
+								previewTargetTag(
+									"div",
+									path,
+									content,
+									"preview-edit-text",
+									"textarea",
+								),
+							);
+						}
+					});
+
+					if (blockParts.length) {
+						const level = previewBlockLevel(b);
+						const indent = Math.max(0, level - 1) * 22;
+						const marker = "#".repeat(level);
+						html.push(
+							`<div class="preview-edit-block preview-edit-level-${level}" style="margin-left:${indent}px"><span class="preview-hierarchy-marker">${marker}</span><div class="preview-edit-block-content">${blockParts.join("\n")}</div></div>`,
+						);
+					}
+				});
+			});
+
+		html.push(`</div>`);
+		return (
+			html.join("\n") || '<p class="preview-placeholder">尚無可預覽內容</p>'
+		);
+	}
+
+	function findBlock(sectionId, blockId) {
+		const section = findSec(sectionId);
+		return section?.blocks?.find((b) => b.id === blockId);
+	}
+
+	function applyPreviewEdit(path, value) {
+		const state = getState();
+		const parts = String(path || "").split(":");
+		if (parts[0] === "top") {
+			const map = {
+				title: "title",
+				relatedRef: "relatedRef",
+				changeContent: "changeContent",
+			};
+			if (map[parts[1]]) state[map[parts[1]]] = value;
+			return;
+		}
+		if (parts[0] === "summary") {
+			const index = Number(parts[1]);
+			const rows = String(state.summary || "")
+				.split("\n")
+				.filter((x) => x.trim());
+			if (Number.isFinite(index)) {
+				rows[index] = value;
+				state.summary = rows.filter((x) => x.trim()).join("\n");
+			}
+			return;
+		}
+		if (parts[0] === "env") {
+			state.environment ||= {};
+			state.environment[parts[1]] = value;
+			return;
+		}
+		if (parts[0] === "section") {
+			const section = findSec(parts[1]);
+			if (section && ["title", "description"].includes(parts[2]))
+				section[parts[2]] = value;
+			return;
+		}
+		if (parts[0] === "block") {
+			const b = findBlock(parts[1], parts[2]);
+			if (!b) return;
+			const field = parts[3];
+			if (
+				["title", "workPath", "workPathTitle", "description"].includes(field)
+			) {
+				b[field] = value;
+				return;
+			}
+			if (field === "content") {
+				const index = Number(parts[4] || 0);
+				ensureBlockContents(b);
+				b.contents[index] = value;
+				b.content = b.contents.join("\n");
+			}
+		}
+	}
+
+	function syncFormAfterPreviewEdit() {
+		renderFields();
+		renderSections();
+		renderToggles();
+		renderSaveStatus();
+	}
+
+	function buildPreviewEditor(target) {
+		if (target.dataset.previewStatus === "true") {
+			const select = document.createElement("select");
+			select.className = "preview-live-editor preview-live-status";
+			["PASS", "FAILED", "WIP", "N/A"].forEach((value) => {
+				const option = document.createElement("option");
+				option.value = value;
+				option.textContent = value;
+				select.appendChild(option);
+			});
+			select.value = target.dataset.previewValue || "N/A";
+			select.dataset.previewStatusEditor = "true";
+			return select;
+		}
+		const editorType =
+			target.dataset.previewEditor === "input" ? "input" : "textarea";
+		const editor = document.createElement(editorType);
+		editor.className =
+			"preview-live-editor" +
+			(target.dataset.previewMode === "code" ? " preview-live-code" : "");
+		editor.value = target.dataset.previewValue || "";
+		editor.dataset.previewEdit = target.dataset.previewEdit;
+		if (editorType === "textarea") {
+			editor.rows = Math.max(
+				2,
+				Math.min(16, editor.value.split("\n").length + 1),
+			);
+		}
+		return editor;
+	}
+
+	function openPreviewEditor(target) {
+		if (!target || target.dataset.previewEditing === "true") return;
+		const editor = buildPreviewEditor(target);
+		target.dataset.previewEditing = "true";
+		target.replaceWith(editor);
+		editor.focus();
+		if (typeof editor.select === "function") editor.select();
+
+		const commit = () => {
+			if (editor.dataset.committed === "true") return;
+			editor.dataset.committed = "true";
+			renderOut();
+		};
+
+		editor.addEventListener("input", () => {
+			if (editor.dataset.previewStatusEditor === "true") return;
+			applyPreviewEdit(editor.dataset.previewEdit, editor.value);
+			changed({ skipRenderOut: true });
+			syncFormAfterPreviewEdit();
+		});
+		editor.addEventListener("change", () => {
+			if (editor.dataset.previewStatusEditor === "true") {
+				getState().status = editor.value;
+				changed({ skipRenderOut: true });
+				syncFormAfterPreviewEdit();
+			}
+		});
+		editor.addEventListener("keydown", (event) => {
+			if (event.key === "Escape") {
+				event.preventDefault();
+				commit();
+			}
+			if (event.key === "Enter" && editor.tagName === "INPUT") {
+				event.preventDefault();
+				editor.blur();
+			}
+		});
+		editor.addEventListener("blur", commit);
+	}
+
+	function bindEditablePreview(preview) {
+		preview.onclick = (event) => {
+			const target = event.target.closest(".preview-edit-target");
+			if (!target || !preview.contains(target)) return;
+			openPreviewEditor(target);
+		};
+		preview.onkeydown = (event) => {
+			if (event.key !== "Enter") return;
+			const target = event.target.closest(".preview-edit-target");
+			if (!target || !preview.contains(target)) return;
+			event.preventDefault();
+			openPreviewEditor(target);
+		};
+	}
+
 	function renderOut() {
 		const state = getState();
 		const view = getView();
@@ -687,7 +1067,8 @@ export function createRenderer(ctx) {
 		out.classList.toggle("hidden", view === "preview");
 		preview.classList.toggle("hidden", view !== "preview");
 		if (view === "preview") {
-			preview.innerHTML = textileToPreviewHtml(raw);
+			preview.innerHTML = renderEditablePreview(state);
+			bindEditablePreview(preview);
 
 			if (window.mermaid) {
 				window.mermaid

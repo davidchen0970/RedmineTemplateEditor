@@ -31,10 +31,10 @@ function save() {
 	renderDocumentPicker();
 }
 
-function changed() {
+function changed(options = {}) {
 	exportStatus = { json: false, txt: false };
 	save();
-	renderer.renderOut();
+	if (!options.skipRenderOut) renderer.renderOut();
 }
 
 const renderer = createRenderer({
