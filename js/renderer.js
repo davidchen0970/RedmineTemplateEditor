@@ -854,40 +854,60 @@ export function createRenderer(ctx) {
 						if (desc) blockParts.push(desc);
 					}
 
-					(b.contents || []).forEach((content, index) => {
-						if (!hasPreviewText(content)) return;
-						const path = `block:${section.id}:${b.id}:content:${index}`;
-						if (
-							["command", "diff", "log", "implementation", "mermaid"].includes(
-								b.type,
-							)
-						) {
-							blockParts.push(
-								previewTargetTag(
-									"pre",
-									path,
-									content,
-									"preview-edit-code",
-									"textarea",
-									"code",
-								),
-							);
-						} else if (b.type === "image") {
-							blockParts.push(
-								`<div class="preview-placeholder">Image: ${previewTargetTag("span", path, content, "preview-edit-inline", "textarea", "code")}</div>`,
-							);
-						} else {
-							blockParts.push(
+					if (b.type === "collapse") {
+						const title = previewTargetTag(
+							"span",
+							`block:${section.id}:${b.id}:title`,
+							b.title || "detail",
+							"preview-edit-inline",
+							"input",
+						);
+
+						const collapseParts = [];
+						(b.contents || []).forEach((content, index) => {
+							if (!hasPreviewText(content)) return;
+							collapseParts.push(
 								previewTargetTag(
 									"div",
-									path,
+									`block:${section.id}:${b.id}:content:${index}`,
 									content,
 									"preview-edit-text",
 									"textarea",
 								),
 							);
+						});
+
+						if (collapseParts.length) {
+							blockParts.push(
+								`<details><summary>${title || esc("detail")}</summary><div class="preview-collapse-body">${collapseParts.join("\n")}</div></details>`,
+							);
 						}
-					});
+					} else {
+						(b.contents || []).forEach((content, index) => {
+							if (!hasPreviewText(content)) return;
+							const path = `block:${section.id}:${b.id}:content:${index}`;
+							if (["command", "diff", "log", "implementation", "mermaid"].includes(b.type)) {
+								blockParts.push(
+									previewTargetTag("pre", path, content, "preview-edit-code", "textarea", "code"),
+								);
+							} else if (b.type === "image") {
+								blockParts.push(
+									`<div class="preview-placeholder">Image: ${previewTargetTag(
+										"span",
+										path,
+										content,
+										"preview-edit-inline",
+										"textarea",
+										"code",
+									)}</div>`,
+								);
+							} else {
+								blockParts.push(
+									previewTargetTag("div", path, content, "preview-edit-text", "textarea"),
+								);
+							}
+						});
+					}
 
 					if (blockParts.length) {
 						const level = previewBlockLevel(b);
