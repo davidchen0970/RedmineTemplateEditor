@@ -161,6 +161,15 @@ function pushPlainText(o, b, content) {
 	});
 }
 
+function codeContentForTextile(content, codeLang) {
+	const lang = String(codeLang || "").trim();
+	const codeOpen = '<code' + (lang ? ' class="' + lang + '"' : '') + '>';
+	return String(content ?? "").replace(
+		/%\{color:([^}]+)\}([\s\S]*?)%/g,
+		(_, color, body) => `</code>%{color:${color}}${body}%${codeOpen} `,
+	);
+}
+
 function push(o, b) {
 	ensureBlockContents(b);
 	const marker = blockMarker(b);
@@ -178,27 +187,29 @@ function push(o, b) {
 			);
 		}
 		if ((b.description || "").trim()) o.push(b.description);
-		(contents.length ? contents : [""]).forEach((c) =>
+		(contents.length ? contents : [""]).forEach((c) => {
+			const codeLang = b.codeLang || "cpp";
 			o.push(
-				' <pre><code class="' + (b.codeLang || "cpp") + '">',
-				c,
+				' <pre><code class="' + codeLang + '">',
+				codeContentForTextile(c, codeLang),
 				"</code></pre>",
-			),
-		);
+			);
+		});
 		return;
 	}
 	if (title && !["image", "plainText"].includes(b.type)) o.push(marker + title);
 	if (b.type === "plainText") {
 		(contents.length ? contents : [""]).forEach((c) => pushPlainText(o, b, c));
 	} else if (["command", "diff", "log"].includes(b.type))
-		contents.forEach((c) =>
+		contents.forEach((c) => {
+			const codeLang = b.type === "command" ? "shell" : b.type;
+			const content =
+				b.type === "command" ? codeContentForTextile(c, codeLang) : c;
 			o.push(
-				' <pre><code class="' +
-					(b.type === "command" ? "shell" : b.type) +
-					'">',
-				c + "</code></pre>",
-			),
-		);
+				' <pre><code class="' + codeLang + '">',
+				content + "</code></pre>",
+			);
+		});
 	else if (b.type === "mermaid")
 		contents.forEach((c) => o.push(" {{mermaid", c, "}}"));
 	else if (b.type === "image")
