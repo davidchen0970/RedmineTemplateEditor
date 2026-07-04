@@ -246,8 +246,9 @@ export function renderInlineTextile(s) {
 		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(
-			/"([^"]+)":(https?:\/\/[^\s]+)/g,
-			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+			/&quot;([^&\n]*)&quot;:(https?:\/\/[^\s<]+)/g,
+			(_, label, url) =>
+				`<a href="${url}" target="_blank" rel="noopener noreferrer">${label || url}</a>`,
 		);
 	inlineCodes.forEach((html, index) => {
 		t = t.replace(`@@INLINE_CODE_${index}@@`, html);
