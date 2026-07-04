@@ -898,3 +898,12 @@ body[data-theme="dark"] .top-actions.header-collapsible button {
 	.storage-actions input { flex: 1 1 180px; max-width: none; }
 }
 
+.redmine-preview a {
+	color: var(--primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.redmine-preview a:hover {
+	color: var(--primary-2);
+}
