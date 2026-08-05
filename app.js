@@ -16,7 +16,10 @@ import {
 	deleteDocument,
 } from "./js/state.js";
 import { textile } from "./js/textile.js";
-import { createRenderer } from "./js/renderer.js";
+import {
+	createRenderer,
+	setupMobileHeaderCollapse
+} from "./js/renderer.js";
 
 let activeDocumentId = getActiveDocumentId(),
 	state = normalizeState(loadState(activeDocumentId)) || makeState(),
@@ -745,43 +748,6 @@ document.getElementById("source_code").onclick = () => {
 		"https://github.com/davidchen0970/RedmineTemplateEditor",
 		"_blank",
 		"noopener")
-}
-
-function setupMobileHeaderCollapse() {
-	const header = document.getElementById("siteHeader");
-	const toggle = document.getElementById("headerMenuToggle");
-	const actions = document.getElementById("headerActions");
-	if (!header || !toggle || !actions) return;
-
-	const collapseQuery = window.matchMedia("(max-width: 1200px)");
-
-	const setExpanded = (expanded) => {
-		header.classList.toggle("is-collapsed", !expanded);
-		actions.classList.toggle("is-open", expanded);
-		toggle.setAttribute("aria-expanded", String(expanded));
-		toggle.setAttribute(
-			"aria-label",
-			expanded ? "收合頁首選單" : "展開頁首選單",
-		);
-	};
-
-	const syncMode = () => {
-		setExpanded(!collapseQuery.matches);
-	};
-
-	toggle.addEventListener("click", () => {
-		if (!collapseQuery.matches) return;
-		const expanded = toggle.getAttribute("aria-expanded") === "true";
-		setExpanded(!expanded);
-	});
-
-	if (typeof collapseQuery.addEventListener === "function") {
-		collapseQuery.addEventListener("change", syncMode);
-	} else {
-		collapseQuery.addListener(syncMode);
-	}
-
-	syncMode();
 }
 
 setupTheme();
