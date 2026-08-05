@@ -747,9 +747,47 @@ document.getElementById("source_code").onclick = () => {
 		"noopener")
 }
 
+function setupMobileHeaderCollapse() {
+	const header = document.getElementById("siteHeader");
+	const toggle = document.getElementById("headerMenuToggle");
+	const actions = document.getElementById("headerActions");
+	if (!header || !toggle || !actions) return;
+
+	const collapseQuery = window.matchMedia("(max-width: 1200px)");
+
+	const setExpanded = (expanded) => {
+		header.classList.toggle("is-collapsed", !expanded);
+		actions.classList.toggle("is-open", expanded);
+		toggle.setAttribute("aria-expanded", String(expanded));
+		toggle.setAttribute(
+			"aria-label",
+			expanded ? "收合頁首選單" : "展開頁首選單",
+		);
+	};
+
+	const syncMode = () => {
+		setExpanded(!collapseQuery.matches);
+	};
+
+	toggle.addEventListener("click", () => {
+		if (!collapseQuery.matches) return;
+		const expanded = toggle.getAttribute("aria-expanded") === "true";
+		setExpanded(!expanded);
+	});
+
+	if (typeof collapseQuery.addEventListener === "function") {
+		collapseQuery.addEventListener("change", syncMode);
+	} else {
+		collapseQuery.addListener(syncMode);
+	}
+
+	syncMode();
+}
+
 setupTheme();
 setupWorkspaceResize();
 setupDocumentStorageUi();
 setupTextColorContextMenu();
 save();
 renderer.render();
+setupMobileHeaderCollapse();
