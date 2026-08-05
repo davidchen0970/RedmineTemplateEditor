@@ -773,33 +773,47 @@ export function setupMobileHeaderCollapse() {
 	const actions = document.getElementById("headerActions");
 	if (!header || !toggle || !actions) return;
 
-	const collapseQuery = window.matchMedia("(max-width: 1200px)");
+	const closeMenu = () => {
+		header.classList.add("is-collapsed");
+		actions.classList.remove("is-open");
+		toggle.setAttribute("aria-expanded", "false");
+		toggle.setAttribute("aria-label", "展開頁首選單");
+	};
+
+	const openMenu = () => {
+		header.classList.remove("is-collapsed");
+		actions.classList.add("is-open");
+		toggle.setAttribute("aria-expanded", "true");
+		toggle.setAttribute("aria-label", "收合頁首選單");
+	};
 
 	const setExpanded = (expanded) => {
-		header.classList.toggle("is-collapsed", !expanded);
-		actions.classList.toggle("is-open", expanded);
-		toggle.setAttribute("aria-expanded", String(expanded));
-		toggle.setAttribute(
-			"aria-label",
-			expanded ? "收合頁首選單" : "展開頁首選單",
-		);
+		if (expanded) {
+			openMenu();
+		} else {
+			closeMenu();
+		}
 	};
 
-	const syncMode = () => {
-		setExpanded(!collapseQuery.matches);
-	};
-
-	toggle.addEventListener("click", () => {
-		if (!collapseQuery.matches) return;
+	toggle.addEventListener("click", (event) => {
+		event.stopPropagation();
 		const expanded = toggle.getAttribute("aria-expanded") === "true";
 		setExpanded(!expanded);
 	});
 
-	if (typeof collapseQuery.addEventListener === "function") {
-		collapseQuery.addEventListener("change", syncMode);
-	} else {
-		collapseQuery.addListener(syncMode);
-	}
+	actions.addEventListener("click", (event) => {
+		event.stopPropagation();
+	});
 
-	syncMode();
+	document.addEventListener("click", () => {
+		closeMenu();
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") {
+			closeMenu();
+		}
+	});
+
+	closeMenu();
 }

@@ -24,29 +24,33 @@
 					aria-label="展開頁首選單"
 				></button>
 			</div>
+			
 			<div class="top-actions header-collapsible" id="headerActions">
-				<div class="storage-actions" aria-label="localStorage 文件管理">
-					<select id="storageDocSelect" title="讀取 localStorage 文件"></select>
-					<input id="storageDocName" type="text" placeholder="文件名稱" title="目前文件名稱" />
-					<button id="storageRename" type="button">改名</button>
-					<button id="storageNew" type="button">新增儲存</button>
-					<button id="storageDelete" type="button" class="danger">刪除儲存</button>
-				</div>
-				<button id="copy" class="primary">複製 Redmine Textile</button>
-				<button id="txt">下載 .textile</button>
-				<button id="json">匯出 JSON</button>
-				<button id="import">匯入 JSON</button>
-				<button id="patch">匯入 Patch</button>
-				<button id="themeToggle" class="ghost" type="button">深色模式</button>
-				<button id="reset" class="danger">重設</button>
+				<!-- 文件管理 -->
+				<select id="storageDocSelect" title="讀取 localStorage 文件"></select>
+				<input id="storageDocName" type="text" placeholder="文件名稱" title="目前文件名稱" />
+				<button id="storageNew" type="button">新增儲存</button>
+				<button id="storageRename" type="button">改名</button>
+
+				<!-- 主要動作 -->
+				<button id="copy" class="primary" type="button">複製 Redmine Textile</button>
+				<button id="txt" type="button">下載 .textile</button>
+
+				<!-- 匯入 / 匯出 -->
+				<button id="json" type="button">匯出 JSON</button>
+				<button id="import" type="button">匯入 JSON</button>
+				<button id="patch" type="button">匯入 Patch</button>
+
 				<input id="file" type="file" accept=".json,application/json" hidden />
-				<input
-					id="patchFile"
-					type="file"
-					accept=".patch,.diff,text/plain"
-					hidden
-				/>
-				<button id="source_code">source code</button>
+				<input id="patchFile" type="file" accept=".patch,.diff,text/plain" hidden />
+
+				<!-- 外觀與其他 -->
+				<button id="themeToggle" class="ghost" type="button">深色模式</button>
+				<button id="source_code" type="button">source code</button>
+
+				<!-- 危險操作 -->
+				<button id="storageDelete" type="button" class="danger">刪除儲存</button>
+				<button id="reset" class="danger" type="button">重設</button>
 			</div>
 		</header>
 
