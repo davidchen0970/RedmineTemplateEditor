@@ -129,7 +129,7 @@ export function textile(state) {
 			.join("\n")
 			.replace(/\n{3,}/g, "\n\n")
 			.trim() + "\n";
-	return result;
+	return applyPreCodeWorkarounds(result);
 }
 
 function blockLevel(b) {
@@ -556,4 +556,18 @@ export function textileToPreviewHtml(text) {
 	if (inCollapse) flushCollapse();
 	closeFlowBlocks();
 	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
+}
+
+function applyPreCodeWorkarounds(text) {
+	return String(text ?? "")
+		.replace(/\n[\t ]*(<\/code><\/pre>)/gi, "$1")
+		.replace(
+			/(<\/code><\/pre>)([\s\S]*?)(?=<pre><code(?:\s|>))/gi,
+			(match, closeTag, between) => {
+				if (/^[\x20\n\r]*$/.test(between)) {
+					return closeTag;
+				}
+				return match;
+			}
+		);
 }
