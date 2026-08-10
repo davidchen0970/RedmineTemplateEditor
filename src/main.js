@@ -14,9 +14,9 @@ import {
 	renameDocument,
 	createDocument,
 	deleteDocument,
-} from "./js/state.js";
-import { textile } from "./js/textile.js";
-import { createRenderer } from "./js/renderer.js";
+} from "./core/state.js";
+import { textile } from "./textile/generator.js";
+import { createRenderer } from "./ui/renderer.js";
 
 let activeDocumentId = getActiveDocumentId(),
 	state = normalizeState(loadState(activeDocumentId)) || makeState(),

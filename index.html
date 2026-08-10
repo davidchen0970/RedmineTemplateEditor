@@ -4,7 +4,7 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<title>Redmine Textile 輸出器</title>
-		<link rel="stylesheet" href="styles.css" />
+		<link rel="stylesheet" href="assets/styles/main.css" />
 	</head>
 	<body>
 		<header class="app-header" id="siteHeader">
@@ -163,45 +163,8 @@
 		</main>
 
 		<div id="toast" class="toast" role="status" aria-live="polite"></div>
-		<script type="module" src="./app.js"></script>
-		<script>
-			function setupMobileHeaderCollapse() {
-				const header = document.getElementById("siteHeader");
-				const toggle = document.getElementById("headerMenuToggle");
-				const actions = document.getElementById("headerActions");
-				if (!header || !toggle || !actions) return;
-
-				const mobileQuery = window.matchMedia("(max-width: 1199px)");
-
-				const setExpanded = (expanded) => {
-					header.classList.toggle("is-collapsed", !expanded);
-					toggle.setAttribute("aria-expanded", String(expanded));
-					toggle.setAttribute(
-						"aria-label",
-						expanded ? "收合頁首選單" : "展開頁首選單",
-					);
-				};
-
-				const syncMode = () => {
-					setExpanded(!mobileQuery.matches);
-				};
-
-				toggle.addEventListener("click", () => {
-					const expanded = toggle.getAttribute("aria-expanded") === "true";
-					setExpanded(!expanded);
-				});
-
-				if (typeof mobileQuery.addEventListener === "function") {
-					mobileQuery.addEventListener("change", syncMode);
-				} else {
-					mobileQuery.addListener(syncMode);
-				}
-
-				syncMode();
-			}
-
-			setupMobileHeaderCollapse();
-		</script>
+		<script type="module" src="./src/main.js"></script>
+		<script type="module" src="./src/ui/mobile-header.js"></script>
 
 		<script type="module">
 			import mermaid from "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs";

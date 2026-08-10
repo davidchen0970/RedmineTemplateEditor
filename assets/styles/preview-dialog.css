@@ -1,0 +1,142 @@
+.redmine-preview h2 {
+	font-size: 22px;
+	margin: .3em 0 .6em;
+	border-bottom: 1px solid var(--line);
+	padding-bottom: 8px
+}
+
+.redmine-preview h3 {
+	font-size: 17px;
+	margin: 1em 0 .45em
+}
+
+.redmine-preview pre {
+	padding: 12px;
+	border-radius: 12px;
+	background: var(--code);
+	color: var(--code-text);
+	overflow: auto
+}
+
+.redmine-preview code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
+}
+
+.redmine-preview details {
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	margin: .7em 0
+}
+
+.redmine-preview summary {
+	padding: 9px 11px;
+	background: var(--panel-2);
+	cursor: pointer;
+	font-weight: 700
+}
+
+.preview-collapse-body {
+	padding: 10px
+}
+
+.preview-placeholder {
+	border: 1px dashed var(--line);
+	border-radius: 12px;
+	padding: 10px;
+	color: var(--muted);
+	background: var(--panel-2)
+}
+
+.preview-table {
+	width: 100%;
+	border-collapse: collapse
+}
+
+.preview-table th,
+.preview-table td {
+	border: 1px solid var(--line);
+	padding: 6px 9px;
+	text-align: left
+}
+
+.preview-table th {
+	background: var(--panel-2)
+}
+
+
+.redmine-preview table.preview-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 10px 0;
+	font-size: 14px;
+}
+
+.redmine-preview table.preview-table th,
+.redmine-preview table.preview-table td {
+	border: 1px solid var(--line);
+	padding: 6px 10px;
+	text-align: left;
+	vertical-align: top;
+}
+
+.redmine-preview table.preview-table th {
+	background: var(--panel-2);
+	font-weight: 700;
+}
+
+.redmine-preview table.preview-table tr:nth-child(even) td {
+	background: var(--soft);
+}
+
+
+.redmine-preview details .preview-collapse-body pre {
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+
+
+.redmine-preview li > ul,
+.redmine-preview li > ol {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+.add-block-dialog {
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0;
+	width: min(420px, calc(100vw - 32px));
+	background: var(--panel);
+	color: var(--text);
+	box-shadow: 0 18px 50px var(--shadow);
+}
+
+.add-block-dialog::backdrop {
+	background: rgba(15, 23, 42, 0.35);
+}
+
+.add-block-dialog .dialog-head {
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--line);
+	background: var(--panel-head);
+	font-weight: 700;
+}
+
+.add-block-dialog .dialog-body {
+	padding: 14px;
+}
+
+.add-block-dialog .dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 14px;
+	border-top: 1px solid var(--line);
+	background: var(--panel-head);
+}
+
+body[data-theme="dark"] .add-block-dialog::backdrop {
+	background: rgba(2, 6, 23, 0.72);
+}
+
+
