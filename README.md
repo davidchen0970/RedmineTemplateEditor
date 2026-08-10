@@ -209,3 +209,8 @@ localStorage 屬於瀏覽器本機資料，不會自動同步到其他瀏覽器�
 
 ## 專案目標
 
+
+
+## Source structure
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for module responsibilities and dependency direction.

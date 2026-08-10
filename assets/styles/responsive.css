@@ -1,0 +1,91 @@
+@media(max-width:1199px) {
+	.app-header {
+		align-items: stretch;
+		flex-direction: column;
+		gap: 10px;
+		padding: 12px 14px
+	}
+
+	.header-menu-toggle {
+		display: flex !important
+	}
+
+	.top-actions.header-collapsible {
+		display: grid;
+		grid-template-columns: 1fr;
+		width: 100%;
+		gap: 8px;
+		justify-content: stretch
+	}
+
+	.app-header.is-collapsed .header-collapsible {
+		display: none !important
+	}
+
+	.top-actions.header-collapsible button {
+		width: 100%;
+		justify-content: center;
+		text-align: center;
+		margin-top: 0
+	}
+
+	.workspace {
+		grid-template-columns: 1fr;
+		gap: 14px;
+		padding: 14px
+	}
+
+	.workspace-resizer {
+		display: none
+	}
+
+	.output-panel {
+		position: static;
+		max-height: none
+	}
+
+	.output,
+	.redmine-preview {
+		height: 58vh
+	}
+
+	.grid-2 {
+		grid-template-columns: 1fr
+	}
+}
+
+@media(max-width:640px) {
+	.brand {
+		min-width: 0
+	}
+
+	.brand h1 {
+		font-size: 16px
+	}
+
+	.brand p {
+		display: none
+	}
+
+	.panel-title.output-title {
+		align-items: flex-start;
+		flex-direction: column
+	}
+
+	.segmented {
+		width: 100%;
+		justify-content: space-between
+	}
+
+	.segmented button {
+		flex: 1
+	}
+
+	.output,
+	.redmine-preview {
+		width: calc(100% - 24px);
+		margin: 0 12px 12px;
+		padding: 12px
+	}
+}
+
