@@ -191,25 +191,35 @@ export function textileToPreviewHtml(text) {
 		collapseTitle = "detail";
 		collapseLines = [];
 	};
-	for (const rawLine of inputLines) {
+	for (let i = 0; i < inputLines.length; i++) {
+		const rawLine = inputLines[i];
 		const trimmed = rawLine.trim();
+		
 		if (inPre) {
-			const decodedTrimmed = decodePreviewHtml(trimmed).trim();
-			if (
-				(inPreCode && decodedTrimmed === "</code></pre>") ||
-				decodedTrimmed === "</pre>"
-			) {
-				flushPre();
-			} else {
+			const decodedLine = decodePreviewHtml(rawLine);
+			const closePattern = inPreCode
+				? /<\/code>\s*<\/pre>/i
+				: /<\/pre>/i;
+			const closeMatch = closePattern.exec(decodedLine);
+
+			if (!closeMatch) {
 				preLines.push(rawLine);
+				continue;
 			}
-			continue;
-		}
-		if (inMermaid) {
-			if (trimmed === "}}") {
-				closeTable();
-				flushMermaid();
-			} else mermaidLines.push(rawLine);
+
+			const beforeClosing = rawLine.slice(0, closeMatch.index);
+			if (beforeClosing) {
+				preLines.push(beforeClosing);
+			}
+
+			flushPre();
+
+			const afterClosingIndex = closeMatch.index + closeMatch[0].length;
+			const afterClosing = rawLine.slice(afterClosingIndex);
+			if (afterClosing.trim()) {
+				inputLines.splice(i + 1, 0, afterClosing);
+			}
+
 			continue;
 		}
 		if (inCollapse) {
@@ -323,18 +333,4 @@ export function textileToPreviewHtml(text) {
 	if (inCollapse) flushCollapse();
 	closeFlowBlocks();
 	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
-}
-
-function applyPreCodeWorkarounds(text) {
-	return String(text ?? "")
-		.replace(/\n[\t ]*(<\/code><\/pre>)/gi, "$1")
-		.replace(
-			/(<\/code><\/pre>)([\s\S]*?)(?=<pre><code(?:\s|>))/gi,
-			(match, closeTag, between) => {
-				if (/^[\x20\n\r]*$/.test(between)) {
-					return closeTag;
-				}
-				return match;
-			}
-		);
 }
