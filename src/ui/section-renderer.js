@@ -60,9 +60,41 @@ export function createSectionRenderer({
         root.replaceChildren();
         getState().sections.forEach((section) => {
             const element = document.createElement("div");
-            element.className = "section";
+            element.className = "section";       
             const collapsed = isCollapsed(getState(), "sections", section.id, true);
-            element.innerHTML = `<div class="section-head"><label><input type="checkbox" data-se="${section.id}" ${section.enabled?"checked":""}></label><button class="section-title-btn" data-collapse-target="section-body-${section.id}" data-collapse-scope="sections" data-collapse-key="${section.id}" aria-expanded="${String(!collapsed)}">${esc(section.title)}</button><div class="actions"><button class="small" data-up>上移</button><button class="small" data-down>下移</button><button class="small" data-add>新增區塊</button><button class="small" data-duplicate>複製段落</button><button class="small danger" data-delete>刪除</button></div></div><div class="section-body ${collapsed?"collapsed":""}" id="section-body-${section.id}"><label class="field">段落標題 h3.<input data-title value="${esc(section.title)}"></label><label class="field">段落說明<textarea data-description>${esc(section.description||"")}</textarea></label><div data-blocks></div></div>`;
+            const isChecked = section.enabled ? "checked" : "";
+            const isExpandedStr = String(!collapsed);
+            const bodyClass = collapsed ? "collapsed" : "";
+            const title = esc(section.title);
+            const description = esc(section.description || "");
+            const actionsHtml = `
+                <div class="actions">
+                    <button class="small" data-up>上移</button>
+                    <button class="small" data-down>下移</button>
+                    <button class="small" data-add>新增區塊</button>
+                    <button class="small" data-duplicate>複製段落</button>
+                    <button class="small danger" data-delete>刪除</button>
+                </div>
+            `;
+            element.innerHTML = `
+                <div class="section-head">
+                    <label><input type="checkbox" data-se="${section.id}" ${isChecked}></label>
+                    <button class="section-title-btn" 
+                        data-collapse-target="section-body-${section.id}" 
+                        data-collapse-scope="sections" 
+                        data-collapse-key="${section.id}" 
+                        aria-expanded="${isExpandedStr}">${title}</button>
+                    ${actionsHtml}
+                </div>
+                <div class="section-body ${bodyClass}" id="section-body-${section.id}">
+                    <label class="field">段落標題 h3.<input data-title value="${title}"></label>
+                    <label class="field">段落說明<textarea data-description>${description}</textarea></label>
+                    <div data-blocks></div>
+                    <div class="section-footer" style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
             root.appendChild(element);
             const blocks = element.querySelector("[data-blocks]");
             (section.blocks || []).forEach((block, index) => {
@@ -84,11 +116,11 @@ export function createSectionRenderer({
                 section.description = event.target.value;
                 changed();
             };
-            element.querySelector("[data-add]").onclick = () => addBlock(section.id);
-            element.querySelector("[data-up]").onclick = () => move(section.id, -1);
-            element.querySelector("[data-down]").onclick = () => move(section.id, 1);
-            element.querySelector("[data-duplicate]").onclick = () => duplicate(section.id);
-            element.querySelector("[data-delete]").onclick = () => remove(section.id);
+            element.querySelectorAll("[data-add]").forEach(btn => btn.onclick = () => addBlock(section.id));
+            element.querySelectorAll("[data-up]").forEach(btn => btn.onclick = () => move(section.id, -1));
+            element.querySelectorAll("[data-down]").forEach(btn => btn.onclick = () => move(section.id, 1));
+            element.querySelectorAll("[data-duplicate]").forEach(btn => btn.onclick = () => duplicate(section.id));
+            element.querySelectorAll("[data-delete]").forEach(btn => btn.onclick = () => remove(section.id));
         });
     }
     return {
