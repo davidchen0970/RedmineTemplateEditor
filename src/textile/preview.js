@@ -1,5 +1,33 @@
 import { esc } from "../core/state.js";
 
+function normalizePreviewCssColor(value) {
+	return String(value ?? "")
+		.trim()
+		.replace(/[^#(),.%\w\s-]/g, "");
+}
+
+function renderPreviewTextileStyleSpans(t) {
+	let previous;
+	const spanPattern = /%\{(color|background-color|background):([^}]+)\}([^%]+)%/g;
+
+	// Run repeatedly so nested spans produced by text-color-menu.js and
+	// text-background-menu.js can both render in preview.
+	do {
+		previous = t;
+		t = t.replace(spanPattern, (_, prop, rawColor, body) => {
+			const color = normalizePreviewCssColor(rawColor);
+			if (!color) return body;
+
+			if (prop === "color") {
+				return `<span style="color:${color}">${body}</span>`;
+			}
+			return `<span style="background-color:${color}">${body}</span>`;
+		});
+	} while (t !== previous);
+
+	return t;
+}
+
 export function renderInlineTextile(s) {
 	let t = esc(s);
 	const inlineCodes = [];
@@ -8,8 +36,7 @@ export function renderInlineTextile(s) {
 		inlineCodes.push(`<code>${code}</code>`);
 		return key;
 	});
-	t = t
-		.replace(/%\{color:([^}]+)\}([^%]+)%/g, '<span style="color:$1">$2</span>')
+	t = renderPreviewTextileStyleSpans(t)
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(
 			/&quot;([^&\n]*)&quot;:(https?:\/\/[^\s<]+)/g,
