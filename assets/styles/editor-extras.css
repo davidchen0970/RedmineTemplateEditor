@@ -38,11 +38,57 @@
 	color: var(--text);
 	padding: 8px 10px;
 }
+.storage-actions select::picker-icon {
+	rotate: 30deg;
+}
 .storage-actions button { white-space: nowrap; }
 @media(max-width:1199px) {
 	.storage-actions { width: 100%; flex-wrap: wrap; }
 	.storage-actions select,
 	.storage-actions input { flex: 1 1 180px; max-width: none; }
+}
+@supports (appearance: base-select) {
+	.storage-actions select,
+	.storage-actions select::picker(select) {
+		appearance: base-select;
+	}
+
+	.storage-actions select::picker(select) {
+		border-radius: 8px;
+		border: 1px solid var(--line);
+		background: var(--panel);
+		box-shadow: var(--shadow);
+	}
+
+	.storage-actions select:open::picker-icon {
+		rotate: 120deg;
+	}
+
+	.storage-actions select::picker-icon {
+		color: #777777;
+		transition: 0.4s rotate;
+	}
+
+	.storage-actions option {
+		padding: 8px 10px;
+		background: var(--panel);
+		color: var(--text);
+	}
+
+	.storage-actions option:first-of-type {
+		border-radius: 8px 8px 0 0;
+	}
+
+	.storage-actions option:last-of-type {
+		border-radius: 0 0 8px 8px;
+	}
+
+	.storage-actions option:hover,
+	.storage-actions option:focus,
+	.storage-actions option:checked {
+		background: var(--primary);
+		color: #fff;
+	}
 }
 
 .redmine-preview a {
