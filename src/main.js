@@ -10,6 +10,7 @@ import { setupFileActions } from "./app/file-actions.js";
 import { setupDocumentStorage } from "./ui/document-storage.js";
 import { createRenderer } from "./ui/renderer.js";
 import { setupTextColorContextMenu } from "./ui/text-color-menu.js";
+import { setupTextBackgroundContextMenu } from "./ui/text-background-menu.js";
 import { setupTheme } from "./ui/theme.js";
 import { setupWorkspaceResize } from "./ui/workspace-resize.js";
 
@@ -113,5 +114,6 @@ bindEditorActions();
 setupTheme(KEY + ":theme");
 setupWorkspaceResize(KEY + ":workspaceLayout");
 setupTextColorContextMenu();
+setupTextBackgroundContextMenu();
 save();
 renderer.render();
