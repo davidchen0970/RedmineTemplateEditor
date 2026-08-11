@@ -179,3 +179,31 @@ body[data-theme="dark"] .top-actions.header-collapsible button {
 .text-color-menu .b_lightgreen::before {
 	background: #86efac;
 }
+
+.text-code-menu-divider {
+	height: 1px;
+	margin: 4px 2px;
+	background: var(--line);
+}
+
+.text-color-menu .inline_code {
+	position: relative;
+	padding-left: 28px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.text-color-menu .inline_code:hover {
+	background: #e5e7eb;
+	border-color: #9ca3af;
+}
+
+.text-color-menu .inline_code::before {
+	content: "<>";
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 11px;
+	font-weight: 700;
+	color: #6b7280;
+}
