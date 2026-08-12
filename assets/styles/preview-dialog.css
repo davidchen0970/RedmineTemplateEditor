@@ -88,12 +88,10 @@
 	background: var(--soft);
 }
 
-
 .redmine-preview details .preview-collapse-body pre {
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
-
 
 .redmine-preview li > ul,
 .redmine-preview li > ol {
@@ -138,5 +136,3 @@
 body[data-theme="dark"] .add-block-dialog::backdrop {
 	background: rgba(2, 6, 23, 0.72);
 }
-
-

@@ -19,7 +19,7 @@ export function createAddBlockDialog({
 
 			targetSection.blocks.push(newBlock);
 			changed();
-			renderAll();
+			renderAll({ openBlockId: newBlock.id });
 			return;
 		}
 		pendingSectionId = sectionId;
@@ -83,7 +83,7 @@ export function createAddBlockDialog({
 			pendingSectionId = null;
 			dialog.close();
 			changed();
-			renderAll();
+			renderAll({ openBlockId: newBlock.id });
 		};
 		return dialog;
 	}

@@ -18,7 +18,7 @@ export function createRenderer(context) {
 	} = context;
 	let sections;
 	const renderOut = () => renderOutput(getState(), getView());
-	const renderAll = () => render();
+	const renderAll = (options) => render(options);
 	const findSection = (id) => getState().sections.find((section) => section.id === id);
 	const blocks = createBlockRenderer({
 		getState,
@@ -59,11 +59,11 @@ export function createRenderer(context) {
 		}
 	}
 
-	function render() {
+	function render(options = {}) {
 		forms.renderPresets();
 		forms.renderFields();
 		forms.renderToggles();
-		sections.render();
+		sections.render(options);
 		renderOut();
 		renderSaveStatus();
 	}
