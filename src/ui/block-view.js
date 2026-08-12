@@ -62,8 +62,15 @@ export function createBlockElement(block, maxLevel) {
     const blockTitle = esc(block.title || "");
     const blockTypeLabel = label(block.type);
     element.innerHTML = `
-        <div class="actions block-actions">
-            <span class="note">${blockTypeLabel}</span>
+        <div class="actions block-actions block-summary">
+            <button class="block-collapse-toggle" type="button" data-block-toggle aria-expanded="${String(open)}">
+                <span class="block-collapse-icon" aria-hidden="true">▾</span>
+                <span class="block-summary-title" title="${blockTitle || "無標題"}">${blockTitle || "無標題"}</span>
+                <span class="block-summary-meta">
+                    <span class="block-summary-separator" aria-hidden="true">|</span>
+                    <span class="block-type-label">${esc(blockTypeLabel)}</span>
+                </span>
+            </button>
             <span>
                 <button class="small" data-bup>上移</button>
                 <button class="small" data-bdown>下移</button>
@@ -71,6 +78,7 @@ export function createBlockElement(block, maxLevel) {
                 <button class="small danger" data-del>刪除</button>
             </span>
         </div>
+        <div class="block-collapsible" data-block-collapsible>
         <div class="grid-2">
             <label class="field">區塊類型<select data-btype>${blockTypeOptions}</select></label>
             <label class="field block-level-field">所在層級<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${blockLevel}"></label>
@@ -79,7 +87,22 @@ export function createBlockElement(block, maxLevel) {
         ${implementation}
         <div data-contents></div>
         <button class="small primary" data-add-content>新增 content</button>
+        </div>
     `;
+
+    const toggle = element.querySelector("[data-block-toggle]");
+    const collapsible = element.querySelector("[data-block-collapsible]");
+
+    function setOpen(nextOpen) {
+        element.classList.toggle("is-collapsed", !nextOpen);
+        collapsible.hidden = !nextOpen;
+        toggle.setAttribute("aria-expanded", String(nextOpen));
+    }
+
+    setOpen(open);
+    toggle.addEventListener("click", () => {
+        setOpen(toggle.getAttribute("aria-expanded") !== "true");
+    });
 
     return element;
 }
