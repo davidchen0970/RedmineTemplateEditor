@@ -1,4 +1,4 @@
-import { esc, sec, uid } from "../core/state.js";
+import { escapeHtml, createSection, createId } from "../core/state.js";
 import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
 export function createSectionRenderer({
 	getState,
@@ -9,45 +9,45 @@ export function createSectionRenderer({
 	blockRenderer,
 	addBlock
 }) {
-	const find = (id) => getState().sections.find((section) => section.id === id);
+	const find = (sectionId) => getState().sections.find((section) => section.id === sectionId);
 
 	function add(title = "新增段落") {
-		getState().sections.push(sec(prompt("段落標題 h3.", title) || title, true));
+		getState().sections.push(createSection(prompt("段落標題 h3.", title) || title, true));
 		changed();
 		renderAll();
 	}
 
-	function duplicate(id) {
+	function duplicate(sectionId) {
 		const state = getState(),
-			target = find(id);
+			target = find(sectionId);
 		if (!target) return;
 		const copy = JSON.parse(JSON.stringify(target));
-		copy.id = uid();
+		copy.id = createId();
 		copy.title = (copy.title || "段落") + " copy";
 		copy.blocks = (copy.blocks || []).map((item) => ({
 			...item,
-			id: uid()
+			id: createId()
 		}));
-		const index = state.sections.findIndex((item) => item.id === id);
+		const index = state.sections.findIndex((item) => item.id === sectionId);
 		state.sections.splice(index + 1, 0, copy);
 		changed();
 		renderAll();
 	}
 
-	function remove(id) {
+	function remove(sectionId) {
 		const state = getState(),
-			section = find(id);
+			section = find(sectionId);
 		if (section && confirm(`刪除段落「${section.title}」？`)) {
-			state.sections = state.sections.filter((item) => item.id !== id);
-			if (state.ui?.collapsed?.sections) delete state.ui.collapsed.sections[id];
+			state.sections = state.sections.filter((item) => item.id !== sectionId);
+			if (state.ui?.collapsed?.sections) delete state.ui.collapsed.sections[sectionId];
 			changed();
 			renderAll();
 		}
 	}
 
-	function move(id, direction) {
+	function move(sectionId, direction) {
 		const state = getState(),
-			index = state.sections.findIndex((item) => item.id === id),
+			index = state.sections.findIndex((item) => item.id === sectionId),
 			target = index + direction;
 		if (index < 0 || target < 0 || target >= state.sections.length) return;
 		[state.sections[index], state.sections[target]] = [state.sections[target], state.sections[index]];
@@ -65,8 +65,8 @@ export function createSectionRenderer({
 			const isChecked = section.enabled ? "checked" : "";
 			const isExpandedStr = String(!collapsed);
 			const bodyClass = collapsed ? "collapsed" : "";
-			const title = esc(section.title);
-			const description = esc(section.description || "");
+			const title = escapeHtml(section.title);
+			const description = escapeHtml(section.description || "");
 			const actionsHtml = `
 				<div class="actions">
 					<button class="small" data-up>上移</button>

@@ -1,6 +1,6 @@
-function applyColorToTextareaSelection(el, color) {
-	const start = el.selectionStart;
-	const end = el.selectionEnd;
+function applyColorToTextareaSelection(inputElement, color) {
+	const start = inputElement.selectionStart;
+	const end = inputElement.selectionEnd;
 
 	if (
 		typeof start !== "number" ||
@@ -10,7 +10,7 @@ function applyColorToTextareaSelection(el, color) {
 		return false;
 	}
 
-	const value = el.value;
+	const value = inputElement.value;
 	const selected = value.slice(start, end);
 
 	const whole = selected.match(/^%\{color:[^}]+\}([\s\S]*)%$/);
@@ -18,10 +18,10 @@ function applyColorToTextareaSelection(el, color) {
 	if (whole) {
 		const wrapped = buildColored(color, whole[1]);
 
-		el.value = value.slice(0, start) + wrapped + value.slice(end);
-		el.focus();
-		el.setSelectionRange(start, start + wrapped.length);
-		el.dispatchEvent(
+		inputElement.value = value.slice(0, start) + wrapped + value.slice(end);
+		inputElement.focus();
+		inputElement.setSelectionRange(start, start + wrapped.length);
+		inputElement.dispatchEvent(
 			new InputEvent("input", {
 				bubbles: true,
 				inputType: "insertText",
@@ -51,7 +51,7 @@ function applyColorToTextareaSelection(el, color) {
 			replacement += buildColored(range.oldColor, afterInner);
 		}
 
-		el.value =
+		inputElement.value =
 			value.slice(0, range.matchStart) +
 			replacement +
 			value.slice(range.matchEnd);
@@ -61,9 +61,9 @@ function applyColorToTextareaSelection(el, color) {
 			(beforeInner ? buildColored(range.oldColor, beforeInner).length : 0);
 		const newEnd = newStart + buildColored(color, selectedInner).length;
 
-		el.focus();
-		el.setSelectionRange(newStart, newEnd);
-		el.dispatchEvent(
+		inputElement.focus();
+		inputElement.setSelectionRange(newStart, newEnd);
+		inputElement.dispatchEvent(
 			new InputEvent("input", {
 				bubbles: true,
 				inputType: "insertText",
@@ -76,10 +76,10 @@ function applyColorToTextareaSelection(el, color) {
 
 	const wrapped = buildColored(color, selected);
 
-	el.value = value.slice(0, start) + wrapped + value.slice(end);
-	el.focus();
-	el.setSelectionRange(start, start + wrapped.length);
-	el.dispatchEvent(
+	inputElement.value = value.slice(0, start) + wrapped + value.slice(end);
+	inputElement.focus();
+	inputElement.setSelectionRange(start, start + wrapped.length);
+	inputElement.dispatchEvent(
 		new InputEvent("input", {
 			bubbles: true,
 			inputType: "insertText",
@@ -90,9 +90,9 @@ function applyColorToTextareaSelection(el, color) {
 	return true;
 }
 
-function clearColorFromTextareaSelection(el) {
-	const start = el.selectionStart;
-	const end = el.selectionEnd;
+function clearColorFromTextareaSelection(inputElement) {
+	const start = inputElement.selectionStart;
+	const end = inputElement.selectionEnd;
 
 	if (
 		typeof start !== "number" ||
@@ -102,7 +102,7 @@ function clearColorFromTextareaSelection(el) {
 		return false;
 	}
 
-	const value = el.value;
+	const value = inputElement.value;
 	const range = findColorRange(value, start, end);
 
 	if (range && start >= range.contentStart && end <= range.contentEnd) {
@@ -122,7 +122,7 @@ function clearColorFromTextareaSelection(el) {
 			replacement += buildColored(range.oldColor, after);
 		}
 
-		el.value =
+		inputElement.value =
 			value.slice(0, range.matchStart) +
 			replacement +
 			value.slice(range.matchEnd);
@@ -131,9 +131,9 @@ function clearColorFromTextareaSelection(el) {
 			range.matchStart +
 			(before ? buildColored(range.oldColor, before).length : 0);
 
-		el.focus();
-		el.setSelectionRange(newStart, newStart + selected.length);
-		el.dispatchEvent(
+		inputElement.focus();
+		inputElement.setSelectionRange(newStart, newStart + selected.length);
+		inputElement.dispatchEvent(
 			new InputEvent("input", {
 				bubbles: true,
 				inputType: "insertText",
@@ -147,10 +147,10 @@ function clearColorFromTextareaSelection(el) {
 	const selected = value.slice(start, end);
 	const cleaned = selected.replace(/%\{color:[^}]+\}([\s\S]*?)%/g, "$1");
 
-	el.value = value.slice(0, start) + cleaned + value.slice(end);
-	el.focus();
-	el.setSelectionRange(start, start + cleaned.length);
-	el.dispatchEvent(
+	inputElement.value = value.slice(0, start) + cleaned + value.slice(end);
+	inputElement.focus();
+	inputElement.setSelectionRange(start, start + cleaned.length);
+	inputElement.dispatchEvent(
 		new InputEvent("input", {
 			bubbles: true,
 			inputType: "insertText",
@@ -166,23 +166,23 @@ function buildColored(color, text) {
 }
 
 function findColorRange(value, start, end) {
-	const re = /%\{color:([^}]+)\}([\s\S]*?)%/g;
-	let m;
+	const colorPattern = /%\{color:([^}]+)\}([\s\S]*?)%/g;
+	let match;
 
-	while ((m = re.exec(value))) {
-		const matchStart = m.index;
-		const contentStart = matchStart + m[0].indexOf("}") + 1;
-		const contentEnd = matchStart + m[0].length - 1;
-		const matchEnd = matchStart + m[0].length;
+	while ((match = colorPattern.exec(value))) {
+		const matchStart = match.index;
+		const contentStart = matchStart + match[0].indexOf("}") + 1;
+		const contentEnd = matchStart + match[0].length - 1;
+		const matchEnd = matchStart + match[0].length;
 
 		if (start >= matchStart && end <= matchEnd) {
 			return {
-				oldColor: m[1],
+				oldColor: match[1],
 				matchStart,
 				contentStart,
 				contentEnd,
 				matchEnd,
-				inner: m[2],
+				inner: match[2],
 			};
 		}
 	}
@@ -208,22 +208,22 @@ export function setupTextColorContextMenu() {
 		menu.classList.remove("show");
 	};
 
-	const isEditableTextField = (el) =>
-		el &&
-		(el.tagName === "TEXTAREA" ||
-			(el.tagName === "INPUT" &&
-				["text", "search", "url", "email"].includes(el.type)));
+	const isEditableTextField = (element) =>
+		element &&
+		(element.tagName === "TEXTAREA" ||
+			(element.tagName === "INPUT" &&
+				["text", "search", "url", "email"].includes(element.type)));
 
 	document.addEventListener("contextmenu", (event) => {
-		const el = event.target;
+		const targetElement = event.target;
 
-		if (!isEditableTextField(el)) {
+		if (!isEditableTextField(targetElement)) {
 			hideMenu();
 			return;
 		}
 
-		const start = el.selectionStart;
-		const end = el.selectionEnd;
+		const start = targetElement.selectionStart;
+		const end = targetElement.selectionEnd;
 
 		if (
 			typeof start !== "number" ||
@@ -234,7 +234,7 @@ export function setupTextColorContextMenu() {
 			return;
 		}
 
-		targetInput = el;
+		targetInput = targetElement;
 		event.preventDefault();
 
 		menu.style.left = `${event.clientX}px`;

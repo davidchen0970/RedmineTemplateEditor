@@ -19,7 +19,7 @@ export function createRenderer(context) {
 	let sections;
 	const renderOut = () => renderOutput(getState(), getView());
 	const renderAll = (options) => render(options);
-	const findSection = (id) => getState().sections.find((section) => section.id === id);
+	const findSection = (sectionId) => getState().sections.find((section) => section.id === sectionId);
 	const blocks = createBlockRenderer({
 		getState,
 		findSection,

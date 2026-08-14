@@ -1,4 +1,4 @@
-import { uid } from "../core/state.js";
+import { createId } from "../core/state.js";
 import { ensureBlockContents } from "../textile/generator.js";
 import { applyDefaults, createBlockElement, renderContents } from "./block-view.js";
 import { getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
@@ -23,7 +23,7 @@ export function createBlockRenderer({
 		const section = findSection(sectionId);
 		const index = section.blocks.findIndex((item) => item.id === source.id);
 		const copy = JSON.parse(JSON.stringify(source));
-		copy.id = uid();
+		copy.id = createId();
 		if (getState().ui?.collapsed?.blocks) delete getState().ui.collapsed.blocks[copy.id];
 		if (copy.type !== "plainText") copy.title = (copy.title || "") + " copy";
 		section.blocks.splice(index + 1, 0, copy);

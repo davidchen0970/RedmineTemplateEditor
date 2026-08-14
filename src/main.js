@@ -1,5 +1,5 @@
 import {
-  KEY,
+  LEGACY_STORAGE_KEY,
   getActiveDocumentId,
   loadState,
   makeState,
@@ -50,8 +50,8 @@ const renderer = createRenderer({
 });
 
 function bindViewButtons() {
-  [["raw", "raw"], ["previewbtn", "preview"], ["statebtn", "json"]].forEach(([id, nextView]) => {
-    const button = document.getElementById(id);
+  [["raw", "raw"], ["previewbtn", "preview"], ["statebtn", "json"]].forEach(([elementId, nextView]) => {
+    const button = document.getElementById(elementId);
     if (button) button.onclick = () => {
       view = nextView;
       renderer.renderOut();
@@ -89,8 +89,8 @@ function bindEditorActions() {
 renderDocumentPicker = setupDocumentStorage({
   getState: () => state,
   getActiveId: () => activeDocumentId,
-  setDocument: (id, nextState, message) => {
-    activeDocumentId = id;
+  setDocument: (documentId, nextState, message) => {
+    activeDocumentId = documentId;
     state = nextState;
     exportStatus = { json: false, txt: false };
     lastSaveText = message;
@@ -112,8 +112,8 @@ setupFileActions({
 
 bindViewButtons();
 bindEditorActions();
-setupTheme(KEY + ":theme");
-setupWorkspaceResize(KEY + ":workspaceLayout");
+setupTheme(LEGACY_STORAGE_KEY + ":theme");
+setupWorkspaceResize(LEGACY_STORAGE_KEY + ":workspaceLayout");
 setupTextColorContextMenu();
 setupTextBackgroundContextMenu();
 setupTextCodeContextMenu();

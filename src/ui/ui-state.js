@@ -6,8 +6,8 @@ export function ensureUiState(state) {
 	return state.ui;
 }
 
-export function isCollapsed(state, scope, id, defaultValue = false) {
-	return ensureUiState(state).collapsed[scope]?.[id] ?? defaultValue;
+export function isCollapsed(state, scope, sectionId, defaultValue = false) {
+	return ensureUiState(state).collapsed[scope]?.[sectionId] ?? defaultValue;
 }
 
 export function normalizeBlockLevel(value, maxLevel = Infinity) {

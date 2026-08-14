@@ -1,4 +1,4 @@
-import { esc } from "../core/state.js";
+import { escapeHtml } from "../core/state.js";
 
 function normalizePreviewCssColor(value) {
 	return String(value ?? "")
@@ -6,15 +6,15 @@ function normalizePreviewCssColor(value) {
 		.replace(/[^#(),.%\w\s-]/g, "");
 }
 
-function renderPreviewTextileStyleSpans(t) {
+function renderPreviewTextileStyleSpans(text) {
 	let previous;
 	const spanPattern = /%\{(color|background-color|background):([^}]+)\}([^%]+)%/g;
 
 	// Run repeatedly so nested spans produced by text-color-menu.js and
 	// text-background-menu.js can both render in preview.
 	do {
-		previous = t;
-		t = t.replace(spanPattern, (_, prop, rawColor, body) => {
+		previous = text;
+		text = text.replace(spanPattern, (fullMatch, prop, rawColor, body) => {
 			const color = normalizePreviewCssColor(rawColor);
 			if (!color) return body;
 
@@ -23,34 +23,34 @@ function renderPreviewTextileStyleSpans(t) {
 			}
 			return `<span style="background-color:${color}">${body}</span>`;
 		});
-	} while (t !== previous);
+	} while (text !== previous);
 
-	return t;
+	return text;
 }
 
-export function renderInlineTextile(s) {
-	let t = esc(s);
+export function renderInlineTextile(text) {
+	let renderedText = escapeHtml(text);
 	const inlineCodes = [];
-	t = t.replace(/@([^@]+)@/g, (_, code) => {
+	renderedText = renderedText.replace(/@([^@]+)@/g, (fullMatch, code) => {
 		const key = `@@INLINE_CODE_${inlineCodes.length}@@`;
 		inlineCodes.push(`<code>${code}</code>`);
 		return key;
 	});
-	t = renderPreviewTextileStyleSpans(t)
+	renderedText = renderPreviewTextileStyleSpans(renderedText)
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(
 			/&quot;([^&\n]*)&quot;:(https?:\/\/[^\s<]+)/g,
-			(_, label, url) =>
+			(fullMatch, label, url) =>
 				`<a href="${url}" target="_blank" rel="noopener noreferrer">${label || url}</a>`,
 		);
 	inlineCodes.forEach((html, index) => {
-		t = t.replace(`@@INLINE_CODE_${index}@@`, html);
+		renderedText = renderedText.replace(`@@INLINE_CODE_${index}@@`, html);
 	});
-	return t;
+	return renderedText;
 }
 
-function escapePreviewHtml(s) {
-	return esc(s);
+function escapePreviewHtml(text) {
+	return escapeHtml(text);
 }
 
 function parsePreviewTableRow(trimmed) {
@@ -106,7 +106,7 @@ export function textileToPreviewHtml(text) {
 	};
 	const openListTag = (type) => (type === "ol" ? "<ol>" : "<ul>");
 	const syncList = (marker) => {
-		const wanted = marker.split("").map((x) => (x === "*" ? "ul" : "ol"));
+		const wanted = marker.split("").map((markerCharacter) => (markerCharacter === "*" ? "ul" : "ol"));
 		let common = 0;
 		while (
 			common < listStack.length &&
@@ -116,9 +116,9 @@ export function textileToPreviewHtml(text) {
 			common++;
 		}
 		closeList(common);
-		for (let i = common; i < wanted.length; i++) {
-			html.push(openListTag(wanted[i]));
-			listStack.push(wanted[i]);
+		for (let listLevel = common; listLevel < wanted.length; listLevel++) {
+			html.push(openListTag(wanted[listLevel]));
+			listStack.push(wanted[listLevel]);
 			listItemOpen.push(false);
 		}
 	};
@@ -138,8 +138,8 @@ export function textileToPreviewHtml(text) {
 		closeList();
 		closeTable();
 	};
-	const decodePreviewHtml = (s) =>
-		String(s ?? "")
+	const decodePreviewHtml = (text) =>
+		String(text ?? "")
 			.replace(/&lt;/g, "<")
 			.replace(/&gt;/g, ">")
 			.replace(/&quot;/g, '"')
@@ -155,7 +155,7 @@ export function textileToPreviewHtml(text) {
 		closeFlowBlocks();
 		if (isCode) {
 			html.push(
-				`<pre><code${lang ? ` class="${esc(lang)}"` : ""}>${escapePreviewHtml(content)}</code></pre>`,
+				`<pre><code${lang ? ` class="${escapeHtml(lang)}"` : ""}>${escapePreviewHtml(content)}</code></pre>`,
 			);
 		} else {
 			html.push(`<pre>${renderInlineTextile(content)}</pre>`);
@@ -185,7 +185,7 @@ export function textileToPreviewHtml(text) {
 		const preContent = preLines.join("\n");
 		if (inPreCode) {
 			html.push(
-				`<pre><code${preLang ? ` class="${esc(preLang)}"` : ""}>${escapePreviewHtml(preContent)}</code></pre>`,
+				`<pre><code${preLang ? ` class="${escapeHtml(preLang)}"` : ""}>${escapePreviewHtml(preContent)}</code></pre>`,
 			);
 		} else {
 			html.push(`<pre>${renderInlineTextile(preContent)}</pre>`);
@@ -218,8 +218,8 @@ export function textileToPreviewHtml(text) {
 		collapseTitle = "detail";
 		collapseLines = [];
 	};
-	for (let i = 0; i < inputLines.length; i++) {
-		const rawLine = inputLines[i];
+	for (let lineIndex = 0; lineIndex < inputLines.length; lineIndex++) {
+		const rawLine = inputLines[lineIndex];
 		const trimmed = rawLine.trim();
 		
 		if (inPre) {
@@ -244,7 +244,7 @@ export function textileToPreviewHtml(text) {
 			const afterClosingIndex = closeMatch.index + closeMatch[0].length;
 			const afterClosing = rawLine.slice(afterClosingIndex);
 			if (afterClosing.trim()) {
-				inputLines.splice(i + 1, 0, afterClosing);
+				inputLines.splice(lineIndex + 1, 0, afterClosing);
 			}
 
 			continue;
@@ -270,7 +270,7 @@ export function textileToPreviewHtml(text) {
 		if (inlinePreCodeMatch) {
 			closeTable();
 			const [, rawLang, rawContent] = inlinePreCodeMatch;
-			const className = rawLang ? ` class="${esc(rawLang)}"` : "";
+			const className = rawLang ? ` class="${escapeHtml(rawLang)}"` : "";
 			const escapedContent = escapePreviewHtml(rawContent);
 			html.push(`<pre><code${className}>${escapedContent}</code></pre>`);
 			continue;
@@ -347,7 +347,7 @@ export function textileToPreviewHtml(text) {
 		if (imageMatch) {
 			closeTable();
 			html.push(
-				`<img src="${esc(imageMatch[1])}" alt="Redmine image preview">`,
+				`<img src="${escapeHtml(imageMatch[1])}" alt="Redmine image preview">`,
 			);
 			continue;
 		}
