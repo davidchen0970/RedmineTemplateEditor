@@ -11,12 +11,12 @@ import {
     setActiveDocumentId,
 } from "../core/state.js";
 
-function asciiCompare(a, b) {
-    const left = String(a || "");
-    const right = String(b || "");
+function asciiCompare(leftValue, rightValue) {
+    const left = String(leftValue || "");
+    const right = String(rightValue || "");
     const length = Math.min(left.length, right.length);
-    for (let i = 0; i < length; i++) {
-        const diff = left.charCodeAt(i) - right.charCodeAt(i);
+    for (let characterIndex = 0; characterIndex < length; characterIndex++) {
+        const diff = left.charCodeAt(characterIndex) - right.charCodeAt(characterIndex);
         if (diff !== 0) return diff;
     }
     return left.length - right.length;
@@ -36,23 +36,23 @@ export function setupDocumentStorage({
     if (!select || !nameInput || !newBtn || !renameBtn || !deleteBtn) return () => {};
 
     const renderPicker = () => {
-        const docs = ensureDocumentIndex().sort((a, b) => asciiCompare(a.name, b.name));
-        select.replaceChildren(...docs.map((doc) => {
+        const documents = ensureDocumentIndex().sort((leftDocument, rightDocument) => asciiCompare(leftDocument.name, rightDocument.name));
+        select.replaceChildren(...documents.map((documentRecord) => {
             const option = document.createElement("option");
-            option.value = doc.id;
-            option.textContent = doc.name || "未命名";
+            option.value = documentRecord.id;
+            option.textContent = documentRecord.name || "未命名";
             return option;
         }));
         select.value = getActiveId();
         if (document.activeElement !== nameInput) {
-            nameInput.value = docs.find((doc) => doc.id === getActiveId())?.name || "";
+            nameInput.value = documents.find((documentRecord) => documentRecord.id === getActiveId())?.name || "";
         }
     };
 
-    const activate = (id, message) => {
-        setActiveDocumentId(id);
-        const nextState = normalizeState(loadState(id)) || makeState();
-        setDocument(id, nextState, message);
+    const activate = (documentId, message) => {
+        setActiveDocumentId(documentId);
+        const nextState = normalizeState(loadState(documentId)) || makeState();
+        setDocument(documentId, nextState, message);
         renderer.render();
         renderPicker();
         renderer.toast(message);
@@ -67,21 +67,21 @@ export function setupDocumentStorage({
         if (event.key === "Enter") renameBtn.click();
     };
     renameBtn.onclick = () => {
-        const doc = renameDocument(getActiveId(), nameInput.value);
+        const documentRecord = renameDocument(getActiveId(), nameInput.value);
         renderPicker();
-        renderer.toast(doc ? "名稱已更新" : "找不到目前文件");
+        renderer.toast(documentRecord ? "名稱已更新" : "找不到目前文件");
     };
     newBtn.onclick = () => {
         const current = getState();
         const name = prompt("新文件名稱", current.title || "新文件") || "新文件";
         const nextState = makeState(current.noteType || "porting");
         nextState.title = name;
-        const doc = createDocument(name, nextState);
-        activate(doc.id, "已建立 " + doc.name);
+        const documentRecord = createDocument(name, nextState);
+        activate(documentRecord.id, "已建立 " + documentRecord.name);
     };
     deleteBtn.onclick = () => {
-        const doc = getActiveDocument();
-        if (!doc || !confirm(`刪除 localStorage 文件「${doc.name}」？`)) return;
+        const documentRecord = getActiveDocument();
+        if (!documentRecord || !confirm(`刪除 localStorage 文件「${documentRecord.name}」？`)) return;
         if (!deleteDocument(getActiveId())) {
             renderer.toast("至少需要保留一份文件");
             return;

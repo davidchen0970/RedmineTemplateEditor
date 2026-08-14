@@ -1,7 +1,7 @@
-import { envKeys, presets, esc } from "../core/state.js";
+import { environmentFields, presets, escapeHtml } from "../core/state.js";
 
-function bindInput(id, value, setter, changed) {
-	const element = document.getElementById(id);
+function bindInput(elementId, value, setter, changed) {
+	const element = document.getElementById(elementId);
 	if (!element) return;
 	if (document.activeElement !== element) element.value = value || "";
 	element.oninput = () => { setter(element.value); changed(); };
@@ -15,7 +15,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		Object.entries(presets).forEach(([key, preset]) => {
 			const card = document.createElement("div");
 			card.className = `card ${getState().noteType === key ? "active" : ""}`;
-			card.innerHTML = `<strong>${esc(preset.label)}</strong><span>${esc(preset.desc)}</span>`;
+			card.innerHTML = `<strong>${escapeHtml(preset.label)}</strong><span>${escapeHtml(preset.desc)}</span>`;
 			card.onclick = () => onPresetClick(key);
 			root.appendChild(card);
 		});
@@ -30,11 +30,11 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		bindInput("ref", state.relatedRef, (value) => state.relatedRef = value, changed);
 		const root = document.getElementById("env");
 		root.replaceChildren();
-		envKeys.forEach(([key, label]) => {
+		environmentFields.forEach(([key, label]) => {
 			const field = document.createElement("label");
 			field.className = "field";
 			const hint = key === "cpldVersion" ? "<br><label> (ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)</label>" : "";
-			field.innerHTML = `<label>${esc(label)}</label>${hint}<textarea data-env="${key}">${esc(state.environment[key] || "")}</textarea>`;
+			field.innerHTML = `<label>${escapeHtml(label)}</label>${hint}<textarea data-env="${key}">${escapeHtml(state.environment[key] || "")}</textarea>`;
 			root.appendChild(field);
 		});
 		root.querySelectorAll("[data-env]").forEach((element) => {
@@ -48,7 +48,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		getState().sections.forEach((section) => {
 			const item = document.createElement("label");
 			const isChecked = section.enabled ? "checked" : "";
-			const sectionTitle = esc(section.title);
+			const sectionTitle = escapeHtml(section.title);
 			item.className = "note";
 			item.innerHTML = `
 				<input type="checkbox" data-section-toggle="${section.id}" ${isChecked}> 

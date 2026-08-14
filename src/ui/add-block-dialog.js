@@ -1,4 +1,4 @@
-import { block, impl } from "../core/state.js";
+import { block, createImplementationBlock } from "../core/state.js";
 import { BLOCK_TYPES, defaultTitle, label } from "./block-view.js";
 export function createAddBlockDialog({
 	findSection,
@@ -14,7 +14,7 @@ export function createAddBlockDialog({
 			const targetSection = findSection(sectionId);
 			const blockTitle = title || defaultTitle(type);
 			const newBlock = type === "implementation" 
-				? impl(title || "api.c") 
+				? createImplementationBlock(title || "api.c") 
 				: block(type, blockTitle, "");
 
 			targetSection.blocks.push(newBlock);
@@ -76,7 +76,7 @@ export function createAddBlockDialog({
 			const selectedTitle = title.value || defaultTitle(selectedType);
 			const section = findSection(pendingSectionId);
 			const newBlock = selectedType === "implementation" 
-				? impl(selectedTitle || "api.c") 
+				? createImplementationBlock(selectedTitle || "api.c") 
 				: block(selectedType, selectedTitle, "");
 
 			section.blocks.push(newBlock);

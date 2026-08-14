@@ -1,4 +1,4 @@
-import { esc } from "../core/state.js";
+import { escapeHtml } from "../core/state.js";
 export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "diff", "log", "mermaid", "image", "collapse"];
 
 export function label(type) {
@@ -38,10 +38,10 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 	const element = document.createElement("div");
 	element.className = "block";
 	const showWorkChecked = block.showWorkPath !== false ? "checked" : "";
-	const workTitle = esc(block.workPathTitle || "work path");
-	const workPath = esc(block.workPath || "(docker)$ pwd");
-	const codeLang = esc(block.codeLang || "cpp");
-	const description = esc(block.description || "");
+	const workTitle = escapeHtml(block.workPathTitle || "work path");
+	const workPath = escapeHtml(block.workPath || "(docker)$ pwd");
+	const codeLang = escapeHtml(block.codeLang || "cpp");
+	const description = escapeHtml(block.description || "");
 
 	const implementation = block.type === "implementation" ? `
 		<div class="grid-2">
@@ -59,7 +59,7 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 	` : "";
 	const blockTypeOptions = options(block.type);
 	const blockLevel = block.level || 1;
-	const blockTitle = esc(block.title || "");
+	const blockTitle = escapeHtml(block.title || "");
 	const blockTypeLabel = label(block.type);
 	element.innerHTML = `
 		<div class="actions block-actions block-summary">
@@ -68,7 +68,7 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 				<span class="block-summary-title" title="${blockTitle || "無標題"}">${blockTitle || "無標題"}</span>
 				<span class="block-summary-meta">
 					<span class="block-summary-separator" aria-hidden="true">|</span>
-					<span class="block-type-label">${esc(blockTypeLabel)}</span>
+					<span class="block-type-label">${escapeHtml(blockTypeLabel)}</span>
 				</span>
 			</button>
 			<span>
@@ -114,7 +114,7 @@ export function renderContents(element, block) {
 		const item = document.createElement("div");
 		item.className = "block block-content";
 		const contentClass = block.type === "implementation" ? "content-editor-large" : "content-editor";
-		const escapedContent = esc(content);
+		const escapedContent = escapeHtml(content);
 
 		item.innerHTML = `
 			<div class="actions block-actions">

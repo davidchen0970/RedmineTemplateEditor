@@ -1,10 +1,10 @@
 import {
     documentStateKey,
-    impl,
+    createImplementationBlock,
     makeState,
     normalizeState,
     safe,
-    sec
+    createSection
 } from "../core/state.js";
 import {
     textile
@@ -29,7 +29,7 @@ function parsePatch(text) {
         .map((chunk) => {
             const match = chunk.match(/^diff --git\s+a\/(.+?)\s+b\/(.+?)\s*$/m);
             const path = match ? match[2] : "patch.diff";
-            return impl(path.split("/").pop(), path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : ".", "diff", chunk.trim());
+            return createImplementationBlock(path.split("/").pop(), path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : ".", "diff", chunk.trim());
         }).filter((unit) => unit.content);
 }
 
@@ -95,7 +95,7 @@ export function setupFileActions({
             const state = getState();
             let section = state.sections.find((item) => item.title === "實作流程");
             if (!section) {
-                section = sec("實作流程", true);
+                section = createSection("實作流程", true);
                 state.sections.push(section);
             }
             section.enabled = true;

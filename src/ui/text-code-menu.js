@@ -1,6 +1,6 @@
-function applyCodeToTextareaSelection(el) {
-	const start = el.selectionStart;
-	const end = el.selectionEnd;
+function applyCodeToTextareaSelection(inputElement) {
+	const start = inputElement.selectionStart;
+	const end = inputElement.selectionEnd;
 	if (
 		typeof start !== "number" ||
 		typeof end !== "number" ||
@@ -9,7 +9,7 @@ function applyCodeToTextareaSelection(el) {
 		return false;
 	}
 
-	const value = el.value;
+	const value = inputElement.value;
 	const selected = value.slice(start, end);
 
 	// If the full selection is already @code@, keep the content and avoid
@@ -17,7 +17,7 @@ function applyCodeToTextareaSelection(el) {
 	const whole = selected.match(/^@([^@]+)@$/);
 	if (whole) {
 		const wrapped = buildCode(whole[1]);
-		replaceTextareaRange(el, start, end, wrapped, wrapped);
+		replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
 		return true;
 	}
 
@@ -39,7 +39,7 @@ function applyCodeToTextareaSelection(el) {
 			replacement += buildCode(afterInner);
 		}
 
-		el.value =
+		inputElement.value =
 			value.slice(0, range.matchStart) +
 			replacement +
 			value.slice(range.matchEnd);
@@ -48,19 +48,19 @@ function applyCodeToTextareaSelection(el) {
 		const newStart = range.matchStart + preservedBeforeLength;
 		const newEnd = newStart + buildCode(selectedInner).length;
 
-		focusAndSelect(el, newStart, newEnd);
-		dispatchTextInput(el, replacement);
+		focusAndSelect(inputElement, newStart, newEnd);
+		dispatchTextInput(inputElement, replacement);
 		return true;
 	}
 
 	const wrapped = buildCode(selected);
-	replaceTextareaRange(el, start, end, wrapped, wrapped);
+	replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
 	return true;
 }
 
-function clearCodeFromTextareaSelection(el) {
-	const start = el.selectionStart;
-	const end = el.selectionEnd;
+function clearCodeFromTextareaSelection(inputElement) {
+	const start = inputElement.selectionStart;
+	const end = inputElement.selectionEnd;
 	if (
 		typeof start !== "number" ||
 		typeof end !== "number" ||
@@ -69,7 +69,7 @@ function clearCodeFromTextareaSelection(el) {
 		return false;
 	}
 
-	const value = el.value;
+	const value = inputElement.value;
 	const range = findCodeRange(value, start, end);
 
 	// If the selection is inside @code@, remove code only from the selected
@@ -88,7 +88,7 @@ function clearCodeFromTextareaSelection(el) {
 			replacement += buildCode(after);
 		}
 
-		el.value =
+		inputElement.value =
 			value.slice(0, range.matchStart) +
 			replacement +
 			value.slice(range.matchEnd);
@@ -96,15 +96,15 @@ function clearCodeFromTextareaSelection(el) {
 		const preservedBeforeLength = before ? buildCode(before).length : 0;
 		const newStart = range.matchStart + preservedBeforeLength;
 
-		focusAndSelect(el, newStart, newStart + selected.length);
-		dispatchTextInput(el, replacement);
+		focusAndSelect(inputElement, newStart, newStart + selected.length);
+		dispatchTextInput(inputElement, replacement);
 		return true;
 	}
 
 	// Clear complete @code@ spans contained in the selection.
 	const selected = value.slice(start, end);
 	const cleaned = selected.replace(/@([^@]+)@/g, "$1");
-	replaceTextareaRange(el, start, end, cleaned, cleaned);
+	replaceTextareaRange(inputElement, start, end, cleaned, cleaned);
 	return true;
 }
 
@@ -113,40 +113,40 @@ function buildCode(text) {
 }
 
 function findCodeRange(value, start, end) {
-	const re = /@([^@]+)@/g;
-	let m;
-	while ((m = re.exec(value))) {
-		const matchStart = m.index;
+	const codePattern = /@([^@]+)@/g;
+	let match;
+	while ((match = codePattern.exec(value))) {
+		const matchStart = match.index;
 		const contentStart = matchStart + 1;
-		const contentEnd = matchStart + m[0].length - 1;
-		const matchEnd = matchStart + m[0].length;
+		const contentEnd = matchStart + match[0].length - 1;
+		const matchEnd = matchStart + match[0].length;
 		if (start >= matchStart && end <= matchEnd) {
 			return {
 				matchStart,
 				contentStart,
 				contentEnd,
 				matchEnd,
-				inner: m[1],
+				inner: match[1],
 			};
 		}
 	}
 	return null;
 }
 
-function replaceTextareaRange(el, start, end, replacement, inputData) {
-	el.value = el.value.slice(0, start) + replacement + el.value.slice(end);
-	focusAndSelect(el, start, start + replacement.length);
-	dispatchTextInput(el, inputData);
+function replaceTextareaRange(inputElement, start, end, replacement, inputData) {
+	inputElement.value = inputElement.value.slice(0, start) + replacement + inputElement.value.slice(end);
+	focusAndSelect(inputElement, start, start + replacement.length);
+	dispatchTextInput(inputElement, inputData);
 }
 
-function focusAndSelect(el, start, end) {
-	el.focus();
-	el.setSelectionRange(start, end);
+function focusAndSelect(inputElement, start, end) {
+	inputElement.focus();
+	inputElement.setSelectionRange(start, end);
 }
 
-function dispatchTextInput(el, data) {
+function dispatchTextInput(inputElement, data) {
 	if (typeof InputEvent === "function") {
-		el.dispatchEvent(
+		inputElement.dispatchEvent(
 			new InputEvent("input", {
 				bubbles: true,
 				inputType: "insertText",
@@ -155,7 +155,7 @@ function dispatchTextInput(el, data) {
 		);
 		return;
 	}
-	el.dispatchEvent(new Event("input", { bubbles: true }));
+	inputElement.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 export function setupTextCodeContextMenu() {
@@ -163,11 +163,11 @@ export function setupTextCodeContextMenu() {
 	let ownMenu = null;
 	let menu = document.getElementById("textColorMenu");
 
-	const isEditableTextField = (el) =>
-		el &&
-		(el.tagName === "TEXTAREA" ||
-			(el.tagName === "INPUT" &&
-				["text", "search", "url", "email"].includes(el.type)));
+	const isEditableTextField = (element) =>
+		element &&
+		(element.tagName === "TEXTAREA" ||
+			(element.tagName === "INPUT" &&
+				["text", "search", "url", "email"].includes(element.type)));
 
 	const hideOwnMenu = () => {
 		if (ownMenu) {
@@ -213,14 +213,14 @@ export function setupTextCodeContextMenu() {
 	renderCodeButtons();
 
 	document.addEventListener("contextmenu", (event) => {
-		const el = event.target;
-		if (!isEditableTextField(el)) {
+		const targetElement = event.target;
+		if (!isEditableTextField(targetElement)) {
 			hideOwnMenu();
 			return;
 		}
 
-		const start = el.selectionStart;
-		const end = el.selectionEnd;
+		const start = targetElement.selectionStart;
+		const end = targetElement.selectionEnd;
 		if (
 			typeof start !== "number" ||
 			typeof end !== "number" ||
@@ -230,7 +230,7 @@ export function setupTextCodeContextMenu() {
 			return;
 		}
 
-		targetInput = el;
+		targetInput = targetElement;
 		const activeMenu = renderCodeButtons();
 
 		// If text-color-menu.js exists, it owns preventDefault and positioning.
