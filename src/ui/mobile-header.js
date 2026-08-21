@@ -47,6 +47,14 @@ function setupHeaderActionGroups() {
 		});
 	});
 
+	document.addEventListener("pointerdown", (event) => {
+		if (!actions.contains(event.target)) setOpenGroup(null);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") setOpenGroup(null);
+	});
+
 	// Default to the storage group. Desktop CSS hides the toggles and displays
 	// panels as normal header content, so this state only matters below 1750px.
 	setOpenGroup(storageGroup);
