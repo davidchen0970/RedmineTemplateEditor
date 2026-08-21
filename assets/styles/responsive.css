@@ -265,3 +265,10 @@
 		top: 85px;
 	}
 }
+
+@media(prefers-reduced-motion:reduce) {
+	.header-action-group-toggle::after,
+	.header-action-group-panel {
+		transition: none;
+	}
+}
