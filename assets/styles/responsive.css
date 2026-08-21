@@ -98,18 +98,31 @@
 		top: calc(100% + 8px);
 		right: 0;
 		z-index: 20;
-		display: none;
+		display: grid;
+		gap: 8px;
 		width: min(520px, calc(100vw - 28px));
 		padding: 8px;
 		border: 1px solid var(--line);
 		border-radius: 16px;
 		background: var(--panel);
 		box-shadow: var(--shadow);
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transform: translateY(-6px) scale(.98);
+		transform-origin: top right;
+		transition:
+			opacity .18s ease,
+			transform .18s ease,
+			visibility 0s linear .18s;
 	}
 
 	.header-action-group.is-open .header-action-group-panel {
-		display: grid;
-		gap: 8px;
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transform: translateY(0) scale(1);
+		transition-delay: 0s;
 	}
 
 	.header-action-group-panel > button {
