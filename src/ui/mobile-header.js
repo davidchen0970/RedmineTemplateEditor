@@ -47,6 +47,11 @@ function setupHeaderActionGroups() {
 		});
 	});
 
+	actions.addEventListener("click", (event) => {
+		const command = event.target.closest(".header-action-group-panel button");
+		if (command) setOpenGroup(null);
+	});
+
 	document.addEventListener("pointerdown", (event) => {
 		if (!actions.contains(event.target)) setOpenGroup(null);
 	});
