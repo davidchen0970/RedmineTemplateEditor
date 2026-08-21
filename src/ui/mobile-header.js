@@ -57,7 +57,11 @@ function setupHeaderActionGroups() {
 	});
 
 	document.addEventListener("keydown", (event) => {
-		if (event.key === "Escape") setOpenGroup(null);
+		if (event.key !== "Escape") return;
+		const openGroup = groups.find((group) => group.root.classList.contains("is-open"));
+		if (!openGroup) return;
+		setOpenGroup(null);
+		openGroup.toggle.focus();
 	});
 
 	// Keep both groups collapsed until the user explicitly opens one.
