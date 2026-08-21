@@ -55,9 +55,8 @@ function setupHeaderActionGroups() {
 		if (event.key === "Escape") setOpenGroup(null);
 	});
 
-	// Default to the storage group. Desktop CSS hides the toggles and displays
-	// panels as normal header content, so this state only matters below 1750px.
-	setOpenGroup(storageGroup);
+	// Keep both groups collapsed until the user explicitly opens one.
+	setOpenGroup(null);
 	actions.dataset.headerActionGroupsReady = "true";
 }
 
