@@ -1,5 +1,13 @@
 import { escapeHtml } from "../core/state.js";
 
+const pendingPreviewImages = new Map();
+export function registerPreviewImage(name, dataUrl) {
+	if (name && dataUrl) pendingPreviewImages.set(name, dataUrl);
+}
+export function getPreviewImage(name) {
+	return name ? pendingPreviewImages.get(name) : undefined;
+}
+
 function normalizePreviewCssColor(value) {
 	return String(value ?? "")
 		.trim()
@@ -411,8 +419,10 @@ export function textileToPreviewHtml(text) {
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
 			closeTable();
+			const name = imageMatch[1];
+			const dataUrl = getPreviewImage(name);
 			html.push(
-				`<img src="${escapeHtml(imageMatch[1])}" alt="Redmine image preview">`,
+				`<img class="preview-image" src="${escapeHtml(dataUrl || name)}" alt="${escapeHtml(name)}">`,
 			);
 			continue;
 		}
