@@ -53,6 +53,25 @@ function escapePreviewHtml(text) {
 	return escapeHtml(text);
 }
 
+function renderPreviewCodeHtml(content) {
+	const cleaned = String(content)
+		.replace(/<\/code>\s?/gi, "")
+		.replace(/<code\b[^>]*>\s?/gi, "");
+	let text = escapePreviewHtml(cleaned);
+	const pattern = /%\{(color|background-color|background):([^}]+)\}([^%]+)%/g;
+	let previous;
+	do {
+		previous = text;
+		text = text.replace(pattern, (fullMatch, prop, rawColor, body) => {
+			const color = normalizePreviewCssColor(rawColor);
+			if (!color) return body;
+			if (prop === "color") return `<span style="color:${color}">${body}</span>`;
+			return `<span style="background-color:${color}">${body}</span>`;
+		});
+	} while (text !== previous);
+	return text;
+}
+
 function renderDiffPreview(content) {
 	let oldLine = null;
 	let newLine = null;
@@ -195,7 +214,7 @@ export function textileToPreviewHtml(text) {
 			html.push(renderDiffPreview(content));
 		} else if (isCode) {
 			html.push(
-				`<pre><code${lang ? ` class="${escapeHtml(lang)}"` : ""}>${escapePreviewHtml(content)}</code></pre>`,
+				`<pre><code${lang ? ` class="${escapeHtml(lang)}"` : ""}>${renderPreviewCodeHtml(content)}</code></pre>`,
 			);
 		} else {
 			html.push(`<pre>${renderInlineTextile(content)}</pre>`);
@@ -227,7 +246,7 @@ export function textileToPreviewHtml(text) {
 			html.push(renderDiffPreview(preContent));
 		} else if (inPreCode) {
 			html.push(
-				`<pre><code${preLang ? ` class="${escapeHtml(preLang)}"` : ""}>${escapePreviewHtml(preContent)}</code></pre>`,
+				`<pre><code${preLang ? ` class="${escapeHtml(preLang)}"` : ""}>${renderPreviewCodeHtml(preContent)}</code></pre>`,
 			);
 		} else {
 			html.push(`<pre>${renderInlineTextile(preContent)}</pre>`);
@@ -316,7 +335,7 @@ export function textileToPreviewHtml(text) {
 				html.push(renderDiffPreview(rawContent));
 			} else {
 				const className = rawLang ? ` class="${escapeHtml(rawLang)}"` : "";
-				const escapedContent = escapePreviewHtml(rawContent);
+				const escapedContent = renderPreviewCodeHtml(rawContent);
 				html.push(`<pre><code${className}>${escapedContent}</code></pre>`);
 			}
 			continue;
