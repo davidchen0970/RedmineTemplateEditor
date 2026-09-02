@@ -53,6 +53,44 @@ function escapePreviewHtml(text) {
 	return escapeHtml(text);
 }
 
+function renderDiffPreview(content) {
+	let oldLine = null;
+	let newLine = null;
+	const rows = String(content ?? "").split("\n").map((line) => {
+		let type = "context";
+		let oldNumber = "";
+		let newNumber = "";
+		const hunk = line.match(/^@@\s+-(\d+)(?:,\d+)?\s+\+(\d+)(?:,\d+)?\s+@@/);
+
+		if (hunk) {
+			type = "hunk";
+			oldLine = Number(hunk[1]);
+			newLine = Number(hunk[2]);
+		} else if (/^(diff --git|index |--- |\+\+\+ |new file mode |deleted file mode |similarity index |rename (from|to) )/.test(line)) {
+			type = "meta";
+		} else if (line.startsWith("+") && !line.startsWith("+++")) {
+			type = "added";
+			newNumber = newLine ?? "";
+			if (newLine !== null) newLine++;
+		} else if (line.startsWith("-") && !line.startsWith("---")) {
+			type = "removed";
+			oldNumber = oldLine ?? "";
+			if (oldLine !== null) oldLine++;
+		} else if (line.startsWith("\ No newline at end of file")) {
+			type = "notice";
+		} else {
+			oldNumber = oldLine ?? "";
+			newNumber = newLine ?? "";
+			if (oldLine !== null) oldLine++;
+			if (newLine !== null) newLine++;
+		}
+
+		return `<span class="diff-line diff-${type}"><span class="diff-line-number diff-old">${oldNumber}</span><span class="diff-line-number diff-new">${newNumber}</span><span class="diff-code">${escapePreviewHtml(line) || " "}</span></span>`;
+	});
+
+	return `<div class="diff-preview" role="region" aria-label="Diff preview"><div class="diff-toolbar"><strong>DIFF</strong></div><pre><code class="diff">${rows.join("\n")}</code></pre></div>`;
+}
+
 function parsePreviewTableRow(trimmed) {
 	const cells = trimmed
 		.slice(1, -1)
@@ -153,7 +191,9 @@ export function textileToPreviewHtml(text) {
 	};
 	const pushPreBlock = (content, lang = "", isCode = false) => {
 		closeFlowBlocks();
-		if (isCode) {
+		if (isCode && String(lang).toLowerCase() === "diff") {
+			html.push(renderDiffPreview(content));
+		} else if (isCode) {
 			html.push(
 				`<pre><code${lang ? ` class="${escapeHtml(lang)}"` : ""}>${escapePreviewHtml(content)}</code></pre>`,
 			);
@@ -183,7 +223,9 @@ export function textileToPreviewHtml(text) {
 	};
 	const flushPre = () => {
 		const preContent = preLines.join("\n");
-		if (inPreCode) {
+		if (inPreCode && String(preLang).toLowerCase() === "diff") {
+			html.push(renderDiffPreview(preContent));
+		} else if (inPreCode) {
 			html.push(
 				`<pre><code${preLang ? ` class="${escapeHtml(preLang)}"` : ""}>${escapePreviewHtml(preContent)}</code></pre>`,
 			);
@@ -270,9 +312,13 @@ export function textileToPreviewHtml(text) {
 		if (inlinePreCodeMatch) {
 			closeTable();
 			const [, rawLang, rawContent] = inlinePreCodeMatch;
-			const className = rawLang ? ` class="${escapeHtml(rawLang)}"` : "";
-			const escapedContent = escapePreviewHtml(rawContent);
-			html.push(`<pre><code${className}>${escapedContent}</code></pre>`);
+			if (String(rawLang || "").toLowerCase() === "diff") {
+				html.push(renderDiffPreview(rawContent));
+			} else {
+				const className = rawLang ? ` class="${escapeHtml(rawLang)}"` : "";
+				const escapedContent = escapePreviewHtml(rawContent);
+				html.push(`<pre><code${className}>${escapedContent}</code></pre>`);
+			}
 			continue;
 		}
 		const inlinePreMatch = decodedTrimmed.match(/^<pre>([\s\S]*)<\/pre>$/i);
