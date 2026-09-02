@@ -11,14 +11,15 @@ function splitPatch(text) {
         .map((part) => "diff --git " + part)
         .map((chunk) => {
             const match = chunk.match(/^diff --git\s+a\/(.+?)\s+b\/(.+?)\s*$/m);
-            const path = match ? match[2] : "patch.diff";
+            if (!match) return null;
+            const path = match[2];
             return {
                 name: path.split("/").pop(),
                 folder: path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : ".",
                 content: chunk.trim()
             };
         })
-        .filter((item) => item.content);
+        .filter((item) => item && item.content);
 }
 
 function elide(name, max = 22) {
