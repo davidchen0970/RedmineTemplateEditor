@@ -35,6 +35,14 @@
 	font-weight: 700
 }
 
+.redmine-preview img.preview-image {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+	margin: .6em 0;
+	box-shadow: 0 10px 26px rgba(0, 0, 0, .28);
+}
+
 .preview-collapse-body {
 	padding: 10px
 }
