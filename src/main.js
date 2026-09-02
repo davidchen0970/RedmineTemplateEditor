@@ -15,6 +15,7 @@ import { setupTextCodeContextMenu } from "./ui/text-code-menu.js";
 import { setupTextBackgroundContextMenu } from "./ui/text-background-menu.js";
 import { setupTheme } from "./ui/theme.js";
 import { setupWorkspaceResize } from "./ui/workspace-resize.js";
+import { setupImageReplacePicker } from "./ui/image-replace-picker.js";
 
 let activeDocumentId = getActiveDocumentId();
 let state = normalizeState(loadState(activeDocumentId)) || makeState();
@@ -119,5 +120,6 @@ setupTextColorContextMenu();
 setupTextBackgroundContextMenu();
 setupTextCodeContextMenu();
 setupImageDrop();
+setupImageReplacePicker(() => renderer.renderOut());
 save();
 renderer.render();

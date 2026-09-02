@@ -43,6 +43,24 @@
 	box-shadow: 0 10px 26px rgba(0, 0, 0, .28);
 }
 
+.redmine-preview img.preview-image.preview-image-pick {
+	min-width: 96px;
+	height: 18px;
+	object-fit: contain;
+	padding: 0 4px 0 6px;
+	margin: 0 4px 0 0;
+	cursor: pointer;
+	border: 1px dashed var(--line);
+	border-radius: 4px;
+	background: var(--panel-2);
+	box-shadow: none;
+}
+
+.redmine-preview img.preview-image.preview-image-pick:hover {
+	border-color: var(--accent, #4a7bd6);
+	background: var(--panel);
+}
+
 .preview-collapse-body {
 	padding: 10px
 }

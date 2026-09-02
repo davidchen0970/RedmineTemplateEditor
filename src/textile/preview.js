@@ -422,7 +422,7 @@ export function textileToPreviewHtml(text) {
 			const name = imageMatch[1];
 			const dataUrl = getPreviewImage(name);
 			html.push(
-				`<img class="preview-image" src="${escapeHtml(dataUrl || name)}" alt="${escapeHtml(name)}">`,
+				`<img class="preview-image" data-preview-name="${escapeHtml(name)}" src="${escapeHtml(dataUrl || name)}" alt="${escapeHtml(name)}">`,
 			);
 			continue;
 		}
