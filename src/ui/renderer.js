@@ -3,7 +3,7 @@ import { createBlockRenderer } from "./block-renderer.js";
 import { createAddBlockDialog } from "./add-block-dialog.js";
 import { createSectionRenderer } from "./section-renderer.js";
 import { renderOutput } from "./output-view.js";
-import { toast } from "./notifications.js";
+import { toast, showPatchProgress, hidePatchProgress } from "./notifications.js";
 import { addVerificationSnippet as appendVerificationSnippet } from "./verification-snippets.js";
 export { label } from "./block-view.js";
 
@@ -79,6 +79,8 @@ export function createRenderer(context) {
 		renderSaveStatus,
 		renderToggles: forms.renderToggles,
 		toast,
+		showPatchProgress,
+		hidePatchProgress,
 		findSec: sections.find,
 		addSection: sections.add,
 		addVerificationSnippet

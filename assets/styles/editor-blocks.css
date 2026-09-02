@@ -63,3 +63,49 @@
 	transform: translateY(0)
 }
 
+.patch-progress {
+	position: fixed;
+	right: 18px;
+	bottom: 18px;
+	width: 240px;
+	background: var(--panel);
+	color: var(--text);
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	padding: 12px 14px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+	opacity: 0;
+	transform: translateY(10px);
+	transition: .25s;
+	pointer-events: none;
+	z-index: 60
+}
+
+.patch-progress.show {
+	opacity: 1;
+	transform: translateY(0)
+}
+
+.progress-label {
+	font-size: 13px;
+	margin-bottom: 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis
+}
+
+.progress-track {
+	height: 6px;
+	border-radius: 999px;
+	background: var(--panel-2);
+	overflow: hidden
+}
+
+.progress-bar {
+	height: 100%;
+	width: 0;
+	border-radius: 999px;
+	background: var(--primary);
+	transition: width .3s ease
+}
+
