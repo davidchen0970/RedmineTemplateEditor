@@ -178,3 +178,33 @@
 .block-collapsible {
 	padding-top: 8px;
 }
+
+/* Mermaid download PNG button */
+.mermaid-with-toolbar {
+	position: relative;
+}
+
+.mermaid-download {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 5;
+	padding: 6px 12px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: var(--panel);
+	color: var(--text);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: var(--shadow);
+}
+
+.mermaid-download:hover,
+.mermaid-download:focus-visible {
+	border-color: var(--primary);
+	background: var(--field);
+	color: var(--primary);
+}
+

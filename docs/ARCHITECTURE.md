@@ -12,6 +12,7 @@
 - `src/textile/generator.js`: Redmine Textile output generation and code-block normalization.
 - `src/textile/preview.js`: Textile-to-HTML preview parsing and inline rendering.
 - `src/ui/renderer.js`: editor controls and DOM rendering.
+- `src/ui/mermaid-export.js`: Mermaid SVG-to-PNG download/export helpers.
 - `src/ui/mobile-header.js`: responsive header behavior.
 
 ## Design rule
