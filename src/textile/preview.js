@@ -14,22 +14,39 @@ function normalizePreviewCssColor(value) {
 		.replace(/[^#(),.%\w\s-]/g, "");
 }
 
+// Combine arbitrary CSS declarations (e.g. "background:yellow; color:red")
+// into a safe inline style string for preview rendering.
+function normalizePreviewCssStyle(rawStyle) {
+	return String(rawStyle ?? "")
+		.split(";")
+		.map((declaration) => declaration.trim())
+		.filter(Boolean)
+		.map((declaration) => {
+			const separator = declaration.indexOf(":");
+			if (separator < 1) return "";
+			const property = declaration.slice(0, separator).trim();
+			const value = declaration.slice(separator + 1).trim();
+			if (!/^[a-zA-Z-]+$/.test(property)) return "";
+			const safeValue = normalizePreviewCssColor(value);
+			if (!safeValue) return "";
+			return `${property}:${safeValue}`;
+		})
+		.filter(Boolean)
+		.join("; ");
+}
+
 function renderPreviewTextileStyleSpans(text) {
 	let previous;
-	const spanPattern = /%\{(color|background-color|background):([^}]+)\}([^%]+)%/g;
+	const spanPattern = /%\{([^}]+)\}([^%]+)%/g;
 
 	// Run repeatedly so nested spans produced by text-color-menu.js and
 	// text-background-menu.js can both render in preview.
 	do {
 		previous = text;
-		text = text.replace(spanPattern, (fullMatch, prop, rawColor, body) => {
-			const color = normalizePreviewCssColor(rawColor);
-			if (!color) return body;
-
-			if (prop === "color") {
-				return `<span style="color:${color}">${body}</span>`;
-			}
-			return `<span style="background-color:${color}">${body}</span>`;
+		text = text.replace(spanPattern, (fullMatch, rawStyle, body) => {
+			const style = normalizePreviewCssStyle(rawStyle);
+			if (!style) return body;
+			return `<span style="${style}">${body}</span>`;
 		});
 	} while (text !== previous);
 
@@ -66,15 +83,14 @@ function renderPreviewCodeHtml(content) {
 		.replace(/<\/code>\s?/gi, "")
 		.replace(/<code\b[^>]*>\s?/gi, "");
 	let text = escapePreviewHtml(cleaned);
-	const pattern = /%\{(color|background-color|background):([^}]+)\}([^%]+)%/g;
+	const pattern = /%\{([^}]+)\}([^%]+)%/g;
 	let previous;
 	do {
 		previous = text;
-		text = text.replace(pattern, (fullMatch, prop, rawColor, body) => {
-			const color = normalizePreviewCssColor(rawColor);
-			if (!color) return body;
-			if (prop === "color") return `<span style="color:${color}">${body}</span>`;
-			return `<span style="background-color:${color}">${body}</span>`;
+		text = text.replace(pattern, (fullMatch, rawStyle, body) => {
+			const style = normalizePreviewCssStyle(rawStyle);
+			if (!style) return body;
+			return `<span style="${style}">${body}</span>`;
 		});
 	} while (text !== previous);
 	return text;

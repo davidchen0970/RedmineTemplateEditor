@@ -157,8 +157,8 @@ function codeContentForTextile(content, codeLang) {
 	const lang = String(codeLang || "").trim();
 	const codeOpen = '<code' + (lang ? ' class="' + lang + '"' : '') + '>';
 	return String(content ?? "").replace(
-		/%\{color:([^}]+)\}([\s\S]*?)%/g,
-		(fullMatch, color, body) => `</code>%{color:${color}}${body}%${codeOpen} `,
+		/%\{([^}]+)\}([\s\S]*?)%/g,
+		(fullMatch, style, body) => `</code>%{${style}}${body}%${codeOpen} `,
 	);
 }
 
