@@ -1,19 +1,27 @@
 const EXPORT_SCALE = 2;
 const RENDER_WAIT_MS = 600;
 
-export function exportMermaidPng(svgElement, fileName) {
+export function exportMermaidPng(svgElement, fileName, options = {}) {
 	if (!svgElement) return Promise.resolve();
 	return (async () => {
 		try {
 			if (document.fonts && document.fonts.ready) await document.fonts.ready;
 			const prepared = prepareExportSvg(svgElement);
-			const blob = await svgToPngBlob(prepared);
+			const scale = resolveExportScale(svgElement, options);
+			const blob = await svgToPngBlob(prepared, scale);
 			downloadBlob(blob, fileName);
 		} catch (error) {
 			console.error("Mermaid PNG 下載失敗:", error);
 			downloadSvgFallback(preparedSvgText(svgElement), fileName);
 		}
 	})();
+}
+
+function resolveExportScale(svgElement, options) {
+	const size = getSvgSize(svgElement);
+	if (options.width > 0 && size.w > 0) return options.width / size.w;
+	if (options.scale > 0) return options.scale;
+	return EXPORT_SCALE;
 }
 
 function prepareExportSvg(live) {
@@ -209,7 +217,7 @@ function preparedSvgText(svgElement) {
 	}
 }
 
-async function svgToPngBlob(prepared) {
+async function svgToPngBlob(prepared, scale = EXPORT_SCALE) {
 	const { svgText, width, height } = prepared;
 	if (!(width > 0) || !(height > 0)) throw new Error("無法取得 SVG 尺寸");
 
@@ -224,8 +232,8 @@ async function svgToPngBlob(prepared) {
 		});
 
 		const canvas = document.createElement("canvas");
-		canvas.width = Math.max(1, Math.ceil(width * EXPORT_SCALE));
-		canvas.height = Math.max(1, Math.ceil(height * EXPORT_SCALE));
+		canvas.width = Math.max(1, Math.ceil(width * scale));
+		canvas.height = Math.max(1, Math.ceil(height * scale));
 		const ctx = canvas.getContext("2d");
 		if (!ctx) throw new Error("瀏覽器無法建立 Canvas 2D 環境");
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
