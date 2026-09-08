@@ -1,3 +1,11 @@
+import {
+	BACKGROUND_PROP,
+	buildStyleSpan,
+	setStyleProperty,
+	removeStyleProperty,
+	findStyleSpan,
+} from "./inline-styles.js";
+
 function applyBackgroundToTextareaSelection(inputElement, backgroundColor) {
 	const start = inputElement.selectionStart;
 	const end = inputElement.selectionEnd;
@@ -12,53 +20,47 @@ function applyBackgroundToTextareaSelection(inputElement, backgroundColor) {
 	const value = inputElement.value;
 	const selected = value.slice(start, end);
 
-	// If the whole selection is already one background span, replace only its color.
-	const whole = selected.match(/^%\{background(?:-color)?:[^}]+\}([\s\S]*)%$/);
-	if (whole) {
-		const wrapped = buildBackgrounded(backgroundColor, whole[1]);
-		replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
-		return true;
-	}
+	const range = findStyleSpan(value, start, end);
+	if (range) {
+		const whole = start === range.matchStart && end === range.matchEnd;
+		const beforeInner = whole ? "" : value.slice(range.contentStart, start);
+		const selectedInner = whole ? range.inner : value.slice(start, end);
+		const afterInner = whole ? "" : value.slice(end, range.contentEnd);
 
-	// If the selection is inside an existing background span, split the old span so
-	// only the selected substring receives the new background color.
-	const range = findBackgroundRange(value, start, end);
-	if (range && start >= range.contentStart && end <= range.contentEnd) {
-		const beforeInner = value.slice(range.contentStart, start);
-		const selectedInner = value.slice(start, end);
-		const afterInner = value.slice(end, range.contentEnd);
+		const oldStyle = range.styleText;
+		const styledSelected = buildStyleSpan(
+			setStyleProperty(oldStyle, BACKGROUND_PROP, backgroundColor),
+			selectedInner,
+		);
 
-		let replacement = "";
-		if (beforeInner) {
-			replacement += buildBackgrounded(range.oldBackground, beforeInner);
-		}
-		replacement += buildBackgrounded(backgroundColor, selectedInner);
-		if (afterInner) {
-			replacement += buildBackgrounded(range.oldBackground, afterInner);
-		}
+		let reBefore = "";
+		let reAfter = "";
+		if (beforeInner) reBefore = buildStyleSpan(oldStyle, beforeInner);
+		if (afterInner) reAfter = buildStyleSpan(oldStyle, afterInner);
 
-		const newValue =
+		inputElement.value =
 			value.slice(0, range.matchStart) +
-			replacement +
+			reBefore +
+			styledSelected +
+			reAfter +
 			value.slice(range.matchEnd);
 
-		inputElement.value = newValue;
+		const newStart = range.matchStart + reBefore.length;
+		const newEnd = newStart + styledSelected.length;
+		inputElement.focus();
+		inputElement.setSelectionRange(newStart, newEnd);
+		inputElement.dispatchEvent(
+			new InputEvent("input", {
+				bubbles: true,
+				inputType: "insertText",
+				data: reBefore + styledSelected + reAfter,
+			}),
+		);
 
-		const preservedBeforeLength = beforeInner
-			? buildBackgrounded(range.oldBackground, beforeInner).length
-			: 0;
-		const newStart = range.matchStart + preservedBeforeLength;
-		const newEnd = newStart + buildBackgrounded(backgroundColor, selectedInner).length;
-
-		focusAndSelect(inputElement, newStart, newEnd);
-		dispatchTextInput(inputElement, replacement);
 		return true;
 	}
 
-	// Normal case. This intentionally creates a separate Textile span instead of
-	// merging with color spans, so the existing text-color-menu.js can still find,
-	// change, and clear %{color:...} spans safely.
-	const wrapped = buildBackgrounded(backgroundColor, selected);
+	const wrapped = buildStyleSpan(BACKGROUND_PROP + ":" + backgroundColor, selected);
 	replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
 	return true;
 }
@@ -75,84 +77,58 @@ function clearBackgroundFromTextareaSelection(inputElement) {
 	}
 
 	const value = inputElement.value;
-	const range = findBackgroundRange(value, start, end);
+	const range = findStyleSpan(value, start, end);
 
-	// If the selection is inside a background span, remove the background only from
-	// the selected substring and preserve the unselected sides with the old color.
-	if (range && start >= range.contentStart && end <= range.contentEnd) {
-		const before = value.slice(range.contentStart, start);
-		const selected = value.slice(start, end);
-		const after = value.slice(end, range.contentEnd);
+	if (range) {
+		const whole = start === range.matchStart && end === range.matchEnd;
+		const before = whole ? "" : value.slice(range.contentStart, start);
+		const selected = whole ? range.inner : value.slice(start, end);
+		const after = whole ? "" : value.slice(end, range.contentEnd);
 
-		let replacement = "";
-		if (before) {
-			replacement += buildBackgrounded(range.oldBackground, before);
-		}
-		replacement += selected;
-		if (after) {
-			replacement += buildBackgrounded(range.oldBackground, after);
-		}
+		const oldStyle = range.styleText;
+		const clearedSelected = buildStyleSpan(
+			removeStyleProperty(oldStyle, BACKGROUND_PROP),
+			selected,
+		);
+
+		let reBefore = "";
+		let reAfter = "";
+		if (before) reBefore = buildStyleSpan(oldStyle, before);
+		if (after) reAfter = buildStyleSpan(oldStyle, after);
 
 		inputElement.value =
 			value.slice(0, range.matchStart) +
-			replacement +
+			reBefore +
+			clearedSelected +
+			reAfter +
 			value.slice(range.matchEnd);
 
-		const preservedBeforeLength = before
-			? buildBackgrounded(range.oldBackground, before).length
-			: 0;
-		const newStart = range.matchStart + preservedBeforeLength;
+		const newStart = range.matchStart + reBefore.length;
+		inputElement.focus();
+		inputElement.setSelectionRange(newStart, newStart + clearedSelected.length);
+		inputElement.dispatchEvent(
+			new InputEvent("input", {
+				bubbles: true,
+				inputType: "insertText",
+				data: reBefore + clearedSelected + reAfter,
+			}),
+		);
 
-		focusAndSelect(inputElement, newStart, newStart + selected.length);
-		dispatchTextInput(inputElement, replacement);
 		return true;
 	}
 
-	// Clear standalone background spans that are fully contained in the selection.
+	// Not inside a style span: strip any spans fully contained in the selection.
 	const selected = value.slice(start, end);
-	const cleaned = selected.replace(
-		/%\{background(?:-color)?:[^}]+\}([\s\S]*?)%/g,
-		"$1",
-	);
+	const cleaned = selected.replace(/%\{[^}]+\}([\s\S]*?)%/g, "$1");
 	replaceTextareaRange(inputElement, start, end, cleaned, cleaned);
 	return true;
 }
 
-function buildBackgrounded(backgroundColor, text) {
-	return `%{background-color:${backgroundColor}}${text}%`;
-}
-
-function findBackgroundRange(value, start, end) {
-	const backgroundPattern = /%\{background(?:-color)?:([^}]+)\}([\s\S]*?)%/g;
-	let match;
-	while ((match = backgroundPattern.exec(value))) {
-		const matchStart = match.index;
-		const contentStart = matchStart + match[0].indexOf("}") + 1;
-		const contentEnd = matchStart + match[0].length - 1;
-		const matchEnd = matchStart + match[0].length;
-		if (start >= matchStart && end <= matchEnd) {
-			return {
-				oldBackground: match[1],
-				matchStart,
-				contentStart,
-				contentEnd,
-				matchEnd,
-				inner: match[2],
-			};
-		}
-	}
-	return null;
-}
-
 function replaceTextareaRange(inputElement, start, end, replacement, inputData) {
 	inputElement.value = inputElement.value.slice(0, start) + replacement + inputElement.value.slice(end);
-	focusAndSelect(inputElement, start, start + replacement.length);
-	dispatchTextInput(inputElement, inputData);
-}
-
-function focusAndSelect(inputElement, start, end) {
 	inputElement.focus();
-	inputElement.setSelectionRange(start, end);
+	inputElement.setSelectionRange(start, start + replacement.length);
+	dispatchTextInput(inputElement, inputData);
 }
 
 function dispatchTextInput(inputElement, data) {
@@ -234,6 +210,7 @@ export function setupTextBackgroundContextMenu() {
 
 		const start = targetElement.selectionStart;
 		const end = targetElement.selectionEnd;
+
 		if (
 			typeof start !== "number" ||
 			typeof end !== "number" ||
@@ -244,16 +221,11 @@ export function setupTextBackgroundContextMenu() {
 		}
 
 		targetInput = targetElement;
-		const activeMenu = renderBackgroundButtons();
+		event.preventDefault();
 
-		// If text-color-menu.js exists, it owns preventDefault and positioning.
-		// If it does not exist, this module behaves independently.
-		if (activeMenu === ownMenu) {
-			event.preventDefault();
-			ownMenu.style.left = `${event.clientX}px`;
-			ownMenu.style.top = `${event.clientY}px`;
-			ownMenu.classList.add("show");
-		}
+		menu.style.left = `${event.clientX}px`;
+		menu.style.top = `${event.clientY}px`;
+		menu.classList.add("show");
 	});
 
 	document.addEventListener("click", (event) => {
