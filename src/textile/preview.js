@@ -53,6 +53,13 @@ function renderPreviewTextileStyleSpans(text) {
 	return text;
 }
 
+export function renderPreviewImage(name) {
+	const cleanName = String(name ?? "").trim();
+	if (!cleanName) return "";
+	const dataUrl = getPreviewImage(cleanName);
+	return `<img class="preview-image" data-preview-name="${escapeHtml(cleanName)}" src="${escapeHtml(dataUrl || cleanName)}" alt="${escapeHtml(cleanName)}">`;
+}
+
 export function renderInlineTextile(text) {
 	let renderedText = escapeHtml(text);
 	const inlineCodes = [];
@@ -62,6 +69,7 @@ export function renderInlineTextile(text) {
 		return key;
 	});
 	renderedText = renderPreviewTextileStyleSpans(renderedText)
+		.replace(/!\s*([^!]+?)\s*!/g, (fullMatch, name) => renderPreviewImage(name))
 		.replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>")
 		.replace(
 			/&quot;([^&\n]*)&quot;:(https?:\/\/[^\s<]+)/g,
@@ -435,11 +443,7 @@ export function textileToPreviewHtml(text) {
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
 			closeTable();
-			const name = imageMatch[1];
-			const dataUrl = getPreviewImage(name);
-			html.push(
-				`<img class="preview-image" data-preview-name="${escapeHtml(name)}" src="${escapeHtml(dataUrl || name)}" alt="${escapeHtml(name)}">`,
-			);
+			html.push(renderPreviewImage(imageMatch[1]));
 			continue;
 		}
 		if (listStack.length) closeTable();
