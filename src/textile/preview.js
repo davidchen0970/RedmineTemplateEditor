@@ -218,6 +218,9 @@ export function textileToPreviewHtml(text) {
 	let listStack = [],
 		listItemOpen = [],
 		inTable = false,
+		expectTable = false,
+		pendingTableStyle = "",
+		tableListDepth = 0,
 		inPre = false,
 		inPreCode = false,  
 		preLang = "",
@@ -269,10 +272,21 @@ export function textileToPreviewHtml(text) {
 		if (!inTable) return;
 		html.push("</table>");
 		inTable = false;
+		// If the table was nested inside a list (rendered indented under the
+		// surrounding #/## heading), close that list now so following blocks
+		// return to the top level.
+		if (tableListDepth > 0) {
+			closeList();
+			tableListDepth = 0;
+		}
 	};
 	const closeFlowBlocks = () => {
-		closeList();
 		closeTable();
+		closeList();
+	};
+	const resetTableAttr = () => {
+		expectTable = false;
+		pendingTableStyle = "";
 	};
 	const decodePreviewHtml = (text) =>
 		String(text ?? "")
@@ -398,6 +412,7 @@ export function textileToPreviewHtml(text) {
 		}
 		if (!trimmed) {
 			closeFlowBlocks();
+			resetTableAttr();
 			continue;
 		}
 		const decodedTrimmed = decodePreviewHtml(trimmed).trim();
@@ -458,17 +473,30 @@ export function textileToPreviewHtml(text) {
 			mermaidLines = [];
 			continue;
 		}
+		// table{...}. declares attributes for the immediately following table
+		// (Redmine): e.g. table{margin-left:2em}. / table{width:100%}.
+		const tableAttrMatch = trimmed.match(/^table\{([^{}\n]*)\}\.\s*$/);
+		if (tableAttrMatch) {
+			pendingTableStyle = tableAttrMatch[1];
+			expectTable = true;
+			continue;
+		}
 		if (/^\|.+\|$/.test(trimmed)) {
-			closeList();
 			if (!inTable) {
-				html.push('<table class="preview-table">');
+				const tableStyle = normalizePreviewCssStyle(expectTable ? pendingTableStyle : "");
+				resetTableAttr();
+				html.push(`<table class="preview-table"${tableStyle ? ` style="${tableStyle}"` : ""}>`);
 				inTable = true;
+				// Nest the table inside the current list level (indents it
+				// under a preceding #/## heading) instead of closing the list.
+				tableListDepth = listStack.length;
 			}
 			html.push(parsePreviewTableRow(trimmed));
 			continue;
 		}
 		if (/^h2\.\s+/.test(trimmed)) {
 			closeFlowBlocks();
+			resetTableAttr();
 			html.push(
 				`<h2>${renderInlineTextile(trimmed.replace(/^h2\.\s+/, ""))}</h2>`,
 			);
@@ -476,6 +504,7 @@ export function textileToPreviewHtml(text) {
 		}
 		if (/^h3\.\s+/.test(trimmed)) {
 			closeFlowBlocks();
+			resetTableAttr();
 			html.push(
 				`<h3>${renderInlineTextile(trimmed.replace(/^h3\.\s+/, ""))}</h3>`,
 			);
@@ -484,17 +513,20 @@ export function textileToPreviewHtml(text) {
 		const listMatch = trimmed.match(/^([*#]+)\s+(.+)$/);
 		if (listMatch) {
 			closeTable();
+			resetTableAttr();
 			addListItem(listMatch[1], listMatch[2]);
 			continue;
 		}
 		const imageMatch = trimmed.match(/^!(.+)!$/);
 		if (imageMatch) {
 			closeTable();
+			resetTableAttr();
 			html.push(renderPreviewImage(imageMatch[1]));
 			continue;
 		}
 		if (listStack.length) closeTable();
 		else closeFlowBlocks();
+		resetTableAttr();
 		html.push(`<p>${renderInlineTextile(trimmed)}</p>`);
 	}
 	if (inPre) flushPre();
