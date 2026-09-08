@@ -142,20 +142,67 @@ function renderDiffPreview(content) {
 	return `<div class="diff-preview" role="region" aria-label="Diff preview"><div class="diff-toolbar"><strong>DIFF</strong></div><pre><code class="diff">${rows.join("\n")}</code></pre></div>`;
 }
 
+// Parse the optional table-cell control head that precedes the content.
+// Order (fixed by Redmine/Textile): _ highlight, \n colspan, /n rowspan,
+// < = > horizontal align, ^ - ~ vertical align, {css} style, terminated by ".".
+function parseTableCellHead(cell) {
+	const defaults = {
+		highlight: false,
+		colspan: "",
+		rowspan: "",
+		align: "",
+		valign: "",
+		attr: "",
+		body: cell
+	};
+	const match = cell.match(
+		/^(?<highlight>_)?(?:(?<colspan>\\\d+)|(?<rowspan>\/\d+))?(?<align><|=|>)?(?<valign>\^|~|-)?(?<attr>\{[^{}\n]*\})?\.\s*(?<body>[\s\S]*)$/,
+	);
+	if (!match) return defaults;
+	return {
+		highlight: Boolean(match.groups.highlight),
+		colspan: (match.groups.colspan || "").replace("\\", ""),
+		rowspan: (match.groups.rowspan || "").replace("/", ""),
+		align: match.groups.align || "",
+		valign: match.groups.valign || "",
+		attr: match.groups.attr || "",
+		body: match.groups.body || ""
+	};
+}
+
+function parseTableCellStyle(head) {
+	const declarations = [];
+	if (head.attr) {
+		const inner = head.attr.slice(1, -1);
+		if (inner.trim()) declarations.push(inner);
+	}
+	if (head.align === "<") declarations.push("text-align:left");
+	else if (head.align === "=") declarations.push("text-align:center");
+	else if (head.align === ">") declarations.push("text-align:right");
+	if (head.valign === "^") declarations.push("vertical-align:top");
+	else if (head.valign === "-") declarations.push("vertical-align:middle");
+	else if (head.valign === "~") declarations.push("vertical-align:bottom");
+	return normalizePreviewCssStyle(declarations.join(";"));
+}
+
 function parsePreviewTableRow(trimmed) {
 	const cells = trimmed
 		.slice(1, -1)
 		.split("|")
-		.map((cell) => cell.trim());
-	const hasHeaderCell = cells.some((cell) => cell.startsWith("_."));
+		.map((cell) => cell.trim())
+		.map(parseTableCellHead);
+	const hasHeaderCell = cells.some((head) => head.highlight);
 	return (
 		"<tr>" +
 		cells
-			.map((cell) => {
-				const isHeader = cell.startsWith("_.");
-				const clean = isHeader ? cell.replace(/^_\.\s*/, "") : cell;
-				const tag = isHeader || hasHeaderCell ? "th" : "td";
-				return "<" + tag + ">" + renderInlineTextile(clean) + "</" + tag + ">";
+			.map((head) => {
+				const tag = head.highlight || hasHeaderCell ? "th" : "td";
+				const style = parseTableCellStyle(head);
+				const attributes =
+					(style ? ` style="${style}"` : "") +
+					(head.colspan ? ` colspan="${head.colspan}"` : "") +
+					(head.rowspan ? ` rowspan="${head.rowspan}"` : "");
+				return `<${tag}${attributes}>${renderInlineTextile(head.body)}</${tag}>`;
 			})
 			.join("") +
 		"</tr>"
