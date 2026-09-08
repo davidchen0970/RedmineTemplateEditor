@@ -1,39 +1,45 @@
-// 把拖進內容框的圖片：暫存 dataURL 供 preview 顯示，並把 !檔名! 插到該 content 框
 import { registerPreviewImage } from "../textile/preview.js";
 
 export function setupImageDrop() {
 	document.addEventListener("dragover", (event) => {
-		if (imageFileFromEvent(event)) event.preventDefault();
+		if (imageFilesFromEvent(event).length) event.preventDefault();
 	});
 
 	document.addEventListener("drop", (event) => {
-		const file = imageFileFromEvent(event);
-		if (!file) return;
+		const files = imageFilesFromEvent(event);
+		if (!files.length) return;
 		event.preventDefault();
 
 		const target = event.target.closest("[data-cont-index]");
 		if (!target) return;
 
-		const reader = new FileReader();
-		reader.onload = () => {
-			const name = file.name;
-			registerPreviewImage(name, reader.result);
-			// 附加 !檔名!（Redmine 內嵌圖語法）
-			target.value = (target.value != null ? target.value : "") + "!" + name + "!";
-			// 觸發原 input 綁定，把值寫回 state、進而更新 preview
+		Promise.all(
+			files.map(
+				(file) =>
+					new Promise((resolve, reject) => {
+						const reader = new FileReader();
+						reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+						reader.onerror = () => reject(reader.error);
+						reader.readAsDataURL(file);
+					}),
+			),
+		)
+			.then((images) => {
+			const firstImage = target.value != null ? target.value : "";
+			const prefix = firstImage && firstImage.trim() ? "\n" : "";
+			const markers = images.map(({ name, dataUrl }) => {
+				registerPreviewImage(name, dataUrl);
+				return "!" + name + "!";
+			});
+			if (!markers.length) return;
+			target.value = firstImage + prefix + markers.join("\n");
 			target.dispatchEvent(new Event("input", { bubbles: true }));
-		};
-		reader.onerror = () => {};
-		reader.readAsDataURL(file);
+		})
+			.catch(() => {});
 	});
 }
 
-function imageFileFromEvent(event) {
+function imageFilesFromEvent(event) {
 	const files = event.dataTransfer ? Array.from(event.dataTransfer.files) : [];
-	const image = files.find((file) => file && file.type && file.type.startsWith("image/"));
-	if (image) {
-		event.preventDefault();
-		return image;
-	}
-	return null;
+	return files.filter((file) => file && file.type && file.type.startsWith("image/"));
 }
