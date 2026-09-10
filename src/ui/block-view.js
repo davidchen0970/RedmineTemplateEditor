@@ -1,4 +1,5 @@
 import { escapeHtml } from "../core/state.js";
+import { ensureContentLangs } from "../textile/generator.js";
 export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "diff", "log", "mermaid", "image", "collapse"];
 
 export function label(type) {
@@ -24,7 +25,6 @@ export function applyDefaults(block) {
 		block.title ||= "api.c";
 		block.workPath ||= "(docker)$ pwd";
 		block.workPathTitle ||= "work path";
-		block.codeLang ||= "cpp";
 	}
 }
 
@@ -40,21 +40,19 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 	const showWorkChecked = block.showWorkPath !== false ? "checked" : "";
 	const workTitle = escapeHtml(block.workPathTitle || "work path");
 	const workPath = escapeHtml(block.workPath || "(docker)$ pwd");
-	const codeLang = escapeHtml(block.codeLang || "cpp");
 	const description = escapeHtml(block.description || "");
 
 	const implementation = block.type === "implementation" ? `
-		<div class="grid-2">
-			<label class="field">
-				<div class="field-header">
-					<span>輸出 work path</span>
-					<input id="workPath" type="checkbox" data-show-work ${showWorkChecked}>
-				</div>
+		<label class="field">
+			<div class="field-header">
+				<span data-work-label>${workTitle || "work path"}</span>
+				<input id="workPath" type="checkbox" data-show-work ${showWorkChecked}>
+			</div>
+			<div class="work-path-fields" data-work-fields ${block.showWorkPath === false ? "hidden" : ""}>
 				<input data-work-title value="${workTitle}">
 				<textarea data-work>${workPath}</textarea>
-			</label>
-			<label class="field">主要內容語言 class<input data-lang value="${codeLang}"></label>
-		</div>
+			</div>
+		</label>
 		<label class="field">Description<textarea data-desc>${description}</textarea></label>
 	` : "";
 	const blockTypeOptions = options(block.type);
@@ -110,11 +108,15 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 export function renderContents(element, block) {
 	const root = element.querySelector("[data-contents]");
 	root.replaceChildren();
+	const contentLangs = block.type === "implementation" ? ensureContentLangs(block) : [];
 	block.contents.forEach((content, index) => {
 		const item = document.createElement("div");
 		item.className = "block block-content";
 		const contentClass = block.type === "implementation" ? "content-editor-large" : "content-editor";
 		const escapedContent = escapeHtml(content);
+		const langField = block.type === "implementation"
+			? `<label class="field content-lang-field">語言<input data-cont-lang="${index}" value="${escapeHtml(contentLangs[index] || "")}"></label>`
+			: "";
 
 		item.innerHTML = `
 			<div class="actions block-actions">
@@ -124,6 +126,7 @@ export function renderContents(element, block) {
 					<button class="small danger" data-del-content="${index}">刪除</button>
 				</span>
 			</div>
+			${langField}
 			<label class="field">
 				內容
 				<textarea data-cont-index="${index}" class="${contentClass}">${escapedContent}</textarea>
