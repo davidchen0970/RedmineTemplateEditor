@@ -1,5 +1,4 @@
 import { escapeHtml } from "../core/state.js";
-import { ensureContentLangs } from "../textile/generator.js";
 export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "diff", "log", "mermaid", "image", "collapse"];
 
 export function label(type) {
@@ -108,14 +107,14 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 export function renderContents(element, block) {
 	const root = element.querySelector("[data-contents]");
 	root.replaceChildren();
-	const contentLangs = block.type === "implementation" ? ensureContentLangs(block) : [];
+	const isImpl = block.type === "implementation";
 	block.contents.forEach((content, index) => {
 		const item = document.createElement("div");
 		item.className = "block block-content";
-		const contentClass = block.type === "implementation" ? "content-editor-large" : "content-editor";
-		const escapedContent = escapeHtml(content);
-		const langField = block.type === "implementation"
-			? `<label class="field content-lang-field">語言<input data-cont-lang="${index}" value="${escapeHtml(contentLangs[index] || "")}"></label>`
+		const contentClass = isImpl ? "content-editor-large" : "content-editor";
+		const contentText = isImpl ? escapeHtml(content?.content ?? "") : escapeHtml(content);
+		const langField = isImpl
+			? `<label class="field content-lang-field">語言<input data-cont-lang="${index}" value="${escapeHtml(content?.lang || "")}"></label>`
 			: "";
 
 		item.innerHTML = `
@@ -129,7 +128,7 @@ export function renderContents(element, block) {
 			${langField}
 			<label class="field">
 				內容
-				<textarea data-cont-index="${index}" class="${contentClass}">${escapedContent}</textarea>
+				<textarea data-cont-index="${index}" class="${contentClass}">${contentText}</textarea>
 			</label>
 		`;
 		

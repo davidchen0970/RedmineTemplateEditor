@@ -59,8 +59,7 @@ export function createBlockRenderer({
 		};
 		element.querySelector("[data-du]").onclick = () => duplicate(sectionId, block);
 		element.querySelector("[data-add-content]").onclick = () => {
-			block.contents.push("");
-			if (Array.isArray(block.contentLangs)) block.contentLangs.push(DEFAULT_CODE_LANG);
+			block.contents.push(block.type === "implementation" ? { content: "", lang: DEFAULT_CODE_LANG } : "");
 			changed();
 			renderAll();
 		};
@@ -72,29 +71,35 @@ export function createBlockRenderer({
 			changed();
 		};
 		element.querySelectorAll("[data-cont-index]").forEach((input) => input.oninput = (event) => {
-			block.contents[Number(input.dataset.contIndex)] = event.target.value;
+			const index = Number(input.dataset.contIndex);
+			if (block.type === "implementation") block.contents[index] = { ...block.contents[index], content: event.target.value };
+			else block.contents[index] = event.target.value;
 			ensureBlockContents(block);
 			changed();
 		});
 		element.querySelectorAll("[data-del-content]").forEach((button) => button.onclick = () => {
 			const index = Number(button.dataset.delContent);
-			block.contents.length <= 1 ? block.contents[0] = "" : block.contents.splice(index, 1);
-			if (Array.isArray(block.contentLangs)) block.contentLangs.splice(index, 1);
+			if (block.contents.length <= 1) {
+				block.contents[0] = block.type === "implementation" ? { content: "", lang: DEFAULT_CODE_LANG } : "";
+			} else {
+				block.contents.splice(index, 1);
+			}
 			ensureBlockContents(block);
 			changed();
 			renderAll();
 		});
 		element.querySelectorAll("[data-dup-content]").forEach((button) => button.onclick = () => {
 			const index = Number(button.dataset.dupContent);
-			block.contents.splice(index + 1, 0, block.contents[index] || "");
-			if (Array.isArray(block.contentLangs)) block.contentLangs.splice(index + 1, 0, block.contentLangs[index] || DEFAULT_CODE_LANG);
+			const source = block.contents[index];
+			const copy = (typeof source === "object" ? { content: source.content, lang: source.lang } : source);
+			block.contents.splice(index + 1, 0, copy);
 			ensureBlockContents(block);
 			changed();
 			renderAll();
 		});
 		element.querySelectorAll("[data-cont-lang]").forEach((input) => input.oninput = (event) => {
-			if (!Array.isArray(block.contentLangs)) block.contentLangs = [];
-			block.contentLangs[Number(input.dataset.contLang)] = event.target.value;
+			const index = Number(input.dataset.contLang);
+			if (block.type === "implementation") block.contents[index] = { ...block.contents[index], lang: event.target.value };
 			changed();
 		});
 		const map = {

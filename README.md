@@ -72,9 +72,8 @@ Redmine Textile 輸出器是一個以 Redmine 筆記輸出為核心的前端工�
 - 檔案或單元名稱
 - work path
 - work path 標題
-- 主要內容語言
 - Description
-- 多筆內容區塊
+- 多筆內容區塊（每筆各自記錄語言）
 
 ## 即時輸出與預覽
 
