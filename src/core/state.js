@@ -12,6 +12,8 @@ export const environmentFields = [
 
 export const createId = () => Math.random().toString(36).slice(2, 10);
 
+export const DEFAULT_CODE_LANG = "shell";
+
 export const escapeHtml = (stringValue) =>
 	String(stringValue ?? "").replace(
 		/[&<>"]/g,
@@ -38,7 +40,7 @@ export function block(type, title, content = "") {
 export function createImplementationBlock(
 	title = "api.c",
 	workPath = "(docker)$ pwd",
-	lang = "cpp",
+	lang = DEFAULT_CODE_LANG,
 	content = "",
 	description = "",
 	workPathTitle = "work path",
@@ -55,6 +57,7 @@ export function createImplementationBlock(
 		description,
 		content,
 		contents: content ? [content] : [""],
+		contentLangs: [lang],
 		level: 1,
 	};
 }

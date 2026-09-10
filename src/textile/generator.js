@@ -1,10 +1,19 @@
-import { environmentFields, toNonEmptyTrimmedLines } from "../core/state.js";
+import { environmentFields, toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
+
+export function ensureContentLangs(blockData) {
+	const fallback = String(blockData.codeLang || "").trim() || DEFAULT_CODE_LANG;
+	if (!Array.isArray(blockData.contentLangs)) blockData.contentLangs = [];
+	while (blockData.contentLangs.length < blockData.contents.length) blockData.contentLangs.push(fallback);
+	blockData.contentLangs.length = blockData.contents.length;
+	return blockData.contentLangs;
+}
 
 export function ensureBlockContents(blockData) {
 	if (!Array.isArray(blockData.contents))
 		blockData.contents = blockData.content ? [String(blockData.content)] : [""];
 	if (!blockData.contents.length) blockData.contents.push("");
 	blockData.content = blockData.contents.join("\n");
+	ensureContentLangs(blockData);
 }
 
 function addH3(outputLines, title) {
@@ -179,8 +188,9 @@ function push(outputLines, blockData) {
 			);
 		}
 		if ((blockData.description || "").trim()) outputLines.push(blockData.description);
-		(contents.length ? contents : [""]).forEach((contentItem) => {
-			const codeLang = blockData.codeLang || "cpp";
+		(contents.length ? contents : [""]).forEach((contentItem, contentIndex) => {
+			const codeLang = String(blockData.contentLangs?.[contentIndex] || "")
+				.trim() || DEFAULT_CODE_LANG;
 			outputLines.push(
 				' <pre><code class="' + codeLang + '">',
 				codeContentForTextile(contentItem, codeLang),
