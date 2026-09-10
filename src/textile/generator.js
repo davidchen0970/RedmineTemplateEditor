@@ -1,19 +1,27 @@
 import { environmentFields, toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
 
-export function ensureContentLangs(blockData) {
-	const fallback = String(blockData.codeLang || "").trim() || DEFAULT_CODE_LANG;
-	if (!Array.isArray(blockData.contentLangs)) blockData.contentLangs = [];
-	while (blockData.contentLangs.length < blockData.contents.length) blockData.contentLangs.push(fallback);
-	blockData.contentLangs.length = blockData.contents.length;
-	return blockData.contentLangs;
+export function itemContent(contentItem) {
+	return typeof contentItem === "object" ? String(contentItem?.content ?? "") : String(contentItem ?? "");
+}
+
+export function itemLang(contentItem, fallback = DEFAULT_CODE_LANG) {
+	if (typeof contentItem === "object" && String(contentItem?.lang || "").trim())
+		return String(contentItem.lang).trim();
+	return fallback;
 }
 
 export function ensureBlockContents(blockData) {
-	if (!Array.isArray(blockData.contents))
-		blockData.contents = blockData.content ? [String(blockData.content)] : [""];
+	const isImpl = blockData.type === "implementation";
+	if (!Array.isArray(blockData.contents)) blockData.contents = [""];
 	if (!blockData.contents.length) blockData.contents.push("");
-	blockData.content = blockData.contents.join("\n");
-	ensureContentLangs(blockData);
+	blockData.contents = blockData.contents.map((contentItem) =>
+		isImpl
+			? (typeof contentItem === "object"
+				? { content: String(contentItem.content ?? ""), lang: String(contentItem.lang || "").trim() || DEFAULT_CODE_LANG }
+				: { content: String(contentItem ?? ""), lang: DEFAULT_CODE_LANG })
+			: (typeof contentItem === "string" ? contentItem : itemContent(contentItem)),
+	);
+	return blockData.contents;
 }
 
 function addH3(outputLines, title) {
@@ -175,7 +183,7 @@ function push(outputLines, blockData) {
 	ensureBlockContents(blockData);
 	const marker = blockMarker(blockData);
 	const title = (blockData.title || "").trim(),
-		contents = blockData.contents.filter((contentItem) => String(contentItem || "").trim());
+		contents = blockData.contents.filter((contentItem) => itemContent(contentItem).trim());
 	if (blockData.type === "implementation") {
 		outputLines.push(marker + (title || "api.c"));
 		if (blockData.showWorkPath !== false) {
@@ -188,12 +196,11 @@ function push(outputLines, blockData) {
 			);
 		}
 		if ((blockData.description || "").trim()) outputLines.push(blockData.description);
-		(contents.length ? contents : [""]).forEach((contentItem, contentIndex) => {
-			const codeLang = String(blockData.contentLangs?.[contentIndex] || "")
-				.trim() || DEFAULT_CODE_LANG;
+		(contents.length ? contents : [{ content: "", lang: DEFAULT_CODE_LANG }]).forEach((contentItem) => {
+			const codeLang = itemLang(contentItem, DEFAULT_CODE_LANG);
 			outputLines.push(
 				' <pre><code class="' + codeLang + '">',
-				codeContentForTextile(contentItem, codeLang),
+				codeContentForTextile(itemContent(contentItem), codeLang),
 				"</code></pre>",
 			);
 		});

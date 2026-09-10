@@ -31,7 +31,6 @@ export function block(type, title, content = "") {
 		id: createId(),
 		type,
 		title,
-		content,
 		contents: content ? [content] : [""],
 		level: 1,
 	};
@@ -53,11 +52,8 @@ export function createImplementationBlock(
 		workPath,
 		workPathTitle,
 		showWorkPath,
-		codeLang: lang,
 		description,
-		content,
-		contents: content ? [content] : [""],
-		contentLangs: [lang],
+		contents: content ? [{ content, lang }] : [{ content: "", lang }],
 		level: 1,
 	};
 }
@@ -155,9 +151,30 @@ export function normalizeState(state) {
 			const maxLevel = index > 0 ? previousLevel + 1 : 1;
 			const rawLevel = Number(block.level || 1);
 			block.level = Math.max(1, Math.min(Number.isFinite(rawLevel) ? Math.floor(rawLevel) : 1, maxLevel));
+			if (block.type === "implementation") migrateImplementationBlock(block);
 		});
 	});
 	return state;
+}
+
+function migrateImplementationBlock(block) {
+	const fallback = String(block.codeLang || "").trim() || DEFAULT_CODE_LANG;
+	if (Array.isArray(block.contents)) {
+		block.contents = block.contents.map((contentItem) =>
+			typeof contentItem === "object"
+				? { content: String(contentItem.content ?? ""), lang: String(contentItem.lang || "").trim() || fallback }
+				: { content: String(contentItem ?? ""), lang: fallback },
+		);
+	} else {
+		const raw = String(block.content ?? "");
+		block.contents = raw.trim()
+			? [{ content: raw, lang: fallback }]
+			: [{ content: "", lang: fallback }];
+	}
+	if (!block.contents.length) block.contents.push({ content: "", lang: fallback });
+	delete block.content;
+	delete block.contentLangs;
+	delete block.codeLang;
 }
 
 
