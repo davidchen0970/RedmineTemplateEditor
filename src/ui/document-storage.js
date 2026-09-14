@@ -54,6 +54,10 @@ export function setupDocumentStorage({
         const nextState = normalizeState(loadState(documentId)) || makeState();
         setDocument(documentId, nextState, message);
         renderer.render();
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        document.querySelectorAll(".panel-body, textarea, pre, code").forEach((element) => {
+            element.scrollTop = 0;
+        });
         renderPicker();
         renderer.toast(message);
     };
