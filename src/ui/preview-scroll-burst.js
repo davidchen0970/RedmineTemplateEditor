@@ -12,6 +12,11 @@ export function onPreviewReRender(preview) {
 	idleTimer = setTimeout(() => releaseScroll(preview), IDLE_MS);
 }
 
+export function resetPreviewScroll() {
+	if (idleTimer) clearTimeout(idleTimer);
+	scrollStack.length = 0;
+}
+
 function releaseScroll(preview) {
 	if (!preview) return;
 	if (scrollStack.length) preview.scrollTop = scrollStack[0];

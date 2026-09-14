@@ -10,6 +10,7 @@ import {
     renameDocument,
     setActiveDocumentId,
 } from "../core/state.js";
+import { resetPreviewScroll } from "./preview-scroll-burst.js";
 
 function asciiCompare(leftValue, rightValue) {
     const left = String(leftValue || "");
@@ -50,10 +51,14 @@ export function setupDocumentStorage({
     };
 
     const activate = (documentId, message) => {
+        resetPreviewScroll();
         setActiveDocumentId(documentId);
         const nextState = normalizeState(loadState(documentId)) || makeState();
         setDocument(documentId, nextState, message);
         renderer.render();
+        resetPreviewScroll();
+        const preview = document.getElementById("preview");
+        if (preview) preview.scrollTop = 0;
         window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         document.querySelectorAll(".panel-body, textarea, pre, code").forEach((element) => {
             element.scrollTop = 0;
