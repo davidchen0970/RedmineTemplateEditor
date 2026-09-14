@@ -212,18 +212,19 @@
 .add-block-dialog .template-list {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
-	margin-bottom: 6px
+	gap: 12px;
+	margin-bottom: 8px
 }
 .add-block-dialog .template-list .card {
 	flex: 1 1 46%;
-	min-width: 140px;
+	min-width: 150px;
 	cursor: pointer;
 	border: 1px solid var(--line);
 	border-radius: 12px;
-	padding: 10px 12px;
+	padding: 12px 14px;
 	background: var(--panel-2);
-	transition: border-color .2s, background .2s, transform .15s
+	transition: border-color .2s, background .2s, transform .15s,
+		box-shadow .2s
 }
 .add-block-dialog .template-list .card:hover {
 	border-color: var(--primary);
@@ -250,21 +251,26 @@
 .add-block-dialog #ndSections {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 6px;
-	max-height: 230px;
+	gap: 10px;
+	max-height: 250px;
 	overflow: auto;
-	padding: 2px
+	padding: 6px;
+	align-content: start
 }
 .add-block-dialog #ndSections .note {
 	display: flex;
 	align-items: center;
-	gap: 7px;
+	gap: 8px;
 	border: 1px solid var(--line);
 	border-radius: 10px;
-	padding: 7px 9px;
+	padding: 10px 12px;
 	background: var(--panel-2);
 	font-size: 13px;
-	color: var(--text)
+	color: var(--text);
+	transition: transform .15s, border-color .2s, background .2s
+}
+.add-block-dialog #ndSections .note:hover {
+	border-color: var(--primary)
 }
 .add-block-dialog #ndSections .note.nd-unused {
 	opacity: .55
