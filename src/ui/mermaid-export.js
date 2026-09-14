@@ -113,64 +113,222 @@ function labelMetrics(fo) {
 	return { fontSize, fontFamily, fill };
 }
 
-function collectLabelLines(node) {
+// Turn a normalized color ("red", "rgb(220,38,38)", "#abc", "#aabbcc", "rgba(…)")
+// into something a plain SVG renderer reliably paints (#rrggbb or a named keyword),
+// or null when there is no usable color.
+function resolveLabelColor(value) {
+	const v = String(value ?? "").trim().toLowerCase();
+	if (!v || v === "transparent" || v === "currentcolor" || v === "none") return null;
+	if (/^#[0-9a-f]{6}$/.test(v)) return v;
+	if (/^#[0-9a-f]{3}$/.test(v)) return "#" + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+	if (/^[a-z]+$/.test(v)) return v;
+	const m = v.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/);
+	if (m) {
+		const hex = m
+			.slice(1)
+			.map((part) => Math.max(0, Math.min(255, Math.round(Number(part)))).toString(16).padStart(2, "0"))
+			.join("");
+		return "#" + hex;
+	}
+	return null;
+}
+
+// Walk the HTML inside a <foreignObject> label and split it into *lines* (at <br>
+// and block elements), each line being an array of styled *runs* -- contiguous
+// pieces of text carrying the resolved text color and bold flag of the element they
+// came from (e.g. <font color='red'>…</font> / <b>…</b>). This preserves
+// per-word colour instead of flattening the label to the wrapper's computed style.
+function labelRuns(fo) {
+	const BLOCK_TAGS = new Set([
+		"p", "div", "section", "article", "header", "footer", "li", "ul", "ol", "tr", "table",
+	]);
 	const lines = [];
-	let current = "";
-	const push = () => {
-		const s = current.replace(/\s+/g, " ").trim();
-		if (s) lines.push(s);
-		current = "";
-	};
-	const walk = (n) => {
-		if (n.nodeType === Node.TEXT_NODE) {
-			current += n.textContent || "";
-			return;
-		}
-		if (n.nodeType !== Node.ELEMENT_NODE) return;
-		const tag = n.tagName.toLowerCase();
-		if (tag === "br") {
-			push();
-			return;
-		}
-		const block = ["p", "div", "section", "article", "header", "footer", "li", "ul", "ol"].includes(tag);
-		if (block) push();
-		Array.from(n.childNodes).forEach(walk);
-		if (block) push();
-	};
-	Array.from(node.childNodes).forEach(walk);
-	push();
-	return lines.length ? lines : [(node.textContent || "").replace(/\s+/g, " ").trim()].filter(Boolean);
-}
+	let currentLine = [];
+	const pending = { color: null, bold: false };
 
-function wrapLabelLine(line, maxChars) {
-	if (maxChars < 1 || line.length <= maxChars) return [line];
-	const chunks = [];
-	let current = "";
-	line.split(/\s+/).forEach((tok) => {
-		if (!tok) return;
-		let piece = tok;
-		while (piece.length > maxChars) {
-			if (current) {
-				chunks.push(current);
-				current = "";
-			}
-			chunks.push(piece.slice(0, maxChars));
-			piece = piece.slice(maxChars);
-		}
-		const sep = current ? " " : "";
-		if ((current + sep + piece).length <= maxChars) {
-			current = current ? current + sep + piece : piece;
+	const pushRun = (rawText) => {
+		const text = String(rawText ?? "").replace(/\s+/g, " ").trim();
+		if (!text) return;
+		const lastRun = currentLine[currentLine.length - 1];
+		if (lastRun && lastRun.color === pending.color && lastRun.bold === pending.bold) {
+			lastRun.text += (lastRun.text ? " " : "") + text;
 		} else {
-			if (current) chunks.push(current);
-			current = piece;
+			currentLine.push({ text, color: pending.color, bold: pending.bold });
 		}
-	});
-	if (current) chunks.push(current);
-	return chunks;
+	};
+	const pushLine = () => {
+		if (currentLine.length) lines.push(currentLine);
+		currentLine = [];
+	};
+
+	const walk = (node) => {
+		if (node.nodeType === Node.TEXT_NODE) {
+			pushRun(node.textContent);
+			return;
+		}
+		if (node.nodeType !== Node.ELEMENT_NODE) return;
+		const tag = node.tagName.toLowerCase();
+		if (tag === "br") {
+			pushLine();
+			return;
+		}
+		const isBlock = BLOCK_TAGS.has(tag);
+		if (isBlock) pushLine();
+
+		const prevColor = pending.color;
+		const prevBold = pending.bold;
+		if (tag === "b" || tag === "strong") pending.bold = true;
+
+		const cs = node.ownerDocument.defaultView.getComputedStyle(node);
+		if (cs && cs.color && cs.color !== "rgba(0, 0, 0, 0)" && cs.color !== "transparent") {
+			pending.color = cs.color;
+		} else if (tag === "font" && node.getAttribute && node.getAttribute("color")) {
+			pending.color = node.getAttribute("color");
+		}
+
+		Array.from(node.childNodes).forEach(walk);
+
+		pending.color = prevColor;
+		pending.bold = prevBold;
+		if (isBlock) pushLine();
+	};
+
+	Array.from(fo.childNodes).forEach(walk);
+	pushLine();
+	if (!lines.length) {
+		const plain = (fo.textContent || "").replace(/\s+/g, " ").trim();
+		if (plain) lines.push([{ text: plain, color: null, bold: false }]);
+	}
+	return lines;
 }
 
+// Measure a word/line width with the same (loaded) font the label uses. Falls back
+// to a rough 0.58em-per-char estimate if the browser has no canvas measureText.
+let labelMeasureCtx = null;
+function getLabelMeasureCtx(fontSize, fontFamily) {
+	if (!labelMeasureCtx && typeof document !== "undefined") {
+		const canvas = document.createElement("canvas");
+		try {
+			labelMeasureCtx = canvas.getContext("2d") || null;
+		} catch {
+			labelMeasureCtx = null;
+		}
+	}
+	if (labelMeasureCtx) {
+		labelMeasureCtx.font = `${fontSize}px ${fontFamily}`;
+	}
+	return labelMeasureCtx;
+}
+function measureLabelText(text, fontSize, fontFamily) {
+	let width = 0;
+	let ctx = null;
+	try {
+		ctx = getLabelMeasureCtx(fontSize, fontFamily);
+		if (ctx) width = ctx.measureText(text).width;
+	} catch {
+		ctx = null;
+	}
+	if (!ctx || !(width > 0)) width = text.length * fontSize * 0.58;
+	return width;
+}
+
+// Wrap a label *line* (an array of styled runs) into as many sub-lines as fit the
+// given box width, measured in REAL pixels via canvas.measureText -- the same metric
+// the live preview wraps on -- so exported line breaks match the on-screen preview.
+// Words keep the colour/bold of the pop-run they came from.
+function wrapLabelRuns(runs, maxWidth, fontSize, fontFamily) {
+	const words = [];
+	runs.forEach((run) => {
+		String(run.text ?? "")
+			.split(/\s+/)
+			.filter(Boolean)
+			.forEach((word) => words.push({ text: word, color: run.color, bold: run.bold }));
+	});
+
+	const budget = Math.max(16, maxWidth || 120);
+	const outputLines = [];
+	let currentWords = [];
+	const joinedText = () => currentWords.map((word) => word.text).join(" ");
+	const flush = () => {
+		if (!currentWords.length) return;
+		const line = [];
+		currentWords.forEach((word) => {
+			const lastRun = line[line.length - 1];
+			if (lastRun && lastRun.color === word.color && lastRun.bold === word.bold) {
+				lastRun.text += " " + word.text;
+			} else {
+				line.push({ text: word.text, color: word.color, bold: word.bold });
+			}
+		});
+		outputLines.push(line);
+		currentWords = [];
+	};
+
+	// Longest prefix of `text` whose real measured width still fits the budget,
+	// preferring to stop at a `.` / `_` break so dotted identifiers don't get
+	// chopped mid-token.
+	const fitBoundary = (text) => {
+		let best = 1;
+		let lo = 1;
+		let hi = text.length;
+		while (lo <= hi) {
+			const mid = (lo + hi) >> 1;
+			if (measureLabelText(text.slice(0, mid), fontSize, fontFamily) <= budget) {
+				best = mid;
+				lo = mid + 1;
+			} else {
+				hi = mid - 1;
+			}
+		}
+		for (let i = best; i >= 1; i--) {
+			if (text[i - 1] === "." || text[i - 1] === "_") return i;
+		}
+		return Math.max(1, best);
+	};
+
+	words.forEach((word) => {
+		let piece = word.text;
+		for (;;) {
+			const joinedOverflow =
+				currentWords.length &&
+				measureLabelText(joinedText() + " " + piece, fontSize, fontFamily) > budget;
+			if (joinedOverflow) {
+				flush();
+				continue;
+			}
+			// The word fits on the current line, or on its own line.
+			if (measureLabelText(piece, fontSize, fontFamily) <= budget) break;
+			// A lone word wider than the box: slice it at a measured fit boundary
+			// (preferring a dot / underscore) so the exported label never overflows.
+			const boundary = fitBoundary(piece);
+			if (boundary < 1) {
+				flush();
+				currentWords.push({ text: piece[0], color: word.color, bold: word.bold });
+				piece = piece.slice(1);
+				flush();
+				continue;
+			}
+			currentWords.push({
+				text: piece.slice(0, boundary),
+				color: word.color,
+				bold: word.bold,
+			});
+			flush();
+			piece = piece.slice(boundary).trim();
+			if (!piece) break;
+		}
+		if (piece) currentWords.push({ text: piece, color: word.color, bold: word.bold });
+	});
+	flush();
+	return outputLines.length ? outputLines : [[{ text: "", color: null, bold: false }]];
+}
+
+// Replace a <foreignObject> with a <g> of <text> elements -- one <text> per
+// label line, each line containing one <tspan> per styled run. Keeps <br> line
+// breaks, adds width-based auto wrapping for long labels, and preserves per-word
+// text colour and bold (foreignObject also taints the canvas, so it must be removed).
 function replaceForeignObjectWithText(fo, metrics) {
-	const baseLines = collectLabelLines(fo);
+	const baseLines = labelRuns(fo);
 	if (!baseLines.length) {
 		fo.remove();
 		return;
@@ -178,35 +336,48 @@ function replaceForeignObjectWithText(fo, metrics) {
 	const fontSpec = metrics || labelMetrics(fo);
 	const fontSize = fontSpec.fontSize || 16;
 	const fontFamily = fontSpec.fontFamily || "sans-serif";
-	const fill = fontSpec.fill || "#333333";
+	const defaultFill = fontSpec.fill || "#333333";
 
 	const x = parseFloat(fo.getAttribute("x") || "0") || 0;
 	const y = parseFloat(fo.getAttribute("y") || "0") || 0;
 	const w = parseFloat(fo.getAttribute("width") || "0") || 0;
 	const h = parseFloat(fo.getAttribute("height") || "0") || 0;
 
-	const lineHeight = Math.round(fontSize * 1.25);
-	const maxChars = Math.max(4, Math.floor((w || 120) / (fontSize * 0.58)));
-	const lines = baseLines.flatMap((line) => wrapLabelLine(line, maxChars));
+	const wrapWidth = Math.max(16, w || 120);
+	const lineHeight = Math.round(fontSize * 1.3);
+	const anchorX = x + (w ? w / 2 : 0);
 
-	const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-	t.setAttribute("x", String(x + (w ? w / 2 : 0)));
-	t.setAttribute("y", String(y + (h ? h / 2 : 0) - ((lines.length - 1) * lineHeight) / 2));
-	t.setAttribute("text-anchor", "middle");
-	t.setAttribute("dominant-baseline", "middle");
-	t.setAttribute("fill", fill);
-	t.setAttribute(
-		"style",
-		`font-family:${fontFamily};font-size:${fontSize}px;font-weight:400;fill:${fill};stroke:none;`,
+	const lines = [];
+	baseLines.forEach((runs) =>
+		lines.push(...wrapLabelRuns(runs, wrapWidth, fontSize, fontFamily)),
 	);
-	lines.forEach((part, idx) => {
-		const tsp = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-		tsp.setAttribute("x", t.getAttribute("x"));
-		if (idx > 0) tsp.setAttribute("dy", String(lineHeight));
-		tsp.textContent = part;
-		t.appendChild(tsp);
+
+	const blockHeight = lines.length * lineHeight;
+	const centerY = (h ? y + h / 2 : y) - blockHeight / 2 + lineHeight / 2;
+
+	const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	lines.forEach((runs, li) => {
+		const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		text.setAttribute("x", String(Math.round(anchorX * 100) / 100));
+		text.setAttribute("y", String(Math.round((centerY + li * lineHeight) * 100) / 100));
+		text.setAttribute("text-anchor", "middle");
+		text.setAttribute("dominant-baseline", "middle");
+		text.setAttribute(
+			"style",
+			`font-family:${fontFamily};font-size:${fontSize}px;font-weight:400;fill:${defaultFill};stroke:none;`,
+		);
+		runs.forEach((run, ri) => {
+			const tsp = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+			tsp.setAttribute("fill", resolveLabelColor(run.color) || defaultFill);
+			if (run.bold) tsp.setAttribute("font-weight", "700");
+			// Separate differently-styled runs with a single space so adjacent
+			// coloured fragments don't render as one concatenated word.
+			tsp.textContent = (ri > 0 ? " " : "") + run.text;
+			text.appendChild(tsp);
+		});
+		group.appendChild(text);
 	});
-	fo.replaceWith(t);
+	fo.replaceWith(group);
 }
 
 function preparedSvgText(svgElement) {
