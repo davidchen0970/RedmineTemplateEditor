@@ -62,10 +62,6 @@ function bindViewButtons() {
 }
 
 function bindEditorActions() {
-  document.getElementById("addSection").onclick = () => renderer.addSection();
-  document.querySelectorAll("[data-snip]").forEach((button) => {
-    button.onclick = () => renderer.addVerificationSnippet(button.dataset.snip);
-  });
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-collapse-target]");
     if (!button) return;
