@@ -210,6 +210,12 @@ localStorage 屬於瀏覽器本機資料，不會自動同步到其他瀏覽器�
 
 
 
+## 開發（測試）
+
+- 純邏輯（`src/core/state.js`、`src/textile/*`）用 Node 內建測試：`npm test`（即 `node --test`）。
+- 測試檔在 `test/`，目前涵蓋 state、generator、preview 與 preview-inline。
+- 修改 parser 前先跑 `npm test`，全綠後再發。
+
 ## Source structure
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for module responsibilities and dependency direction.
