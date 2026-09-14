@@ -37,6 +37,114 @@
 	font-weight: 700
 }
 
+.env-palette {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 4px
+}
+
+.env-chip,
+.env-add {
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--panel-2);
+	color: var(--text);
+	padding: 7px 12px;
+	cursor: pointer;
+	font-size: 12px
+}
+
+.env-chip.active {
+	border-color: var(--primary);
+	background: var(--soft);
+	color: var(--primary)
+}
+
+.env-add {
+	border-style: dashed;
+	color: var(--muted)
+}
+
+.env-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+	align-items: start
+}
+
+.env-grid .section {
+	margin: 0
+}
+
+/* ---------- env 控件過渡動畫 ---------- */
+.env-chip,
+.env-add {
+	transition:
+		transform var(--mo-fast) var(--mo-ease),
+		background var(--mo) var(--mo-easeio),
+		border-color var(--mo) var(--mo-easeio),
+		box-shadow var(--mo) var(--mo-easeio)
+}
+
+.env-chip:active,
+.env-add:active {
+	transform: scale(0.9)
+}
+
+.env-chip.active {
+	transform: scale(1.06)
+	transition:
+		transform var(--mo-fast) var(--mo-ease),
+		background var(--mo) var(--mo-easeio),
+		border-color var(--mo) var(--mo-easeio)
+}
+
+.env-hint:not([hidden]) {
+	animation: mo-rise var(--mo) var(--mo-ease) both
+}
+
+@keyframes env-in {
+	from { opacity: 0; transform: translateY(12px) scale(0.94); }
+	to { opacity: 1; transform: none; }
+}
+
+.env-in {
+	animation: env-in var(--mo-slow) var(--mo-ease) both
+}
+
+.env-gone {
+	opacity: 0 !important
+}
+
+.env-hint {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 10px;
+	font-size: 12px;
+	color: var(--muted)
+}
+
+.env-hint[hidden] {
+	display: none
+}
+
+.env-hint code {
+	flex: 1;
+	padding: 6px 8px;
+	background: var(--code);
+	color: var(--code-text);
+	border-radius: 9px;
+	word-break: break-all
+}
+
+.env-hint .small {
+	flex: 0 0 auto
+}
+
+
+
 .template-list,
 .toggle-list {
 	display: grid;

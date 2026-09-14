@@ -62,6 +62,30 @@ export function createSection(title, enabled, blocks = [], description = "") {
 	return { id: createId(), title, enabled, description, blocks };
 }
 
+export function createEnvItem(label, value = "", enabled = false, custom = false) {
+	return { id: createId(), label, value, enabled, custom };
+}
+
+export function normalizeEnvironment(environment) {
+	if (Array.isArray(environment)) {
+		return environment.map((item) => ({
+			id: String(item?.id || createId()),
+			label: String(item?.label ?? ""),
+			value: String(item?.value ?? ""),
+			enabled: Boolean(item?.enabled),
+			custom: Boolean(item?.custom),
+		}));
+	}
+	// Legacy environment was an object keyed by environmentFields entries.
+	return environmentFields.map(([fieldKey, label]) => ({
+		id: createId(),
+		label,
+		value: String(environment?.[fieldKey] ?? ""),
+		enabled: Boolean(environment && String(environment[fieldKey] ?? "").trim()),
+		custom: false,
+	}));
+}
+
 export const presets = {
 	hardware: {
 		label: "Hardware Check",
@@ -118,15 +142,7 @@ export function makeState(type = "porting") {
 		summary: "",
 		changeContent: preset.change,
 		relatedRef: "",
-		environment: {
-			systemModel: "",
-			bios: "",
-			bmcVersion: "",
-			cpldVersion: "",
-			cpuInformation: "",
-			osKernel: "N/A",
-			others: "N/A",
-		},
+		environment: environmentFields.map(([, label]) => createEnvItem(label)),
 		sections: preset.sections,
 		ui: {
 			collapsed: {
@@ -140,7 +156,7 @@ export function makeState(type = "porting") {
 
 export function normalizeState(state) {
 	if (!state) return state;
-	state.environment ||= {};
+	state.environment = normalizeEnvironment(state.environment);
 	state.sections = Array.isArray(state.sections) ? state.sections : [];
 	state.ui ||= {};
 	state.ui.collapsed ||= {};

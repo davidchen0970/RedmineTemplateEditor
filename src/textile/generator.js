@@ -1,4 +1,4 @@
-import { environmentFields, toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
+import { toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
 
 export function itemContent(contentItem) {
 	return typeof contentItem === "object" ? String(contentItem?.content ?? "") : String(contentItem ?? "");
@@ -115,9 +115,9 @@ export function textile(state) {
 	} else {
 		outputLines.push("");
 	}
-	const environmentLines = environmentFields.flatMap(([fieldKey, fieldLabel]) =>
-		envTextileLines(fieldLabel, state.environment?.[fieldKey]),
-	);
+	const environmentLines = (state.environment || [])
+		.filter((item) => item.enabled)
+		.flatMap((item) => envTextileLines(item.label, item.value));
 	if (environmentLines.length) {
 		addH3(outputLines, "測試環境");
 		outputLines.push(...environmentLines, "");

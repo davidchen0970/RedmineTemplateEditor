@@ -30,6 +30,24 @@ function stateWithImplementation() {
 	return s;
 }
 
+function stateWithEnvironment() {
+	const s = makeState();
+	s.title = "env";
+	s.environment = [
+		{ id: "a", label: "System Model", value: "DVT2", enabled: true, custom: false },
+		{ id: "b", label: "BIOS", value: "", enabled: true, custom: false },
+		{ id: "c", label: "OS / Kernel", value: "Ubuntu 22.04", enabled: false, custom: false },
+	];
+	return s;
+}
+
+test("environment emits only enabled and filled items", () => {
+	const out = textile(stateWithEnvironment());
+	assert.match(out, /\* System Model: DVT2/);
+	assert.doesNotMatch(out, /BIOS: /);
+	assert.doesNotMatch(out, /OS \/ Kernel/);
+});
+
 test("textile starts with the doc title (h2)", () => {
 	const s = stateWithMermaid();
 	const out = textile(s);

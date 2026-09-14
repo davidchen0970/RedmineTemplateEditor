@@ -40,6 +40,27 @@ test("blank preset starts with no sections", () => {
 	assert.deepEqual(s.sections, []);
 });
 
+test("makeState keeps the test environment as 7 known items", () => {
+	const env = makeState("porting").environment;
+	assert.equal(env.length, 7);
+	assert.ok(env.every((item) => item.custom === false));
+	assert.ok(env.every((item) => item.enabled === false));
+	assert.ok(env.every((item) => item.id && item.label));
+});
+
+test("normalizeState migrates a legacy environment object to items", () => {
+	const legacy = makeState("porting");
+	legacy.environment = { systemModel: "DVT2", bios: "", osKernel: "Ubuntu" };
+	const env = normalizeState(legacy).environment;
+	const sys = env.find((item) => item.label === "System Model");
+	assert.equal(sys.value, "DVT2");
+	assert.equal(sys.enabled, true);
+	const bios = env.find((item) => item.label === "BIOS");
+	assert.equal(bios.enabled, false);
+	const os = env.find((item) => item.label === "OS / Kernel");
+	assert.equal(os.value, "Ubuntu");
+});
+
 test("normalizeState migrates a legacy implementation block to per-item lang", () => {
 	const legacy = {
 		sections: [
