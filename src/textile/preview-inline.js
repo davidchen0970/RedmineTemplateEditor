@@ -46,18 +46,7 @@ export function renderPreviewCodeHtml(content) {
 	const cleaned = String(content)
 		.replace(/<\/code>\s?/gi, "")
 		.replace(/<code\b[^>]*>\s?/gi, "");
-	let text = escapePreviewHtml(cleaned);
-	const pattern = /%\{([^}]+)\}([^%]+)%/g;
-	let previous;
-	do {
-		previous = text;
-		text = text.replace(pattern, (fullMatch, rawStyle, body) => {
-			const style = normalizePreviewCssStyle(rawStyle);
-			if (!style) return body;
-			return `<span style="${style}">${body}</span>`;
-		});
-	} while (text !== previous);
-	return text;
+	return renderPreviewTextileStyleSpans(escapePreviewHtml(cleaned));
 }
 
 export function renderDiffPreview(content) {
