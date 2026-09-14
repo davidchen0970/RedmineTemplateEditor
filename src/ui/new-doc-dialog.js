@@ -1,5 +1,7 @@
 import { presets } from "../core/state.js";
 
+const EXTRA_SECTIONS = ["測試環境", "參考資料", "附圖", "結論補充"];
+
 let dialog = null;
 let pendingResolve = null;
 
@@ -49,6 +51,11 @@ export function openNewDocDialog(defaultName = "新文件") {
 	let noteType = "porting";
 	let sectionRows = [];
 
+	const baseSections = () => [
+		...(presets[noteType].sections || []).map((section) => ({ title: section.title, enabled: true })),
+		...EXTRA_SECTIONS.map((title) => ({ title, enabled: false })),
+	];
+
 	const renderTemplateCards = () => {
 		templatesRoot.replaceChildren();
 		for (const [key, preset] of Object.entries(presets)) {
@@ -57,10 +64,7 @@ export function openNewDocDialog(defaultName = "新文件") {
 			card.innerHTML = `<strong>${preset.label}</strong><span>${preset.desc}</span>`;
 			card.onclick = () => {
 				noteType = key;
-				sectionRows = (presets[key].sections || []).map((section) => ({
-					title: section.title,
-					enabled: true,
-				}));
+				sectionRows = baseSections();
 				renderTemplateCards();
 				renderSectionRows();
 			};
@@ -72,11 +76,14 @@ export function openNewDocDialog(defaultName = "新文件") {
 		sectionsRoot.replaceChildren();
 		sectionRows.forEach((row, index) => {
 			const rowElement = document.createElement("label");
-			rowElement.className = "note";
+			rowElement.className = "note" + (row.enabled ? "" : " nd-unused");
 			const box = document.createElement("input");
 			box.type = "checkbox";
 			box.checked = row.enabled;
-			box.onchange = () => { row.enabled = box.checked; };
+			box.onchange = () => {
+				row.enabled = box.checked;
+				rowElement.classList.toggle("nd-unused", !box.checked);
+			};
 			const title = document.createElement("span");
 			title.textContent = row.title;
 			const remove = document.createElement("button");
@@ -108,7 +115,7 @@ export function openNewDocDialog(defaultName = "新文件") {
 
 	confirmBtn.onclick = () => {
 		const name = nameInput.value.trim() || defaultName;
-		const sections = sectionRows.map((row) => ({ title: row.title, enabled: row.enabled }));
+		const sections = sectionRows.filter((row) => row.enabled).map((row) => ({ title: row.title, enabled: true }));
 		finish({ name, noteType, sections });
 		root.close();
 	};
