@@ -181,6 +181,7 @@ dialog::backdrop,
 .panel-body,
 .section-body,
 .header-collapsible {
+	box-sizing: border-box;
 	transition:
 		height var(--mo-slow) var(--mo-ease),
 		padding var(--mo) var(--mo-easeio),

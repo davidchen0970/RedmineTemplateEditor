@@ -291,3 +291,11 @@
 .add-block-dialog .actions input {
 	flex: 1
 }
+
+/* --- 新增文件 dialog：box-sizing 統一，padding/margin 都算在內 --- */
+.add-block-dialog,
+.add-block-dialog *,
+.add-block-dialog *::before,
+.add-block-dialog *::after {
+	box-sizing: border-box
+}
