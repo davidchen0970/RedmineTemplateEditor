@@ -413,6 +413,13 @@ export function textileToPreviewHtml(text) {
 			} else collapseLines.push(rawLine);
 			continue;
 		}
+		if (inMermaid) {
+			if (trimmed === "}}") {
+				closeTable();
+				flushMermaid();
+			} else mermaidLines.push(rawLine);
+			continue;
+		}
 		if (!trimmed) {
 			closeFlowBlocks();
 			resetTableAttr();
