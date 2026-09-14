@@ -1,6 +1,7 @@
 import { textile } from "../textile/generator.js";
 import { textileToPreviewHtml } from "../textile/preview.js";
 import { exportMermaidPng } from "./mermaid-export.js";
+import { onPreviewReRender } from "./preview-scroll-burst.js";
 
 export function renderOutput(state, view) {
 	const raw = textile(state);
@@ -10,17 +11,62 @@ export function renderOutput(state, view) {
 	output.classList.toggle("hidden", view === "preview");
 	preview.classList.toggle("hidden", view !== "preview");
 	if (view === "preview") {
+		onPreviewReRender(preview);
 		preview.innerHTML = textileToPreviewHtml(raw);
-		window.mermaid
-			?.run({ querySelector: ".mermaid" })
-			.then(() => addMermaidDownloadButtons(preview))
-			.catch((error) => console.warn("Mermaid render failed:", error));
+		renderMermaidDiagrams(preview);
 	}
 	document.querySelectorAll(".segmented button").forEach((button) => button.classList.remove("active"));
 	const activeId = { raw: "raw", preview: "previewbtn", json: "statebtn" }[view];
 	document.getElementById(activeId)?.classList.add("active");
 	const stats = document.getElementById("stats");
 	if (stats) stats.textContent = `${raw.length} 字元 · ${raw.split("\n").length} 行`;
+}
+
+const mermaidCache = new Map();
+let lastMermaidHeights = [];
+
+function renderMermaidDiagrams(preview) {
+	const hosts = [...preview.querySelectorAll(".mermaid")];
+	const toRender = [];
+	hosts.forEach((host, index) => {
+		const source = host.getAttribute("data-mermaid-source") ?? "";
+		const cached = mermaidCache.get(source);
+		if (cached) {
+			host.innerHTML = cached.html;
+			host.style.height = Math.round(cached.height) + "px";
+			host.classList.add("mermaid-with-toolbar");
+		} else {
+			const reserved = lastMermaidHeights[index];
+			if (reserved && reserved > 0) {
+				host.style.height = Math.round(reserved) + "px";
+			}
+			toRender.push({ host, index });
+		}
+	});
+
+	addMermaidDownloadButtons(preview);
+
+	if (toRender.length === 0 || !window.mermaid) return;
+	toRender.forEach(({ host }) => host.classList.add("mermaid-needs-render"));
+	window.mermaid
+		.run({ querySelector: ".mermaid-needs-render" })
+		.then(() => {
+			const nextHeights = hosts.map((host) => {
+				host.classList.remove("mermaid-needs-render");
+				const svg = host.querySelector("svg");
+				if (!svg) return 0;
+				const height = Math.round(svg.getBoundingClientRect().height) || 0;
+				if (height > 0) host.style.height = height + "px";
+				const source = host.getAttribute("data-mermaid-source");
+				if (source != null) {
+					mermaidCache.set(source, { html: svg.outerHTML, height });
+				}
+				return height;
+			});
+			lastMermaidHeights = nextHeights;
+			addMermaidDownloadButtons(preview);
+		})
+		.catch(() => {});
 }
 
 function addMermaidDownloadButtons(preview) {

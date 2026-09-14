@@ -350,9 +350,12 @@ export function textileToPreviewHtml(text) {
 		preLines = [];
 	};
 	const flushMermaid = () => {
+		const mermaidSource = mermaidLines.join("\n");
 		html.push(
-			'<div class="mermaid">' +
-				escapePreviewHtml(mermaidLines.join("\n")) +
+			'<div class="mermaid" data-mermaid-source="' +
+				escapeHtml(mermaidSource) +
+				'">' +
+				escapePreviewHtml(mermaidSource) +
 				"</div>",
 		);
 
