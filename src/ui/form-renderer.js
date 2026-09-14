@@ -11,6 +11,7 @@ function bindInput(elementId, value, setter, changed) {
 export function createFormRenderer({ getState, changed, onPresetClick, findSection, renderAll }) {
 	function renderPresets() {
 		const root = document.getElementById("templates");
+		if (!root) return;
 		root.replaceChildren();
 		Object.entries(presets).forEach(([key, preset]) => {
 			const card = document.createElement("div");
@@ -44,6 +45,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 
 	function renderToggles() {
 		const root = document.getElementById("toggles");
+		if (!root) return;
 		root.replaceChildren();
 		getState().sections.forEach((section) => {
 			const item = document.createElement("label");

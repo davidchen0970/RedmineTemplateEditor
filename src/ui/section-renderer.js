@@ -58,6 +58,18 @@ export function createSectionRenderer({
 	function render({ openBlockId = null } = {}) {
 		const root = document.getElementById("sections");
 		root.replaceChildren();
+		const makeAddBar = () => {
+			const bar = document.createElement("div");
+			bar.className = "button-row";
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "primary";
+			button.textContent = "＋ 新增段落";
+			button.onclick = () => add();
+			bar.appendChild(button);
+			return bar;
+		};
+		root.appendChild(makeAddBar());
 		getState().sections.forEach((section) => {
 			const element = document.createElement("div");
 			element.className = "section";	   
@@ -124,6 +136,7 @@ export function createSectionRenderer({
 			element.querySelectorAll("[data-duplicate]").forEach(btn => btn.onclick = () => duplicate(section.id));
 			element.querySelectorAll("[data-delete]").forEach(btn => btn.onclick = () => remove(section.id));
 		});
+		root.appendChild(makeAddBar());
 	}
 	return {
 		find,
