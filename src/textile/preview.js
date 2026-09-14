@@ -1,4 +1,5 @@
 import { escapeHtml } from "../core/state.js";
+import { normalizePreviewCssStyle, renderPreviewTextileStyleSpans } from "./preview-style.js";
 
 const pendingPreviewImages = new Map();
 export function registerPreviewImage(name, dataUrl) {
@@ -6,51 +7,6 @@ export function registerPreviewImage(name, dataUrl) {
 }
 export function getPreviewImage(name) {
 	return name ? pendingPreviewImages.get(name) : undefined;
-}
-
-function normalizePreviewCssColor(value) {
-	return String(value ?? "")
-		.trim()
-		.replace(/[^#(),.%\w\s-]/g, "");
-}
-
-// Combine arbitrary CSS declarations (e.g. "background:yellow; color:red")
-// into a safe inline style string for preview rendering.
-function normalizePreviewCssStyle(rawStyle) {
-	return String(rawStyle ?? "")
-		.split(";")
-		.map((declaration) => declaration.trim())
-		.filter(Boolean)
-		.map((declaration) => {
-			const separator = declaration.indexOf(":");
-			if (separator < 1) return "";
-			const property = declaration.slice(0, separator).trim();
-			const value = declaration.slice(separator + 1).trim();
-			if (!/^[a-zA-Z-]+$/.test(property)) return "";
-			const safeValue = normalizePreviewCssColor(value);
-			if (!safeValue) return "";
-			return `${property}:${safeValue}`;
-		})
-		.filter(Boolean)
-		.join("; ");
-}
-
-function renderPreviewTextileStyleSpans(text) {
-	let previous;
-	const spanPattern = /%\{([^}]+)\}([^%]+)%/g;
-
-	// Run repeatedly so nested spans produced by text-color-menu.js and
-	// text-background-menu.js can both render in preview.
-	do {
-		previous = text;
-		text = text.replace(spanPattern, (fullMatch, rawStyle, body) => {
-			const style = normalizePreviewCssStyle(rawStyle);
-			if (!style) return body;
-			return `<span style="${style}">${body}</span>`;
-		});
-	} while (text !== previous);
-
-	return text;
 }
 
 export function renderPreviewImage(name) {
