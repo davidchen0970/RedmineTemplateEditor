@@ -1,5 +1,6 @@
 import {
     createDocument,
+    createSection,
     deleteDocument,
     ensureDocumentIndex,
     getActiveDocument,
@@ -11,6 +12,7 @@ import {
     setActiveDocumentId,
 } from "../core/state.js";
 import { resetPreviewScroll } from "./preview-scroll-burst.js";
+import { openNewDocDialog } from "./new-doc-dialog.js";
 
 function asciiCompare(leftValue, rightValue) {
     const left = String(leftValue || "");
@@ -80,12 +82,14 @@ export function setupDocumentStorage({
         renderPicker();
         renderer.toast(documentRecord ? "名稱已更新" : "找不到目前文件");
     };
-    newBtn.onclick = () => {
+    newBtn.onclick = async () => {
         const current = getState();
-        const name = prompt("新文件名稱", current.title || "新文件") || "新文件";
-        const nextState = makeState(current.noteType || "porting");
-        nextState.title = name;
-        const documentRecord = createDocument(name, nextState);
+        const choice = await openNewDocDialog(current.title || "新文件");
+        if (!choice) return;
+        const nextState = makeState(choice.noteType);
+        nextState.title = choice.name;
+        nextState.sections = choice.sections.map((row) => createSection(row.title, row.enabled));
+        const documentRecord = createDocument(choice.name, nextState);
         activate(documentRecord.id, "已建立 " + documentRecord.name);
     };
     deleteBtn.onclick = () => {
