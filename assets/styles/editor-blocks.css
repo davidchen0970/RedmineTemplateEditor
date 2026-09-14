@@ -3,7 +3,7 @@
 	border-radius: 14px;
 	margin: 12px 0;
 	background: var(--panel);
-	overflow: hidden
+	overflow: visible
 }
 
 .section-head {
@@ -13,7 +13,8 @@
 	justify-content: space-between;
 	padding: 10px;
 	background: var(--panel-2);
-	border-bottom: 1px solid var(--line)
+	border-bottom: 1px solid var(--line);
+	border-radius: 13px 13px 0 0
 }
 
 .section-title-btn {
@@ -109,3 +110,49 @@
 	transition: width .3s ease
 }
 
+
+.more-menu {
+	position: relative;
+	display: inline-flex
+}
+
+.more-items {
+	position: absolute;
+	top: calc(100% + 4px);
+	right: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	min-width: 120px;
+	gap: 2px;
+	padding: 6px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	background: var(--panel);
+	box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+	animation: mo-pop var(--mo) var(--mo-ease) both
+}
+
+.more-items[hidden] {
+	display: none
+}
+
+.section:last-child .more-items {
+	top: auto;
+	bottom: calc(100% + 4px);
+}
+
+.more-items button {
+	border: none;
+	background: transparent;
+	text-align: left;
+	padding: 6px 8px;
+	border-radius: 7px;
+	cursor: pointer;
+	color: var(--text)
+}
+
+.more-items button:hover {
+	background: var(--soft)
+}

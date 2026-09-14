@@ -63,6 +63,18 @@ function bindViewButtons() {
 
 function bindEditorActions() {
   document.addEventListener("click", (event) => {
+    const moreToggle = event.target.closest("[data-more-toggle]");
+    if (moreToggle) {
+      const box = moreToggle.closest("[data-more]");
+      const all = [...document.querySelectorAll("[data-more] .more-items")];
+      all.forEach((menu) => { if (menu !== box.querySelector(".more-items")) menu.hidden = true; });
+      const menu = box.querySelector(".more-items");
+      if (menu) menu.hidden = !menu.hidden;
+      return;
+    }
+    document.querySelectorAll("[data-more] .more-items").forEach((menu) => { menu.hidden = true; });
+  });
+  document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-collapse-target]");
     if (!button) return;
     const target = document.getElementById(button.dataset.collapseTarget);

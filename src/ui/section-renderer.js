@@ -58,18 +58,6 @@ export function createSectionRenderer({
 	function render({ openBlockId = null } = {}) {
 		const root = document.getElementById("sections");
 		root.replaceChildren();
-		const makeAddBar = () => {
-			const bar = document.createElement("div");
-			bar.className = "button-row";
-			const button = document.createElement("button");
-			button.type = "button";
-			button.className = "primary";
-			button.textContent = "＋ 新增段落";
-			button.onclick = () => add();
-			bar.appendChild(button);
-			return bar;
-		};
-		root.appendChild(makeAddBar());
 		getState().sections.forEach((section) => {
 			const element = document.createElement("div");
 			element.className = "section";	   
@@ -81,11 +69,17 @@ export function createSectionRenderer({
 			const description = escapeHtml(section.description || "");
 			const actionsHtml = `
 				<div class="actions">
-					<button class="small" data-up>上移</button>
-					<button class="small" data-down>下移</button>
-					<button class="small" data-add>新增區塊</button>
-					<button class="small" data-duplicate>複製段落</button>
-					<button class="small danger" data-delete>刪除</button>
+					<button type="button" class="small" data-up>上移</button>
+					<button type="button" class="small" data-down>下移</button>
+					<div class="more-menu" data-more>
+						<button type="button" class="small" data-more-toggle>其他 ▾</button>
+						<div class="more-items" hidden>
+							<button type="button" data-add>新增區塊</button>
+							<button type="button" data-add-section>新增段落</button>
+							<button type="button" data-duplicate>複製段落</button>
+							<button type="button" class="danger" data-delete>刪除段落</button>
+						</div>
+					</div>
 				</div>
 			`;
 			element.innerHTML = `
@@ -134,9 +128,9 @@ export function createSectionRenderer({
 			element.querySelectorAll("[data-up]").forEach(btn => btn.onclick = () => move(section.id, -1));
 			element.querySelectorAll("[data-down]").forEach(btn => btn.onclick = () => move(section.id, 1));
 			element.querySelectorAll("[data-duplicate]").forEach(btn => btn.onclick = () => duplicate(section.id));
+			element.querySelectorAll("[data-add-section]").forEach(btn => btn.onclick = () => add());
 			element.querySelectorAll("[data-delete]").forEach(btn => btn.onclick = () => remove(section.id));
 		});
-		root.appendChild(makeAddBar());
 	}
 	return {
 		find,
