@@ -81,3 +81,10 @@ test("plain heading text wraps in a <p>", () => {
 test("empty input renders the empty-preview note", () => {
 	assert.match(textileToPreviewHtml(""), /尚無可預覽內容/);
 });
+
+test("a standalone !image! line renders an <img> without throwing", () => {
+	const html = textileToPreviewHtml("!diagram.png!\n");
+	assert.match(html, /<img class="preview-image"/);
+	assert.match(html, /data-preview-name="diagram.png"/);
+	assert.match(html, /src="diagram.png"/);
+});

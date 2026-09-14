@@ -6,6 +6,7 @@ import {
 	renderPreviewCodeHtml,
 	renderDiffPreview,
 	parsePreviewTableRow,
+	renderPreviewImage,
 } from "./preview-inline.js";
 
 // Re-exported for callers that historically imported from preview.js.
