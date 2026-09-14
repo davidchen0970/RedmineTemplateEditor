@@ -1,0 +1,156 @@
+/* motion.css — 舒適微動畫層
+   原則：
+   - 進場動畫只套在「整頁只 mount 一次」的佈局容器（避免打字重建時一直重播）。
+   - 會隨輸入重建的物件（block / 列表 / 表格列）用 hover/focus 微位移 + 顏色 transition。
+   - 瞬態（下拉 menu / dialog / toast）用 pop / fade。
+*/
+
+:root {
+	--mo-fast: 150ms;
+	--mo: 260ms;
+	--mo-slow: 380ms;
+	--mo-ease: cubic-bezier(0.22, 0.9, 0.32, 1);
+	--mo-easeio: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- 進場 keyframes ---------- */
+@keyframes mo-rise {
+	from { opacity: 0; transform: translateY(12px); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes mo-fade {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes mo-pop {
+	from { opacity: 0; transform: scale(0.96) translateY(6px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* ---------- 整頁佈局進場（load 只跑一次） ---------- */
+.app-header {
+	animation: mo-rise var(--mo) var(--mo-ease) both;
+}
+
+.side-stack > .panel {
+	animation: mo-rise var(--mo-slow) var(--mo-ease) both;
+}
+
+.side-stack > .panel:nth-child(2) { animation-delay: 60ms; }
+.side-stack > .panel:nth-child(3) { animation-delay: 120ms; }
+
+.output-panel {
+	animation: mo-fade var(--mo-slow) var(--mo-ease) both;
+}
+
+/* ---------- 互動按鈕微動畫 ---------- */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+	transition:
+		transform var(--mo-fast) var(--mo-ease),
+		box-shadow var(--mo) var(--mo-easeio),
+		background var(--mo) var(--mo-easeio),
+		color var(--mo) var(--mo-easeio),
+		border-color var(--mo) var(--mo-easeio),
+		filter var(--mo) var(--mo-easeio);
+}
+
+button:not(:disabled):hover,
+[role="button"]:not([aria-disabled="true"]):hover {
+	transform: translateY(-1px);
+}
+
+button:not(:disabled):focus-visible,
+[role="button"]:not([aria-disabled="true"]):focus-visible {
+	transform: translateY(-1px);
+}
+
+button:not(:disabled):active,
+[role="button"]:active {
+	transform: translateY(0) scale(0.975);
+	transition-duration: var(--mo-fast);
+}
+
+/* ---------- 編輯區塊 hover 微人情味（不打字重建時重播） ---------- */
+.block {
+	transition:
+		transform var(--mo) var(--mo-ease),
+		border-color var(--mo) var(--mo-easeio),
+		background var(--mo) var(--mo-easeio),
+		box-shadow var(--mo) var(--mo-easeio);
+}
+
+.block:hover {
+	transform: translateY(-2px);
+	border-color: var(--primary);
+	box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+/* ---------- 側欄模板 / 段落切換列表 ---------- */
+.template-list > *,
+.toggle-list > * {
+	transition:
+		transform var(--mo-fast) var(--mo-ease),
+		padding-left var(--mo) var(--mo-easeio),
+		background var(--mo) var(--mo-easeio);
+}
+
+.template-list > *:hover,
+.toggle-list > *:hover {
+	transform: translateX(3px);
+	background: var(--soft);
+}
+
+/* ---------- 預覽表格列 hover ---------- */
+.preview-table tbody tr,
+.redmine-preview table.preview-table tbody tr {
+	transition: background var(--mo) var(--mo-easeio);
+}
+
+.preview-table tbody tr:hover,
+.redmine-preview table.preview-table tbody tr:hover {
+	background: var(--soft);
+}
+
+/* ---------- 下拉選單（.show 出現時 pop） ---------- */
+.text-color-menu,
+.text-code-menu,
+.text-background-menu {
+	transform-origin: top left;
+}
+
+.text-color-menu.show,
+.text-code-menu.show,
+.text-background-menu.show {
+	animation: mo-pop var(--mo) var(--mo-ease) both;
+}
+
+/* ---------- Dialog / 遮罩（原生 <dialog> + ::backdrop） ---------- */
+dialog[open] {
+	animation: mo-pop var(--mo-slow) var(--mo-ease) both;
+}
+
+dialog::backdrop,
+.overlay,
+[data-overlay] {
+	animation: mo-fade var(--mo) var(--mo-easeio) both;
+}
+
+/* ---------- Toast / 進度浮層 ---------- */
+.toast.show,
+.patch-progress.show {
+	animation: mo-rise var(--mo) var(--mo-ease) both;
+}
+
+/* ---------- 無障礙：尊重使用者關閉動畫 ---------- */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
