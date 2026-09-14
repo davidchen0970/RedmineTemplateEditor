@@ -38,6 +38,18 @@ function finish(value) {
 	resolve(value);
 }
 
+function closeAnimated() {
+	if (!dialog) return;
+	dialog.classList.add("closing");
+	const onEnd = (event) => {
+		if (event.target !== dialog) return;
+		dialog.removeEventListener("animationend", onEnd);
+		dialog.classList.remove("closing");
+		dialog.close();
+	};
+	dialog.addEventListener("animationend", onEnd);
+}
+
 export function openNewDocDialog(defaultName = "新文件") {
 	const root = ensureDialog();
 	const nameInput = root.querySelector("#ndName");
@@ -110,14 +122,14 @@ export function openNewDocDialog(defaultName = "新文件") {
 	};
 
 	cancelBtn.onclick = () => {
-		root.close();
+		closeAnimated();
 	};
 
 	confirmBtn.onclick = () => {
 		const name = nameInput.value.trim() || defaultName;
 		const sections = sectionRows.filter((row) => row.enabled).map((row) => ({ title: row.title, enabled: true }));
 		finish({ name, noteType, sections });
-		root.close();
+		closeAnimated();
 	};
 
 	nameInput.value = defaultName;
