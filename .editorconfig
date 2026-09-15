@@ -1,0 +1,20 @@
+# Editor style guide. The repo-wide established style is:
+#   - LF line endings, UTF-8, final newline at EOF, no trailing whitespace (tabs).
+#   - Source (JS/PY) indented with TABs — this matches src/*.js.
+#   - Data files (JSON/MD/etc.) stay as-authored.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.js]
+indent_style = tab
+indent_size = tab
+
+[*.json]
+indent_style = space
+indent_size = 2
