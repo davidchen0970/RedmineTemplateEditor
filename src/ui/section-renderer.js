@@ -1,6 +1,7 @@
 import { escapeHtml, createSection, createId } from "../core/state.js";
 import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
-import { slideReorder, markEntering, markLeaving } from "./reorder-animate.js";
+import { slideReorder } from "./card-slide.js";
+import { markEntering, markLeaving } from "./card-stage.js";
 import { sectionCard } from "./card-dom.js";
 export function createSectionRenderer({
 	getState,

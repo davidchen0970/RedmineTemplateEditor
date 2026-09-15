@@ -1,6 +1,6 @@
 import { block, createImplementationBlock } from "../core/state.js";
 import { BLOCK_TYPES, defaultTitle, label } from "./block-view.js";
-import { markEntering } from "./reorder-animate.js";
+import { markEntering } from "./card-stage.js";
 import { blockCard } from "./card-dom.js";
 export function createAddBlockDialog({
 	findSection,

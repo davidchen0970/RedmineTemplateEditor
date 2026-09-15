@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { reorderOffset } from "../src/ui/reorder-animate.js";
+import { reorderOffset } from "../src/ui/card-slide.js";
 
 test("reorderOffset for a card that moved down slides to the old top", () => {
 	assert.equal(reorderOffset(100, 200), -100);
