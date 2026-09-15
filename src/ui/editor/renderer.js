@@ -20,16 +20,17 @@ export function createRenderer(context) {
 	const renderOut = () => renderOutput(getState(), getView());
 	const renderAll = (options) => render(options);
 	const findSection = (sectionId) => getState().sections.find((section) => section.id === sectionId);
-	const blocks = createBlockRenderer({
-		getState,
-		findSection,
-		changed,
-		renderAll
-	});
 	const dialog = createAddBlockDialog({
 		findSection,
 		changed,
 		renderAll
+	});
+	const blocks = createBlockRenderer({
+		getState,
+		findSection,
+		changed,
+		renderAll,
+		addBlock: dialog.add
 	});
 	const forms = createFormRenderer({
 		getState,

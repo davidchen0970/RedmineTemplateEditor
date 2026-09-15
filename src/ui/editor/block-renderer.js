@@ -4,13 +4,15 @@ import { applyDefaults, createBlockElement, renderContents } from "./block-view.
 import { getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
 import { slideReorder } from "../motion/card-slide.js";
 import { markEntering, markLeaving } from "../motion/card-stage.js";
+import { confirmDelete } from "../dialogs/confirm-dialog.js";
 import { blockCard } from "../dom/card.js";
 
 export function createBlockRenderer({
 	getState,
 	findSection,
 	changed,
-	renderAll
+	renderAll,
+	addBlock
 }) {
 	function move(sectionId, blockId, direction) {
 		const section = findSection(sectionId);
@@ -23,6 +25,83 @@ export function createBlockRenderer({
 		changed();
 		renderAll();
 		play();
+	}
+
+	// 區塊「其他」使用掛在 document.body 的共用 popup，逃離 .block 的 transform 層疊／裁切上下文。
+	let morePopup = null;
+	let moreAnchorId = null;
+
+	function getMorePopup() {
+		if (morePopup) return morePopup;
+		morePopup = document.createElement("div");
+		morePopup.className = "more-popup";
+		morePopup.hidden = true;
+		document.body.appendChild(morePopup);
+		document.addEventListener("click", (event) => {
+			if (!morePopup.hidden && !event.target.closest("[data-block-more]") && !morePopup.contains(event.target)) {
+				morePopup.hidden = true;
+				morePopup.replaceChildren();
+				moreAnchorId = null;
+			}
+		});
+		return morePopup;
+	}
+
+	function moreItem(label, danger, onClick) {
+		const button = document.createElement("button");
+		button.type = "button";
+		if (danger) button.className = "danger";
+		button.textContent = label;
+		button.onclick = () => { onClick(); morePopup.hidden = true; morePopup.replaceChildren(); moreAnchorId = null; };
+		return button;
+	}
+
+	function showLabel(sectionId, blockId) {
+		const found = (findSection(sectionId)?.blocks || []).find((item) => item.id === blockId);
+		return found ? (found.title || found.type || "") : "";
+	}
+
+	function doDelete(sectionId, blockId) {
+		markLeaving(blockId, blockCard, () => {
+			findSection(sectionId).blocks = findSection(sectionId).blocks.filter((item) => item.id !== blockId);
+			changed();
+			renderAll();
+		});
+	}
+
+	function askDelete(sectionId, blockId) {
+		confirmDelete({
+			heading: "刪除區塊",
+			text: `刪除區塊「${showLabel(sectionId, blockId)}」？`,
+			confirmLabel: "刪除",
+			onConfirm: () => doDelete(sectionId, blockId),
+		});
+	}
+
+	function openMore(toggle, sectionId, blockId) {
+		const popup = getMorePopup();
+		if (!popup.hidden && moreAnchorId === blockId) {
+			popup.hidden = true;
+			popup.replaceChildren();
+			moreAnchorId = null;
+			return;
+		}
+		moreAnchorId = blockId;
+		const section = findSection(sectionId);
+		const index = section ? section.blocks.findIndex((item) => item.id === blockId) : -1;
+		popup.replaceChildren(
+			moreItem("在區塊前新增區塊", false, () => addBlock(sectionId, index)),
+			moreItem("在區塊後新增區塊", false, () => addBlock(sectionId, index + 1)),
+			moreItem("複製", false, () => duplicate(sectionId, findSection(sectionId).blocks.find((b) => b.id === blockId))),
+			moreItem("刪除", true, () => askDelete(sectionId, blockId)),
+		);
+		const rect = toggle.getBoundingClientRect();
+		popup.hidden = false;
+		popup.classList.remove("mo-pop");
+		void popup.offsetWidth;
+		popup.classList.add("mo-pop");
+		popup.style.left = (rect.right - popup.offsetWidth) + "px";
+		popup.style.top = (rect.bottom + 4) + "px";
 	}
 
 	function duplicate(sectionId, source) {
@@ -38,7 +117,8 @@ export function createBlockRenderer({
 		markEntering(copy.id, blockCard);
 	}
 
-	function bind(element, sectionId, block, maxLevel) {
+	function bind(element, sectionId, block, maxLevel, index = 0) {
+		element.querySelector("[data-block-more]").onclick = (event) => openMore(event.currentTarget, sectionId, block.id);
 		element.querySelector("[data-btype]").onchange = (event) => {
 			block.type = event.target.value;
 			applyDefaults(block);
@@ -59,14 +139,6 @@ export function createBlockRenderer({
 		};
 		element.querySelector("[data-bup]").onclick = () => move(sectionId, block.id, -1);
 		element.querySelector("[data-bdown]").onclick = () => move(sectionId, block.id, 1);
-		element.querySelector("[data-del]").onclick = () => {
-			markLeaving(block.id, blockCard, () => {
-				findSection(sectionId).blocks = findSection(sectionId).blocks.filter((item) => item.id !== block.id);
-				changed();
-				renderAll();
-			});
-		};
-		element.querySelector("[data-du]").onclick = () => duplicate(sectionId, block);
 		element.querySelector("[data-add-content]").onclick = () => {
 			block.contents.push(block.type === "implementation" ? { content: "", lang: DEFAULT_CODE_LANG } : "");
 			changed();
@@ -142,7 +214,7 @@ export function createBlockRenderer({
 		const element = createBlockElement(block, maxLevel, { open });
 		element.dataset.block = block.id;
 		renderContents(element, block);
-		bind(element, sectionId, block, maxLevel);
+		bind(element, sectionId, block, maxLevel, index);
 		return element;
 	}
 	return {

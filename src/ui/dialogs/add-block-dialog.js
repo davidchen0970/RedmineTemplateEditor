@@ -21,7 +21,13 @@ function describe(type) {
 
 export function createAddBlockDialog({ findSection, changed, renderAll }) {
 	let pendingSectionId = null;
+	let pendingIndex;
 	let selectedType = "implementation";
+
+	function insertionIndex(section) {
+		if (typeof pendingIndex !== "number") return section.blocks.length;
+		return Math.max(0, Math.min(pendingIndex, section.blocks.length));
+	}
 
 	function renderTypeCards(typeRoot, titleInput) {
 		typeRoot.replaceChildren();
@@ -44,7 +50,8 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 		}
 	}
 
-	function add(sectionId) {
+	function add(sectionId, atIndex) {
+		pendingIndex = typeof atIndex === "number" ? atIndex : undefined;
 		if (typeof HTMLDialogElement === "undefined") {
 			const type = prompt(`區塊類型：${BLOCK_TYPES.join(" / ")}`, "implementation") || "text";
 			const title = prompt("區塊標題", defaultTitle(type)) || "";
@@ -53,7 +60,9 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			const newBlock = type === "implementation"
 				? createImplementationBlock(title || "api.c")
 				: block(type, blockTitle, "");
-			targetSection.blocks.push(newBlock);
+			const target = insertionIndex(targetSection);
+			targetSection.blocks.splice(target, 0, newBlock);
+			newBlock.level = 1;
 			changed();
 			renderAll({ openBlockId: newBlock.id });
 			return;
@@ -63,7 +72,9 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 		selectedType = "implementation";
 		const typeRoot = dialog.querySelector("#abTypes");
 		const title = dialog.querySelector("#abTitle");
+		const level = dialog.querySelector("#abLevel");
 		title.value = defaultTitle(selectedType);
+		level.value = 1;
 		renderTypeCards(typeRoot, title);
 		dialog.showModal();
 		title.focus();
@@ -83,6 +94,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 					<div class="section-label">區塊類型</div>
 					<div class="template-list" id="abTypes"></div>
 					<label class="field">區塊標題<input id="abTitle" type="text"></label>
+					<label class="field">階層<input id="abLevel" type="number" min="1" step="1" value="1"></label>
 				</div>
 				<div class="dialog-actions">
 					<button type="button" id="abCancel">取消</button>
@@ -106,8 +118,11 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			const newBlock = type === "implementation"
 				? createImplementationBlock(selectedTitle || "api.c")
 				: block(type, selectedTitle, "");
-			section.blocks.push(newBlock);
+			const target = insertionIndex(section);
+			newBlock.level = Math.max(1, Math.floor(Number(dialog.querySelector("#abLevel").value) || 1));
+			section.blocks.splice(target, 0, newBlock);
 			pendingSectionId = null;
+			pendingIndex = undefined;
 			dialog.close();
 			changed();
 			renderAll({ openBlockId: newBlock.id });

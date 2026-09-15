@@ -85,8 +85,7 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 			<span>
 				<button class="small" data-bup>上移</button>
 				<button class="small" data-bdown>下移</button>
-				<button class="small" data-du>複製</button>
-				<button class="small danger" data-del>刪除</button>
+				<button class="small" data-block-more>其他 ▾</button>
 			</span>
 		</div>
 		<div class="block-collapsible" data-block-collapsible>
