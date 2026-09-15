@@ -15,6 +15,10 @@ export function label(type) {
 	})[type] ?? type;
 }
 
+export function titleDisabled(type) {
+	return type === "plainText";
+}
+
 export function defaultTitle(type) {
 	return ({
 		implementation: "api.c",
@@ -90,7 +94,7 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 			<label class="field">區塊類型<select data-btype>${blockTypeOptions}</select></label>
 			<label class="field block-level-field">所在層級<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${blockLevel}"></label>
 		</div>
-		<label class="field">區塊標題<input data-btitle value="${blockTitle}"></label>
+		<label class="field">區塊標題<input data-btitle value="${blockTitle}" ${titleDisabled(block.type) ? "disabled" : ""}></label>
 		${implementation}
 		<div data-contents></div>
 		<button class="small primary" data-add-content>新增內容</button>
