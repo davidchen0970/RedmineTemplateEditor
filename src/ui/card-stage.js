@@ -1,4 +1,4 @@
-const LEAVE_TIMEOUT = 240;
+import { LEAVE_MS } from "./motion-timing.js";
 
 export function markEntering(id, locate) {
 	const el = locate(id);
@@ -13,5 +13,5 @@ export function markLeaving(id, locate, done) {
 	}
 	el.classList.add("is-leaving");
 	el.addEventListener("animationend", () => done(), { once: true });
-	window.setTimeout(done, LEAVE_TIMEOUT);
+	window.setTimeout(done, LEAVE_MS);
 }
