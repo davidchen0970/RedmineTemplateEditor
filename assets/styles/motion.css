@@ -210,3 +210,12 @@ dialog.closing::backdrop {
 .redmine-preview:not(.hidden) {
 	animation: mo-fade var(--mo) var(--mo-ease) both;
 }
+
+.output-title .eyebrow,
+.output-title h2 {
+	animation: mo-rise var(--mo-fast) var(--mo-ease) both;
+}
+
+.output-title h2 {
+	animation-delay: 60ms;
+}
