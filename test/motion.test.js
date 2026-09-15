@@ -33,3 +33,9 @@ test("header localStorage controls ease on hover and focus", () => {
 	);
 	assert.match(css, /\.storage-actions select:focus,/);
 });
+
+test("template cards lift on hover and press down", () => {
+	assert.match(css, /\.card:active\s*\{[\s\S]*?transform:\s*scale\(0\.985\)/);
+	assert.match(css, /\.card\s*\{[^{}]*transition:[^{}]*var\(--mo-fast\)/);
+	assert.match(css, /\.card:hover\s*\{[\s\S]*?box-shadow:\s*0 6px 14px/);
+});
