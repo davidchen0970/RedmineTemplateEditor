@@ -66,6 +66,24 @@ test("textile emits a mermaid fence", () => {
 	assert.match(out, /\}\}/);
 });
 
+test("textile embeds the classic frontmatter at the head of a mermaid frame", () => {
+	const out = textile(stateWithMermaid());
+	assert.match(out, /{{mermaid\n---\nconfig:\n  layout: dagre\n  look: classic\n  theme: default\n---\nflowchart LR/);
+});
+
+test("textile prepends classic to a mermaid-language code frame", () => {
+	const block = { type: "implementation", title: "diag", contents: [{ content: "flowchart TD\nA --> B", lang: "mermaid" }], showWorkPath: false };
+	const s = makeState();
+	s.sections = [createSection("概念", true, [block])];
+	const out = textile(s);
+	assert.match(out, /<code class="mermaid">\n---\nconfig:\n  layout: dagre\n  look: classic\n  theme: default\n---\nflowchart TD/);
+	// 其它 lang 的 code frame 不得被塞入 classic
+	const shellBlock = { type: "implementation", title: "cmd", contents: [{ content: "echo hi", lang: "shell" }], showWorkPath: false };
+	const s2 = makeState();
+	s2.sections = [createSection("實例", true, [shellBlock])];
+	assert.doesNotMatch(textile(s2), /classic/);
+});
+
 test("disabled sections are skipped", () => {
 	const s = stateWithMermaid();
 	s.sections = [createSection("隱藏", false)];

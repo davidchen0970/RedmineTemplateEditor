@@ -1,5 +1,14 @@
 import { toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
 
+const MERMAID_CLASSIC_FRONTMATTER = [
+	"---",
+	"config:",
+	"  layout: dagre",
+	"  look: classic",
+	"  theme: default",
+	"---",
+].join("\n");
+
 export function itemContent(contentItem) {
 	return typeof contentItem === "object" ? String(contentItem?.content ?? "") : String(contentItem ?? "");
 }
@@ -200,6 +209,7 @@ function push(outputLines, blockData) {
 			const codeLang = itemLang(contentItem, DEFAULT_CODE_LANG);
 			outputLines.push(
 				' <pre><code class="' + codeLang + '">',
+				...(codeLang === "mermaid" ? [MERMAID_CLASSIC_FRONTMATTER] : []),
 				codeContentForTextile(itemContent(contentItem), codeLang),
 				"</code></pre>",
 			);
@@ -220,7 +230,14 @@ function push(outputLines, blockData) {
 			);
 		});
 	else if (blockData.type === "mermaid")
-		contents.forEach((contentItem) => outputLines.push(" {{mermaid", contentItem, "}}"));
+		contents.forEach((contentItem) => {
+			outputLines.push(" {{mermaid");
+			outputLines.push(MERMAID_CLASSIC_FRONTMATTER);
+			String(contentItem ?? "")
+				.split("\n")
+				.forEach((line) => outputLines.push(line));
+			outputLines.push("}}");
+		});
 	else if (blockData.type === "image")
 		contents.forEach((contentItem) =>
 			toNonEmptyTrimmedLines(contentItem).forEach((imageUrl) => outputLines.push("!" + imageUrl.replace(/^!|!$/g, "") + "!")),
