@@ -3,20 +3,30 @@ export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "d
 
 export function label(type) {
 	return ({
-		implementation: "Implementation Unit",
-		text: "Text / Textile",
-		plainText: "純文字（無標題）",
-		command: "Command Block",
-		diff: "Diff Block",
-		log: "Log Block",
-		mermaid: "Mermaid Block",
-		image: "Image",
-		collapse: "Collapse"
-	})[type] || type;
+		implementation: "程式碼",
+		text: "內文",
+		plainText: "純文字",
+		command: "終端指令",
+		diff: "程式碼差異",
+		log: "執行日誌",
+		mermaid: "流程圖",
+		image: "圖片",
+		collapse: "收合區塊",
+	})[type] ?? type;
 }
 
 export function defaultTitle(type) {
-	return type === "implementation" ? "api.c" : type === "plainText" ? "" : label(type);
+	return ({
+		implementation: "api.c",
+		text: "",
+		plainText: "",
+		command: "執行指令",
+		diff: "",
+		log: "執行日誌",
+		mermaid: "流程圖",
+		image: "",
+		collapse: "收合區段",
+	})[type] ?? "";
 }
 
 export function applyDefaults(block) {
