@@ -6,7 +6,7 @@ import {
 	createSection
 } from "../core/state.js";
 
-function splitPatch(text) {
+export function splitPatch(text) {
 	return String(text || "").split(/^diff --git /m).filter(Boolean)
 		.map((part) => "diff --git " + part)
 		.map((chunk) => {
@@ -22,7 +22,7 @@ function splitPatch(text) {
 		.filter((item) => item && item.content);
 }
 
-function elide(name, max = 22) {
+export function elide(name, max = 22) {
 	if (name.length <= max) return name;
 	const keep = Math.max(1, max - 3);
 	const head = Math.ceil(keep * 0.6);
