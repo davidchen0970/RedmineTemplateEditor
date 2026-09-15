@@ -202,8 +202,8 @@ export function setupTextCodeContextMenu() {
 			"beforeend",
 			`
 				<div class="text-code-menu-divider" aria-hidden="true"></div>
-				<button type="button" class="inline_code" data-inline-code="true">標成 Code</button>
-				<button type="button" data-clear-inline-code="true">清除 Code</button>
+				<button type="button" class="inline_code" data-inline-code="true">標示為程式碼</button>
+				<button type="button" data-clear-inline-code="true">清除程式碼標示</button>
 			`,
 		);
 		activeMenu.dataset.codeMenuReady = "true";

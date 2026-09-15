@@ -93,7 +93,7 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 		<label class="field">區塊標題<input data-btitle value="${blockTitle}"></label>
 		${implementation}
 		<div data-contents></div>
-		<button class="small primary" data-add-content>新增 content</button>
+		<button class="small primary" data-add-content>新增內容</button>
 		</div>
 	`;
 
@@ -129,7 +129,7 @@ export function renderContents(element, block) {
 
 		item.innerHTML = `
 			<div class="actions block-actions">
-				<span class="note">content #${index + 1}</span>
+				<span class="note">內容 #${index + 1}</span>
 				<span>
 					<button class="small" data-dup-content="${index}">複製</button>
 					<button class="small danger" data-del-content="${index}">刪除</button>

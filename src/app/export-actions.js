@@ -13,7 +13,7 @@ export function setupExportActions({ getState, renderer, setExportStatus }) {
 			document.getElementById("out").select();
 			document.execCommand("copy");
 		}
-		renderer.toast("已複製 Redmine Textile, 強制儲存至 JSON file");
+		renderer.toast("已複製 Textile，並同時儲存成 JSON 檔案");
 		setExportStatus("json");
 	};
 	document.getElementById("txt").onclick = () => {
