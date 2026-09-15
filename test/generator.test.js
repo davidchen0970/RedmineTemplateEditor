@@ -2,33 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { textile } from "../src/textile/generator.js";
 import {
-	createImplementationBlock,
 	createSection,
 	makeState,
 } from "../src/core/state.js";
-import { makeBlock, stateWithMermaid } from "./_fixtures.js";
-
-function stateWithImplementation() {
-	const s = makeState();
-	s.title = "impl";
-	s.sections = [
-		createSection("實作", true, [
-			createImplementationBlock("api.c", "(docker)$ pwd", "c", "int x;"),
-		]),
-	];
-	return s;
-}
-
-function stateWithEnvironment() {
-	const s = makeState();
-	s.title = "env";
-	s.environment = [
-		{ id: "a", label: "System Model", value: "DVT2", enabled: true, custom: false },
-		{ id: "b", label: "BIOS", value: "", enabled: true, custom: false },
-		{ id: "c", label: "OS / Kernel", value: "Ubuntu 22.04", enabled: false, custom: false },
-	];
-	return s;
-}
+import { makeBlock, stateWithEnvironment, stateWithImplementation, stateWithMermaid } from "./_fixtures.js";
 
 test("environment emits only enabled and filled items", () => {
 	const out = textile(stateWithEnvironment());
