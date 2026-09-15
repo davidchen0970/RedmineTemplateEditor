@@ -21,3 +21,15 @@ test("output panel title rises in once with a small h2 stagger", () => {
 	);
 	assert.match(css, /\.output-title h2\s*\{[\s\S]*?animation-delay:\s*60ms/);
 });
+
+test("header localStorage controls ease on hover and focus", () => {
+	assert.match(
+		css,
+		/\.add-block-dialog \.actions input:focus\s*\{[\s\S]*?box-shadow:\s*0 0 0 3px var\(--soft\)/
+	);
+	assert.match(
+		css,
+		/\.add-block-dialog \.actions input:hover\s*\{[\s\S]*?transform:\s*translateY\(-1px\)/
+	);
+	assert.match(css, /\.storage-actions select:focus,/);
+});

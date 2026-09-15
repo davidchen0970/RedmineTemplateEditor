@@ -219,3 +219,29 @@ dialog.closing::backdrop {
 .output-title h2 {
 	animation-delay: 60ms;
 }
+
+.storage-actions input,
+.storage-actions select,
+.add-block-dialog .actions input {
+	transition:
+		border-color var(--mo) var(--mo-easeio),
+		box-shadow var(--mo) var(--mo-easeio),
+		background var(--mo) var(--mo-easeio),
+		transform var(--mo-fast) var(--mo-ease);
+}
+
+.storage-actions input:hover,
+.storage-actions select:hover,
+.add-block-dialog .actions input:hover {
+	border-color: var(--primary);
+	background: color-mix(in srgb, var(--field) 92%, var(--soft));
+	transform: translateY(-1px);
+}
+
+.storage-actions input:focus,
+.storage-actions select:focus,
+.add-block-dialog .actions input:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px var(--soft);
+}
