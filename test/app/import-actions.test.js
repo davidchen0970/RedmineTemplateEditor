@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { splitPatch, elide } from "../src/app/import-actions.js";
+import { splitPatch, elide } from "../../src/app/import-actions.js";
 
 const SAMPLE_DIFF = `diff --git a/src/editor/block-view.js b/src/editor/block-view.js
 index 111..222 100644

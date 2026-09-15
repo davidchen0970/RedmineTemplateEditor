@@ -8,7 +8,7 @@ import {
 	normalizeState,
 	safe,
 	toNonEmptyTrimmedLines,
-} from "../src/core/state.js";
+} from "../../src/core/state.js";
 
 test("escapeHtml escapes &, <, >, and quotes", () => {
 	assert.equal(escapeHtml("<a href=\"x&y\">"), "&lt;a href=&quot;x&amp;y&quot;&gt;");
@@ -121,7 +121,7 @@ test("safe replaces reserved characters with underscore", () => {
 	assert.equal(safe('my:file/name?.txt'), "my_file_name_.txt");
 });
 
-import { createImplementationBlock, createEnvItem, normalizeEnvironment, environmentFields } from "../src/core/state.js";
+import { createImplementationBlock, createEnvItem, normalizeEnvironment, environmentFields } from "../../src/core/state.js";
 
 
 test("makeState deep-copies presets and does not share section arrays across calls", () => {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { textileToPreviewHtml } from "../src/textile/preview.js";
+import { textileToPreviewHtml } from "../../src/textile/preview.js";
 
 test("h2 heading renders an <h2>", () => {
 	const html = textileToPreviewHtml("h2. 標題\n\n內文\n");
@@ -89,7 +89,7 @@ test("a standalone !image! line renders an <img> without throwing", () => {
 	assert.match(html, /src="diagram.png"/);
 });
 
-import { renderInlineTextile, parsePreviewTableRow, renderPreviewCodeHtml } from "../src/textile/preview-inline.js";
+import { renderInlineTextile, parsePreviewTableRow, renderPreviewCodeHtml } from "../../src/textile/preview-inline.js";
 
 
 const render = (textileText) => textileToPreviewHtml("\n" + textileText + "\n");

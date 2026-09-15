@@ -29,8 +29,8 @@ const {
 	loadState,
 	saveState,
 	LEGACY_STORAGE_KEY,
-} = await import("../src/core/storage.js");
-const stateModule = await import("../src/core/state.js");
+} = await import("../../src/core/storage.js");
+const stateModule = await import("../../src/core/state.js");
 
 test("pageStoragePrefix encodes origin+path and strips a trailing slash", () => {
 	const prefix = pageStoragePrefix();

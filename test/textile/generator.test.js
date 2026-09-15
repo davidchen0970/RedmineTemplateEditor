@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { textile } from "../src/textile/generator.js";
+import { textile } from "../../src/textile/generator.js";
 import {
 	createSection,
 	makeState,
-} from "../src/core/state.js";
-import { makeBlock, stateWithEnvironment, stateWithImplementation, stateWithMermaid } from "./_fixtures.js";
+} from "../../src/core/state.js";
+import { makeBlock, stateWithEnvironment, stateWithImplementation, stateWithMermaid } from "../_fixtures.js";
 
 test("environment emits only enabled and filled items", () => {
 	const out = textile(stateWithEnvironment());

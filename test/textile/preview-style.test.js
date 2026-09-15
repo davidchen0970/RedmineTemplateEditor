@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
 	normalizePreviewCssStyle,
 	renderPreviewTextileStyleSpans,
-} from "../src/textile/preview-style.js";
+} from "../../src/textile/preview-style.js";
 
 test("bright hex background gets a forced dark text color", () => {
 	const html = renderPreviewTextileStyleSpans("%{background:#fff}hi%");
@@ -75,7 +75,7 @@ test("normalizePreviewCssStyle rejects invalid declarations", () => {
 	assert.equal(normalizePreviewCssStyle(" ; "), "");
 });
 
-import { normalizePreviewCssColor, parsePreviewColorRgb, isHighBrightnessBackground } from "../src/textile/preview-style.js";
+import { normalizePreviewCssColor, parsePreviewColorRgb, isHighBrightnessBackground } from "../../src/textile/preview-style.js";
 
 
 test("normalizePreviewCssColor keeps only a safe colour charset", () => {

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 
-const indexHtml = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../index.html"), "utf8");
+const indexHtml = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../../index.html"), "utf8");
 
 test("mermaid is loaded from a pinned version", () => {
 	const urls = [...indexHtml.matchAll(/https:\/\/cdn\.jsdelivr\.net\/npm\/mermaid(@[^/]*)?\/dist\/mermaid\.esm\.min\.mjs/g)]
