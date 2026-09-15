@@ -262,3 +262,28 @@ dialog.closing::backdrop {
 .card:active {
 	transform: scale(0.985);
 }
+
+.redmine-preview a {
+	transition: color var(--mo) var(--mo-easeio);
+}
+
+.redmine-preview summary {
+	transition: background var(--mo) var(--mo-easeio), color var(--mo) var(--mo-easeio);
+}
+
+.redmine-preview summary:hover {
+	background: var(--soft);
+	color: var(--primary);
+}
+
+.redmine-preview img.preview-image-pick {
+	transition:
+		border-color var(--mo) var(--mo-easeio),
+		background var(--mo) var(--mo-easeio),
+		box-shadow var(--mo) var(--mo-easeio),
+		transform var(--mo-fast) var(--mo-ease);
+}
+
+.redmine-preview img.preview-image-pick:hover {
+	transform: scale(1.05);
+}

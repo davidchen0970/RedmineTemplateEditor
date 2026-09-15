@@ -39,3 +39,12 @@ test("template cards lift on hover and press down", () => {
 	assert.match(css, /\.card\s*\{[^{}]*transition:[^{}]*var\(--mo-fast\)/);
 	assert.match(css, /\.card:hover\s*\{[\s\S]*?box-shadow:\s*0 6px 14px/);
 });
+
+test("preview links, summaries and pick images ease on hover", () => {
+	assert.match(
+		css,
+		/\.redmine-preview img\.preview-image-pick:hover\s*\{[\s\S]*?transform:\s*scale\(1\.05\)/
+	);
+	assert.match(css, /\.redmine-preview summary:hover\s*\{[\s\S]*?color:\s*var\(--primary\)/);
+	assert.match(css, /\.redmine-preview a\s*\{[^{}]*transition:\s*color/);
+});
