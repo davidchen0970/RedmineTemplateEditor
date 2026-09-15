@@ -205,3 +205,8 @@ dialog.closing::backdrop {
 		padding var(--mo) var(--mo-easeio),
 		opacity var(--mo) var(--mo-easeio);
 }
+
+.output:not(.hidden),
+.redmine-preview:not(.hidden) {
+	animation: mo-fade var(--mo) var(--mo-ease) both;
+}
