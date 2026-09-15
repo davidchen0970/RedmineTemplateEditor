@@ -1,142 +1,23 @@
+import { applyCodeWrap, clearCodeWrap } from "./code-markers.js";
+
+function applyEdit(inputElement, result) {
+	if (!result) return false;
+	inputElement.value = result.value;
+	focusAndSelect(inputElement, result.start, result.end);
+	dispatchTextInput(inputElement, result.value);
+	return true;
+}
+
 function applyCodeToTextareaSelection(inputElement) {
 	const start = inputElement.selectionStart;
 	const end = inputElement.selectionEnd;
-	if (
-		typeof start !== "number" ||
-		typeof end !== "number" ||
-		start === end
-	) {
-		return false;
-	}
-
-	const value = inputElement.value;
-	const selected = value.slice(start, end);
-
-	// If the full selection is already @code@, keep the content and avoid
-	// adding another pair of markers.
-	const whole = selected.match(/^@([^@]+)@$/);
-	if (whole) {
-		const wrapped = buildCode(whole[1]);
-		replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
-		return true;
-	}
-
-	// If the selected range is inside an existing @code@ span, split the span
-	// and keep all pieces as code. This mirrors the color/background menu behavior
-	// and prevents broken marker pairs.
-	const range = findCodeRange(value, start, end);
-	if (range && start >= range.contentStart && end <= range.contentEnd) {
-		const beforeInner = value.slice(range.contentStart, start);
-		const selectedInner = value.slice(start, end);
-		const afterInner = value.slice(end, range.contentEnd);
-
-		let replacement = "";
-		if (beforeInner) {
-			replacement += buildCode(beforeInner);
-		}
-		replacement += buildCode(selectedInner);
-		if (afterInner) {
-			replacement += buildCode(afterInner);
-		}
-
-		inputElement.value =
-			value.slice(0, range.matchStart) +
-			replacement +
-			value.slice(range.matchEnd);
-
-		const preservedBeforeLength = beforeInner ? buildCode(beforeInner).length : 0;
-		const newStart = range.matchStart + preservedBeforeLength;
-		const newEnd = newStart + buildCode(selectedInner).length;
-
-		focusAndSelect(inputElement, newStart, newEnd);
-		dispatchTextInput(inputElement, replacement);
-		return true;
-	}
-
-	const wrapped = buildCode(selected);
-	replaceTextareaRange(inputElement, start, end, wrapped, wrapped);
-	return true;
+	return applyEdit(inputElement, applyCodeWrap(inputElement.value, start, end));
 }
 
 function clearCodeFromTextareaSelection(inputElement) {
 	const start = inputElement.selectionStart;
 	const end = inputElement.selectionEnd;
-	if (
-		typeof start !== "number" ||
-		typeof end !== "number" ||
-		start === end
-	) {
-		return false;
-	}
-
-	const value = inputElement.value;
-	const range = findCodeRange(value, start, end);
-
-	// If the selection is inside @code@, remove code only from the selected
-	// substring and preserve the unselected sides as code.
-	if (range && start >= range.contentStart && end <= range.contentEnd) {
-		const before = value.slice(range.contentStart, start);
-		const selected = value.slice(start, end);
-		const after = value.slice(end, range.contentEnd);
-
-		let replacement = "";
-		if (before) {
-			replacement += buildCode(before);
-		}
-		replacement += selected;
-		if (after) {
-			replacement += buildCode(after);
-		}
-
-		inputElement.value =
-			value.slice(0, range.matchStart) +
-			replacement +
-			value.slice(range.matchEnd);
-
-		const preservedBeforeLength = before ? buildCode(before).length : 0;
-		const newStart = range.matchStart + preservedBeforeLength;
-
-		focusAndSelect(inputElement, newStart, newStart + selected.length);
-		dispatchTextInput(inputElement, replacement);
-		return true;
-	}
-
-	// Clear complete @code@ spans contained in the selection.
-	const selected = value.slice(start, end);
-	const cleaned = selected.replace(/@([^@]+)@/g, "$1");
-	replaceTextareaRange(inputElement, start, end, cleaned, cleaned);
-	return true;
-}
-
-function buildCode(text) {
-	return `@${text}@`;
-}
-
-function findCodeRange(value, start, end) {
-	const codePattern = /@([^@]+)@/g;
-	let match;
-	while ((match = codePattern.exec(value))) {
-		const matchStart = match.index;
-		const contentStart = matchStart + 1;
-		const contentEnd = matchStart + match[0].length - 1;
-		const matchEnd = matchStart + match[0].length;
-		if (start >= matchStart && end <= matchEnd) {
-			return {
-				matchStart,
-				contentStart,
-				contentEnd,
-				matchEnd,
-				inner: match[1],
-			};
-		}
-	}
-	return null;
-}
-
-function replaceTextareaRange(inputElement, start, end, replacement, inputData) {
-	inputElement.value = inputElement.value.slice(0, start) + replacement + inputElement.value.slice(end);
-	focusAndSelect(inputElement, start, start + replacement.length);
-	dispatchTextInput(inputElement, inputData);
+	return applyEdit(inputElement, clearCodeWrap(inputElement.value, start, end));
 }
 
 function focusAndSelect(inputElement, start, end) {
