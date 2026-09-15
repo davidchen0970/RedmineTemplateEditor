@@ -2,6 +2,8 @@ import { escapeHtml, createSection, createId } from "../../core/state.js";
 import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
 import { slideReorder } from "../motion/card-slide.js";
 import { markEntering, markLeaving } from "../motion/card-stage.js";
+import { confirmDelete } from "../dialogs/confirm-dialog.js";
+import { openPrompt } from "../dialogs/prompt-dialog.js";
 import { sectionCard } from "../dom/card.js";
 export function createSectionRenderer({
 	getState,
@@ -16,11 +18,19 @@ export function createSectionRenderer({
 	const locate = sectionCard;
 
 	function add(title = "新增段落") {
-		const section = createSection(prompt("段落標題 h3.", title) || title, true);
-		getState().sections.push(section);
-		changed();
-		renderAll();
-		markEntering(section.id, locate);
+		openPrompt({
+			heading: "新增段落",
+			label: "段落標題 h3.",
+			value: title,
+			confirmLabel: "新增",
+			onConfirm: (value) => {
+				const section = createSection(value || title, true);
+				getState().sections.push(section);
+				changed();
+				renderAll();
+				markEntering(section.id, locate);
+			},
+		});
 	}
 
 	function duplicate(sectionId) {
@@ -41,15 +51,26 @@ export function createSectionRenderer({
 		markEntering(copy.id, locate);
 	}
 
+	// state 需在 onConfirm 時另行讀取（dialog 是異步回的）
 	function remove(sectionId) {
 		const state = getState(),
 			section = find(sectionId);
-		if (!section || !confirm(`刪除段落「${section.title}」？`)) return;
-		markLeaving(sectionId, locate, () => {
-			state.sections = state.sections.filter((item) => item.id !== sectionId);
-			if (state.ui?.collapsed?.sections) delete state.ui.collapsed.sections[sectionId];
-			changed();
-			renderAll();
+		if (!section) return;
+		confirmDelete({
+			heading: "刪除段落",
+			text: `刪除段落「${section.title}」？`,
+			confirmLabel: "刪除",
+			onConfirm: () => {
+				const current = find(sectionId);
+				if (!current) return;
+				markLeaving(sectionId, locate, () => {
+					const live = getState();
+					live.sections = live.sections.filter((item) => item.id !== sectionId);
+					if (live.ui?.collapsed?.sections) delete live.ui.collapsed.sections[sectionId];
+					changed();
+					renderAll();
+				});
+			},
 		});
 	}
 
