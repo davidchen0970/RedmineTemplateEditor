@@ -337,3 +337,35 @@ dialog.closing::backdrop {
 	box-shadow: none;
 	color: var(--primary);
 }
+
+.block.is-entering,
+.section.is-entering {
+	animation: rte-pop 200ms ease-out;
+}
+
+@keyframes rte-pop {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.block.is-leaving,
+.section.is-leaving {
+	animation: rte-leave 200ms ease-in forwards;
+}
+
+@keyframes rte-leave {
+	from {
+		opacity: 1;
+		transform: none;
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.98);
+	}
+}

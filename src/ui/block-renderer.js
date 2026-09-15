@@ -2,6 +2,7 @@ import { createId, DEFAULT_CODE_LANG } from "../core/state.js";
 import { ensureBlockContents } from "../textile/generator.js";
 import { applyDefaults, createBlockElement, renderContents } from "./block-view.js";
 import { getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
+import { slideReorder, markEntering, markLeaving } from "./reorder-animate.js";
 
 export function createBlockRenderer({
 	getState,
@@ -14,9 +15,12 @@ export function createBlockRenderer({
 		const index = section.blocks.findIndex((item) => item.id === blockId);
 		const target = index + direction;
 		if (index < 0 || target < 0 || target >= section.blocks.length) return;
+		const locate = (id) => document.querySelector('.block[data-block="' + id + '"]');
+		const play = slideReorder([section.blocks[index].id, section.blocks[target].id], locate);
 		[section.blocks[index], section.blocks[target]] = [section.blocks[target], section.blocks[index]];
 		changed();
 		renderAll();
+		play();
 	}
 
 	function duplicate(sectionId, source) {
@@ -29,6 +33,7 @@ export function createBlockRenderer({
 		section.blocks.splice(index + 1, 0, copy);
 		changed();
 		renderAll();
+		markEntering(copy.id, (id) => document.querySelector('.block[data-block="' + id + '"]'));
 	}
 
 	function bind(element, sectionId, block, maxLevel) {
@@ -53,9 +58,11 @@ export function createBlockRenderer({
 		element.querySelector("[data-bup]").onclick = () => move(sectionId, block.id, -1);
 		element.querySelector("[data-bdown]").onclick = () => move(sectionId, block.id, 1);
 		element.querySelector("[data-del]").onclick = () => {
-			findSection(sectionId).blocks = findSection(sectionId).blocks.filter((item) => item.id !== block.id);
-			changed();
-			renderAll();
+			markLeaving(block.id, (id) => document.querySelector('.block[data-block="' + id + '"]'), () => {
+				findSection(sectionId).blocks = findSection(sectionId).blocks.filter((item) => item.id !== block.id);
+				changed();
+				renderAll();
+			});
 		};
 		element.querySelector("[data-du]").onclick = () => duplicate(sectionId, block);
 		element.querySelector("[data-add-content]").onclick = () => {
@@ -131,6 +138,7 @@ export function createBlockRenderer({
 		block.level = normalizeBlockLevel(block.level, maxLevel);
 		applyDefaults(block);
 		const element = createBlockElement(block, maxLevel, { open });
+		element.dataset.block = block.id;
 		renderContents(element, block);
 		bind(element, sectionId, block, maxLevel);
 		return element;

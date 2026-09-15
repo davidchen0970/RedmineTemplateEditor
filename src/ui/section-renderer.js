@@ -1,5 +1,6 @@
 import { escapeHtml, createSection, createId } from "../core/state.js";
 import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
+import { slideReorder, markEntering, markLeaving } from "./reorder-animate.js";
 export function createSectionRenderer({
 	getState,
 	changed,
@@ -10,11 +11,14 @@ export function createSectionRenderer({
 	addBlock
 }) {
 	const find = (sectionId) => getState().sections.find((section) => section.id === sectionId);
+	const locate = (id) => document.getElementById("section-body-" + id)?.closest(".section") || null;
 
 	function add(title = "新增段落") {
-		getState().sections.push(createSection(prompt("段落標題 h3.", title) || title, true));
+		const section = createSection(prompt("段落標題 h3.", title) || title, true);
+		getState().sections.push(section);
 		changed();
 		renderAll();
+		markEntering(section.id, locate);
 	}
 
 	function duplicate(sectionId) {
@@ -32,17 +36,19 @@ export function createSectionRenderer({
 		state.sections.splice(index + 1, 0, copy);
 		changed();
 		renderAll();
+		markEntering(copy.id, locate);
 	}
 
 	function remove(sectionId) {
 		const state = getState(),
 			section = find(sectionId);
-		if (section && confirm(`刪除段落「${section.title}」？`)) {
+		if (!section || !confirm(`刪除段落「${section.title}」？`)) return;
+		markLeaving(sectionId, locate, () => {
 			state.sections = state.sections.filter((item) => item.id !== sectionId);
 			if (state.ui?.collapsed?.sections) delete state.ui.collapsed.sections[sectionId];
 			changed();
 			renderAll();
-		}
+		});
 	}
 
 	function move(sectionId, direction) {
@@ -50,9 +56,11 @@ export function createSectionRenderer({
 			index = state.sections.findIndex((item) => item.id === sectionId),
 			target = index + direction;
 		if (index < 0 || target < 0 || target >= state.sections.length) return;
+		const play = slideReorder([state.sections[index].id, state.sections[target].id], locate);
 		[state.sections[index], state.sections[target]] = [state.sections[target], state.sections[index]];
 		changed();
 		renderAll();
+		play();
 	}
 
 	function render({ openBlockId = null } = {}) {

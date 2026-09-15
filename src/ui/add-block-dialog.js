@@ -1,5 +1,6 @@
 import { block, createImplementationBlock } from "../core/state.js";
 import { BLOCK_TYPES, defaultTitle, label } from "./block-view.js";
+import { markEntering } from "./reorder-animate.js";
 export function createAddBlockDialog({
 	findSection,
 	changed,
@@ -84,6 +85,7 @@ export function createAddBlockDialog({
 			dialog.close();
 			changed();
 			renderAll({ openBlockId: newBlock.id });
+			markEntering(newBlock.id, (id) => document.querySelector('.block[data-block="' + id + '"]'));
 		};
 		return dialog;
 	}
