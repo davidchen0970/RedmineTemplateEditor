@@ -1,4 +1,5 @@
 import { registerPreviewImage } from "../../textile/preview.js";
+import { readFileAsDataUrl } from "../io/read.js";
 
 export function setupImageReplacePicker(renderPreview) {
 	const preview = document.getElementById("preview");
@@ -36,20 +37,18 @@ export function setupImageReplacePicker(renderPreview) {
 
 	fileInput.addEventListener("change", () => {
 		const file = fileInput.files[0];
-		pendingName =
-			file && file.type && file.type.startsWith("image/") ? pendingName : null;
+		pendingName = file && file.type && file.type.startsWith("image/") ? pendingName : null;
 		if (!pendingName) return;
-		const reader = new FileReader();
-		reader.onload = () => {
-			const name = pendingName;
-			pendingName = null;
-			registerPreviewImage(name, reader.result);
-			if (typeof renderPreview === "function") renderPreview();
-		};
-		reader.onerror = () => {
-			pendingName = null;
-		};
-		reader.readAsDataURL(file);
+		readFileAsDataUrl(file)
+			.then((dataUrl) => {
+				const name = pendingName;
+				pendingName = null;
+				registerPreviewImage(name, dataUrl);
+				if (typeof renderPreview === "function") renderPreview();
+			})
+			.catch(() => {
+				pendingName = null;
+			});
 	});
 
 	return () => fileInput.remove();

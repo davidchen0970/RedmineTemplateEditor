@@ -1,4 +1,5 @@
 import { registerPreviewImage } from "../textile/preview.js";
+import { readFileAsDataUrl } from "../ui/io/read.js";
 
 export function setupImageDrop() {
 	document.addEventListener("dragover", (event) => {
@@ -14,15 +15,7 @@ export function setupImageDrop() {
 		if (!target) return;
 
 		Promise.all(
-			files.map(
-				(file) =>
-					new Promise((resolve, reject) => {
-						const reader = new FileReader();
-						reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
-						reader.onerror = () => reject(reader.error);
-						reader.readAsDataURL(file);
-					}),
-			),
+			files.map((file) => readFileAsDataUrl(file).then((dataUrl) => ({ name: file.name, dataUrl }))),
 		)
 			.then((images) => {
 			const firstImage = target.value != null ? target.value : "";
