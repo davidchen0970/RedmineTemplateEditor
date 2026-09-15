@@ -1,10 +1,10 @@
 import { createFormRenderer } from "./form-renderer.js";
 import { createBlockRenderer } from "./block-renderer.js";
-import { createAddBlockDialog } from "./add-block-dialog.js";
+import { createAddBlockDialog } from "../dialogs/add-block-dialog.js";
 import { createSectionRenderer } from "./section-renderer.js";
-import { renderOutput } from "./output-view.js";
-import { toast, showPatchProgress, hidePatchProgress } from "./notifications.js";
-import { addVerificationSnippet as appendVerificationSnippet } from "./verification-snippets.js";
+import { renderOutput } from "../output/output-view.js";
+import { toast, showPatchProgress, hidePatchProgress } from "../shell/notifications.js";
+import { addVerificationSnippet as appendVerificationSnippet } from "../formatting/verification-snippets.js";
 export { label } from "./block-view.js";
 
 export function createRenderer(context) {

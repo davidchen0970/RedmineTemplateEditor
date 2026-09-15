@@ -1,8 +1,10 @@
-import { createId, DEFAULT_CODE_LANG } from "../core/state.js";
-import { ensureBlockContents } from "../textile/generator.js";
+import { createId, DEFAULT_CODE_LANG } from "../../core/state.js";
+import { ensureBlockContents } from "../../textile/generator.js";
 import { applyDefaults, createBlockElement, renderContents } from "./block-view.js";
 import { getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
-import { slideReorder, markEntering, markLeaving } from "./reorder-animate.js";
+import { slideReorder } from "../motion/card-slide.js";
+import { markEntering, markLeaving } from "../motion/card-stage.js";
+import { blockCard } from "../dom/card.js";
 
 export function createBlockRenderer({
 	getState,
@@ -15,7 +17,7 @@ export function createBlockRenderer({
 		const index = section.blocks.findIndex((item) => item.id === blockId);
 		const target = index + direction;
 		if (index < 0 || target < 0 || target >= section.blocks.length) return;
-		const locate = (id) => document.querySelector('.block[data-block="' + id + '"]');
+		const locate = blockCard;
 		const play = slideReorder([section.blocks[index].id, section.blocks[target].id], locate);
 		[section.blocks[index], section.blocks[target]] = [section.blocks[target], section.blocks[index]];
 		changed();
@@ -33,7 +35,7 @@ export function createBlockRenderer({
 		section.blocks.splice(index + 1, 0, copy);
 		changed();
 		renderAll();
-		markEntering(copy.id, (id) => document.querySelector('.block[data-block="' + id + '"]'));
+		markEntering(copy.id, blockCard);
 	}
 
 	function bind(element, sectionId, block, maxLevel) {
@@ -58,7 +60,7 @@ export function createBlockRenderer({
 		element.querySelector("[data-bup]").onclick = () => move(sectionId, block.id, -1);
 		element.querySelector("[data-bdown]").onclick = () => move(sectionId, block.id, 1);
 		element.querySelector("[data-del]").onclick = () => {
-			markLeaving(block.id, (id) => document.querySelector('.block[data-block="' + id + '"]'), () => {
+			markLeaving(block.id, blockCard, () => {
 				findSection(sectionId).blocks = findSection(sectionId).blocks.filter((item) => item.id !== block.id);
 				changed();
 				renderAll();

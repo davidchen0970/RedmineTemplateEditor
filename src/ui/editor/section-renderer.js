@@ -1,6 +1,8 @@
-import { escapeHtml, createSection, createId } from "../core/state.js";
+import { escapeHtml, createSection, createId } from "../../core/state.js";
 import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
-import { slideReorder, markEntering, markLeaving } from "./reorder-animate.js";
+import { slideReorder } from "../motion/card-slide.js";
+import { markEntering, markLeaving } from "../motion/card-stage.js";
+import { sectionCard } from "../dom/card.js";
 export function createSectionRenderer({
 	getState,
 	changed,
@@ -11,7 +13,7 @@ export function createSectionRenderer({
 	addBlock
 }) {
 	const find = (sectionId) => getState().sections.find((section) => section.id === sectionId);
-	const locate = (id) => document.getElementById("section-body-" + id)?.closest(".section") || null;
+	const locate = sectionCard;
 
 	function add(title = "新增段落") {
 		const section = createSection(prompt("段落標題 h3.", title) || title, true);
