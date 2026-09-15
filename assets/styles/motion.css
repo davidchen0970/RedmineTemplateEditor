@@ -287,3 +287,19 @@ dialog.closing::backdrop {
 .redmine-preview img.preview-image-pick:hover {
 	transform: scale(1.05);
 }
+
+.block-collapsible {
+	overflow: hidden;
+	transition:
+		height var(--mo-slow) var(--mo-ease),
+		padding var(--mo) var(--mo-easeio),
+		opacity var(--mo) var(--mo-easeio);
+}
+
+.block-collapsible[hidden] {
+	display: block;
+	height: 0;
+	padding-block: 0;
+	opacity: 0;
+	pointer-events: none;
+}

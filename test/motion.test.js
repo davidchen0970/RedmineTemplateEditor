@@ -48,3 +48,9 @@ test("preview links, summaries and pick images ease on hover", () => {
 	assert.match(css, /\.redmine-preview summary:hover\s*\{[\s\S]*?color:\s*var\(--primary\)/);
 	assert.match(css, /\.redmine-preview a\s*\{[^{}]*transition:\s*color/);
 });
+
+test("block bodies collapse by animating height", () => {
+	assert.match(css, /\.block-collapsible\s*\{[^{}]*transition:[\s\S]*?height var\(--mo-slow\)/);
+	assert.match(css, /\.block-collapsible\[hidden\]\s*\{[\s\S]*?\bdisplay:\s*block/);
+	assert.match(css, /\.block-collapsible\[hidden\]\s*\{[\s\S]*?\bheight:\s*0;/);
+});
