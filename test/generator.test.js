@@ -6,18 +6,7 @@ import {
 	createSection,
 	makeState,
 } from "../src/core/state.js";
-
-function stateWithMermaid() {
-	const s = makeState();
-	s.title = "樣本";
-	s.sections = [createSection("圖表", true, [makeBlock("mermaid", "diag", "flowchart LR\nA-->B")])];
-	return s;
-}
-
-function makeBlock(type, title, content = "") {
-	const presets = { block: null };
-	return { id: "x", type, title, contents: content ? [content] : [""], level: 1 };
-}
+import { makeBlock, stateWithMermaid } from "./_fixtures.js";
 
 function stateWithImplementation() {
 	const s = makeState();
