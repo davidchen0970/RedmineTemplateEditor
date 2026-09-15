@@ -18,8 +18,32 @@ export function renderOutput(state, view) {
 	document.querySelectorAll(".segmented button").forEach((button) => button.classList.remove("active"));
 	const activeId = { raw: "raw", preview: "previewbtn", json: "statebtn" }[view];
 	document.getElementById(activeId)?.classList.add("active");
+	slideSegmentedIndicator();
 	const stats = document.getElementById("stats");
 	if (stats) stats.textContent = `${raw.length} 字元 · ${raw.split("\n").length} 行`;
+}
+
+export function segmentedIndicatorPosition(groupRect, buttonRect) {
+	return {
+		left: Math.round(buttonRect.left - groupRect.left),
+		width: Math.round(buttonRect.width),
+	};
+}
+
+function slideSegmentedIndicator() {
+	const group = document.querySelector(".segmented");
+	const active = group?.querySelector(".active");
+	if (!group || !active) return;
+	const pos = segmentedIndicatorPosition(
+		group.getBoundingClientRect(),
+		active.getBoundingClientRect()
+	);
+	group.style.setProperty("--seg-left", `${pos.left}px`);
+	group.style.setProperty("--seg-w", `${pos.width}px`);
+}
+
+if (typeof window !== "undefined") {
+	window.addEventListener("resize", slideSegmentedIndicator);
 }
 
 const mermaidCache = new Map();

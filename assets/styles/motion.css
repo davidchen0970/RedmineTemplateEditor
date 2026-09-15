@@ -303,3 +303,37 @@ dialog.closing::backdrop {
 	opacity: 0;
 	pointer-events: none;
 }
+
+.segmented {
+	position: relative;
+	isolation: isolate;
+}
+
+.segmented::after {
+	content: "";
+	position: absolute;
+	z-index: 0;
+	top: 4px;
+	bottom: 4px;
+	left: var(--seg-left, 4px);
+	width: var(--seg-w, 56px);
+	border-radius: 10px;
+	background: var(--panel);
+	box-shadow: 0 2px 8px rgba(15, 23, 42, .12);
+	pointer-events: none;
+	transition:
+		left var(--mo-slow) var(--mo-ease),
+		width var(--mo-slow) var(--mo-ease);
+}
+
+.segmented button {
+	position: relative;
+	z-index: 1;
+}
+
+.segmented button.active {
+	transform: none;
+	background: transparent;
+	box-shadow: none;
+	color: var(--primary);
+}
