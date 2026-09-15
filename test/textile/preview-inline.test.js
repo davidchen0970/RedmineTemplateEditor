@@ -7,7 +7,7 @@ import {
 	renderInlineTextile,
 	renderPreviewCodeHtml,
 	renderPreviewImage,
-} from "../src/textile/preview-inline.js";
+} from "../../src/textile/preview-inline.js";
 
 test("renderInlineTextile keeps @code@ as <code>", () => {
 	assert.equal(renderInlineTextile("run @ls -l@"), 'run <code>ls -l</code>');
