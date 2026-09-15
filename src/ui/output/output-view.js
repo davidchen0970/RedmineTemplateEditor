@@ -1,7 +1,7 @@
-import { textile } from "../textile/generator.js";
-import { textileToPreviewHtml } from "../textile/preview.js";
+import { textile } from "../../textile/generator.js";
+import { textileToPreviewHtml } from "../../textile/preview.js";
 import { exportMermaidPng } from "./mermaid-export.js";
-import { onPreviewReRender } from "./preview-scroll-burst.js";
+import { onPreviewReRender } from "../editor/preview-scroll-burst.js";
 
 export function renderOutput(state, view) {
 	const raw = textile(state);

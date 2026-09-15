@@ -1,4 +1,4 @@
-import { registerPreviewImage } from "../textile/preview.js";
+import { registerPreviewImage } from "../../textile/preview.js";
 
 export function setupImageReplacePicker(renderPreview) {
 	const preview = document.getElementById("preview");

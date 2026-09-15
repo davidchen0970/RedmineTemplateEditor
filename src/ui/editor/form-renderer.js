@@ -1,4 +1,4 @@
-import { createEnvItem, normalizeEnvironment, presets, escapeHtml } from "../core/state.js";
+import { createEnvItem, normalizeEnvironment, presets, escapeHtml } from "../../core/state.js";
 
 const ENV_HINTS = {
 	"CPLD 版本": "(ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)",

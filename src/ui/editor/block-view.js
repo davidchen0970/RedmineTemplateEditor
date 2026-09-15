@@ -1,4 +1,4 @@
-import { escapeHtml } from "../core/state.js";
+import { escapeHtml } from "../../core/state.js";
 export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "diff", "log", "mermaid", "image", "collapse"];
 
 export function label(type) {

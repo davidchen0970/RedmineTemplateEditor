@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
-import { segmentedIndicatorPosition } from "../src/ui/output-view.js";
+import { segmentedIndicatorPosition } from "../src/ui/output/output-view.js";
 
 const cssPath = join(dirname(fileURLToPath(import.meta.url)), "../assets/styles/motion.css");
 const css = readFileSync(cssPath, "utf8");

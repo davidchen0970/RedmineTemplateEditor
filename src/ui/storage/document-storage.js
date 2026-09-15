@@ -10,9 +10,9 @@ import {
     normalizeState,
     renameDocument,
     setActiveDocumentId,
-} from "../core/state.js";
-import { resetPreviewScroll } from "./preview-scroll-burst.js";
-import { openNewDocDialog } from "./new-doc-dialog.js";
+} from "../../core/state.js";
+import { resetPreviewScroll } from "../editor/preview-scroll-burst.js";
+import { openNewDocDialog } from "../dialogs/new-doc-dialog.js";
 
 function asciiCompare(leftValue, rightValue) {
     const left = String(leftValue || "");

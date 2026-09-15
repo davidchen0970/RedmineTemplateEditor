@@ -1,4 +1,4 @@
-import { block, createSection } from "../core/state.js";
+import { block, createSection } from "../../core/state.js";
 const COMMANDS = {
     journalctl: ["journalctl", "root@bmc-host:~# journalctl -o short-precise | grep obmc-console-server\n..."],
     systemctl: ["systemctl", "root@bmc-host:~# systemctl status obmc-console@ttyS0.service -l\n..."],

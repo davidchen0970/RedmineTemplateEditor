@@ -1,4 +1,4 @@
-import { presets } from "../core/state.js";
+import { presets } from "../../core/state.js";
 
 const EXTRA_SECTIONS = ["測試環境", "參考資料", "附圖", "結論補充"];
 

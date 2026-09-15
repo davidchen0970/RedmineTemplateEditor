@@ -7,15 +7,15 @@ import {
   saveState,
 } from "./core/state.js";
 import { setupFileActions } from "./app/file-actions.js";
-import { setupDocumentStorage } from "./ui/document-storage.js";
-import { createRenderer } from "./ui/renderer.js";
-import { setupTextColorContextMenu } from "./ui/text-color-menu.js";
+import { setupDocumentStorage } from "./ui/storage/document-storage.js";
+import { createRenderer } from "./ui/editor/renderer.js";
+import { setupTextColorContextMenu } from "./ui/formatting/text-color-menu.js";
 import { setupImageDrop } from "./app/image-drop.js";
-import { setupTextCodeContextMenu } from "./ui/text-code-menu.js";
-import { setupTextBackgroundContextMenu } from "./ui/text-background-menu.js";
-import { setupTheme } from "./ui/theme.js";
-import { setupWorkspaceResize } from "./ui/workspace-resize.js";
-import { setupImageReplacePicker } from "./ui/image-replace-picker.js";
+import { setupTextCodeContextMenu } from "./ui/formatting/text-code-menu.js";
+import { setupTextBackgroundContextMenu } from "./ui/formatting/text-background-menu.js";
+import { setupTheme } from "./ui/theme/theme.js";
+import { setupWorkspaceResize } from "./ui/shell/workspace-resize.js";
+import { setupImageReplacePicker } from "./ui/dialogs/image-replace-picker.js";
 
 let activeDocumentId = getActiveDocumentId();
 let state = normalizeState(loadState(activeDocumentId)) || makeState();
