@@ -1,7 +1,7 @@
 import { block, createImplementationBlock } from "../core/state.js";
 import { BLOCK_TYPES, defaultTitle, label } from "./block-view.js";
-import { markEntering } from "./card-stage.js";
-import { blockCard } from "./card-dom.js";
+import { markEntering } from "./motion/card-stage.js";
+import { blockCard } from "./dom/card.js";
 export function createAddBlockDialog({
 	findSection,
 	changed,

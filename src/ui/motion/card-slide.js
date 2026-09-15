@@ -1,4 +1,4 @@
-import { SLIDE_MS, SLIDE_SETTLE_MS } from "./motion-timing.js";
+import { SLIDE_MS, SLIDE_SETTLE_MS } from "./timing.js";
 
 export function reorderOffset(beforeTop, afterTop) {
 	const a = Number(afterTop), b = Number(beforeTop);

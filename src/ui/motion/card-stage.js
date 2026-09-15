@@ -1,4 +1,4 @@
-import { LEAVE_MS } from "./motion-timing.js";
+import { LEAVE_MS } from "./timing.js";
 
 export function markEntering(id, locate) {
 	const el = locate(id);
