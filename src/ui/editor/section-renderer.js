@@ -1,5 +1,5 @@
 import { escapeHtml, createSection, createId } from "../../core/state.js";
-import { isCollapsed, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
+import { isCollapsed, ensureUiState, getMaxBlockLevel, normalizeBlockLevel } from "./ui-state.js";
 import { slideReorder } from "../motion/card-slide.js";
 import { markEntering, markLeaving } from "../motion/card-stage.js";
 import { confirmDelete } from "../dialogs/confirm-dialog.js";
@@ -94,6 +94,17 @@ export function createSectionRenderer({
 		renderAll();
 	}
 
+	function collapseSectionBlocks(sectionId) {
+		const section = find(sectionId);
+		if (!section) return;
+		const ui = ensureUiState(getState());
+		(section.blocks || []).forEach((block) => {
+			ui.collapsed.blocks[block.id] = true;
+		});
+		changed();
+		renderAll();
+	}
+
 	function render({ openBlockId = null } = {}) {
 		const root = document.getElementById("sections");
 		root.replaceChildren();
@@ -116,6 +127,7 @@ export function createSectionRenderer({
 							<button type="button" data-add>新增區塊</button>
 							<button type="button" data-add-section>新增段落</button>
 							<button type="button" data-duplicate>複製段落</button>
+							<button type="button" data-collapse-block>全部收闔區塊</button>
 							<button type="button" data-order>${section.unordered ? "子項目改為有序排列" : "子項目改為無序排列"}</button>
 							<button type="button" class="danger" data-delete>刪除段落</button>
 						</div>
@@ -145,8 +157,16 @@ export function createSectionRenderer({
 			const blocks = element.querySelector("[data-blocks]");
 			(section.blocks || []).forEach((block, index) => {
 				block.level = normalizeBlockLevel(block.level, getMaxBlockLevel(section, index));
+				const isOpen = block.id === openBlockId
+					? true
+					: !isCollapsed(getState(), "blocks", block.id, true);
 				blocks.appendChild(blockRenderer.render(section.id, block, index, {
-					open: block.id === openBlockId
+					open: isOpen,
+					onToggle: (nextOpen) => {
+						const ui = ensureUiState(getState());
+						ui.collapsed.blocks[block.id] = !nextOpen;
+						changed();
+					},
 				}));
 			});
 			element.querySelector("[data-se]").onchange = (event) => {
@@ -171,6 +191,7 @@ export function createSectionRenderer({
 			element.querySelectorAll("[data-add-section]").forEach(btn => btn.onclick = () => add());
 			element.querySelectorAll("[data-delete]").forEach(btn => btn.onclick = () => remove(section.id));
 			element.querySelectorAll("[data-order]").forEach(btn => btn.onclick = () => toggleOrder(section.id));
+			element.querySelectorAll("[data-collapse-block]").forEach(btn => btn.onclick = () => collapseSectionBlocks(section.id));
 		});
 	}
 	return {

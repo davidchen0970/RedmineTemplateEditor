@@ -47,7 +47,7 @@ function options(selected) {
 	).join("");
 }
 
-export function createBlockElement(block, maxLevel, { open = false } = {}) {
+export function createBlockElement(block, maxLevel, { open = false, onToggle = null } = {}) {
 	const element = document.createElement("div");
 	element.className = "block";
 	const showWorkChecked = block.showWorkPath !== false ? "checked" : "";
@@ -111,7 +111,9 @@ export function createBlockElement(block, maxLevel, { open = false } = {}) {
 
 	setOpen(open);
 	toggle.addEventListener("click", () => {
-		setOpen(toggle.getAttribute("aria-expanded") !== "true");
+		const nextOpen = toggle.getAttribute("aria-expanded") !== "true";
+		setOpen(nextOpen);
+		if (onToggle) onToggle(nextOpen);
 	});
 
 	return element;

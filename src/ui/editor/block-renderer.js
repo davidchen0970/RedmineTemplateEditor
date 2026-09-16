@@ -205,13 +205,13 @@ export function createBlockRenderer({
 		});
 	}
 
-	function render(sectionId, block, index = 0, { open = false } = {}) {
+	function render(sectionId, block, index = 0, { open = false, onToggle = null } = {}) {
 		ensureBlockContents(block);
 		const section = findSection(sectionId);
 		const maxLevel = getMaxBlockLevel(section, index);
 		block.level = normalizeBlockLevel(block.level, maxLevel);
 		applyDefaults(block);
-		const element = createBlockElement(block, maxLevel, { open });
+		const element = createBlockElement(block, maxLevel, { open, onToggle });
 		element.dataset.block = block.id;
 		renderContents(element, block);
 		bind(element, sectionId, block, maxLevel, index);
