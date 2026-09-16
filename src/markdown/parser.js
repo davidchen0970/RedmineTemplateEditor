@@ -28,6 +28,11 @@ function imageBlock(url) {
 }
 
 const IMAGE_LINE = /^!\[[^\]]*\]\(([^)]+)\)\s*$/;
+const TEXTILE_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+function convertLinks(line) {
+	return String(line ?? "").replace(TEXTILE_LINK, (_match, text, url) => `"${text}":${url}`);
+}
 
 function blankState() {
 	return {
@@ -107,7 +112,7 @@ export function markdownToState(content) {
 				continue;
 			}
 			if (!block.cur.contents.length && !block.cur.title) block.cur.title = "內文";
-			block.cur.contents.push(item[1]);
+			block.cur.contents.push(convertLinks(item[1]));
 			continue;
 		}
 
@@ -120,7 +125,7 @@ export function markdownToState(content) {
 				continue;
 			}
 			if (!block.cur.contents.length && !block.cur.title) block.cur.title = "內文";
-			block.cur.contents.push(line);
+			block.cur.contents.push(convertLinks(line));
 		}
 	}
 

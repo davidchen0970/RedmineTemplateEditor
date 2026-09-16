@@ -43,3 +43,9 @@ test("md: turns an image link into an image block", () => {
 	assert.equal(images.length, 2);
 	assert.deepEqual(images.map((item) => item.contents), [["http://a.png"], ["http://b.png"]]);
 });
+
+test("md: turns a link into the textile link form", () => {
+	const s = markdownToState("# t\n## 段\n[文件](http://ex.com/doc)\n- [原始碼](http://ex.com/src)");
+	const contents = s.sections[0].blocks.flatMap((item) => item.contents);
+	assert.deepEqual(contents, ['"文件":http://ex.com/doc', '"原始碼":http://ex.com/src']);
+});
