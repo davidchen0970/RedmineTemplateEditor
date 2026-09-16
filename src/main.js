@@ -12,6 +12,7 @@ import { createRenderer } from "./ui/editor/renderer.js";
 import { setupTextColorContextMenu } from "./ui/formatting/text-color-menu.js";
 import { setupImageDrop } from "./app/image-drop.js";
 import { setupTextCodeContextMenu } from "./ui/formatting/text-code-menu.js";
+import { setupKeyboardShortcuts } from "./app/keyboard-shortcuts.js";
 import { setupTextBackgroundContextMenu } from "./ui/formatting/text-background-menu.js";
 import { setupTheme } from "./ui/theme/theme.js";
 import { setupWorkspaceResize } from "./ui/shell/workspace-resize.js";
@@ -124,6 +125,14 @@ bindViewButtons();
 bindEditorActions();
 setupTheme(LEGACY_STORAGE_KEY + ":theme");
 setupWorkspaceResize(LEGACY_STORAGE_KEY + ":workspaceLayout");
+setupKeyboardShortcuts({
+	getState: () => state,
+	renderer,
+	setExportStatus: (type) => {
+		exportStatus[type] = true;
+		renderer.renderSaveStatus();
+	},
+});
 setupTextColorContextMenu();
 setupTextBackgroundContextMenu();
 setupTextCodeContextMenu();
