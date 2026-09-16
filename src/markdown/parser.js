@@ -28,10 +28,32 @@ function imageBlock(url) {
 }
 
 const IMAGE_LINE = /^!\[[^\]]*\]\(([^)]+)\)\s*$/;
-const TEXTILE_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
 
 function convertLinks(line) {
-	return String(line ?? "").replace(TEXTILE_LINK, (_match, text, url) => `"${text}":${url}`);
+	const text = String(line ?? "");
+	let out = "";
+	let i = 0;
+	for (; i < text.length; ) {
+		if (text[i] !== "[") { out += text[i]; i += 1; continue; }
+		const open = text.indexOf("](", i);
+		if (open < 0) { out += text.slice(i); break; }
+		const label = text.slice(i + 1, open);
+		let depth = 0;
+		let urlEnd = -1;
+		for (let j = open + 2; j < text.length; j += 1) {
+			const ch = text[j];
+			if (ch === "(") depth += 1;
+			else if (ch === ")") {
+				if (depth === 0) { urlEnd = j; break; }
+				depth -= 1;
+			}
+		}
+		if (urlEnd < 0) { out += text.slice(i); break; }
+		const url = text.slice(open + 2, urlEnd);
+		out += `"${label}":${url}`;
+		i = urlEnd + 1;
+	}
+	return out;
 }
 
 function blankState() {
@@ -77,12 +99,22 @@ export function markdownToState(content) {
 		}
 
 		const h1 = /^# (.+)$/.exec(line);
-		if (h1) { state.title = h1[1]; block = null; continue; }
+		if (h1) {
+			if (block !== null && block.cur && (block.cur.contents.length || block.cur.title)) {
+				if (section) section.blocks.push(block.cur);
+			}
+			block = null;
+			state.title = convertLinks(h1[1]);
+			continue;
+		}
 
 		const h2 = /^## (.+)$/.exec(line);
 		if (h2) {
+			if (block !== null && block.cur && (block.cur.contents.length || block.cur.title)) {
+				if (section) section.blocks.push(block.cur);
+			}
 			block = null;
-			section = createSection(h2[1], true, [], "");
+			section = createSection(convertLinks(h2[1]), true, [], "");
 			state.sections.push(section);
 			continue;
 		}
@@ -98,7 +130,7 @@ export function markdownToState(content) {
 		const h3 = /^### (.+)$/.exec(line);
 		if (h3) {
 			if (block.cur.contents.length || block.cur.title) section.blocks.push(block.cur);
-			block = { cur: textBlock(h3[1], []) };
+			block = { cur: textBlock(convertLinks(h3[1]), []) };
 			continue;
 		}
 

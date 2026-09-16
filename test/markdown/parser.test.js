@@ -1,5 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { markdownToState } from "../../src/markdown/parser.js";
 
 test("md: reads the h1 as the note title", () => {
@@ -48,4 +51,33 @@ test("md: turns a link into the textile link form", () => {
 	const s = markdownToState("# t\n## 段\n[文件](http://ex.com/doc)\n- [原始碼](http://ex.com/src)");
 	const contents = s.sections[0].blocks.flatMap((item) => item.contents);
 	assert.deepEqual(contents, ['"文件":http://ex.com/doc', '"原始碼":http://ex.com/src']);
+});
+
+test("md: keeps balanced parens inside a link url", () => {
+	const s = markdownToState("# t\n## 段\n[F](http://a_(b).md)");
+	assert.deepEqual(s.title, "t");
+	const contents = s.sections[0].blocks.flatMap((item) => item.contents);
+	assert.deepEqual(contents, ['"F":http://a_(b).md']);
+});
+
+test("md: converts links inside headings", () => {
+	const s = markdownToState("# [首頁](http://a)\n## [Flash](http://a.md)\n### [細節](http://a_(b).md)");
+	assert.equal(s.title, '"首頁":http://a');
+	assert.equal(s.sections[0].title, '"Flash":http://a.md');
+	assert.equal(s.sections[0].blocks[0].title, '"細節":http://a_(b).md');
+});
+
+test("md: converts a relative-path link that does not start with http", () => {
+	const s = markdownToState(
+		"# p\n## 段\n- [相對路徑檔案](./docs/example.md)\n- [上層檔](../docs/example.md)"
+	);
+	const contents = s.sections[0].blocks.flatMap((item) => item.contents);
+	assert.deepEqual(contents, ['"相對路徑檔案":./docs/example.md', '"上層檔":../docs/example.md']);
+});
+
+test("md: keeps each section's content when a later h2 starts", () => {
+	const s = markdownToState("# p\n## 一\n- a\n- b\n## 二\n- c");
+	const byTitle = new Map(s.sections.map((sec) => [sec.title, sec]));
+	assert.deepEqual(byTitle.get("一").blocks.flatMap((b) => b.contents), ["a", "b"]);
+	assert.deepEqual(byTitle.get("二").blocks.flatMap((b) => b.contents), ["c"]);
 });
