@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { textile } from "../../src/textile/generator.js";
+import { sectionsTextile, textile } from "../../src/textile/generator.js";
 import {
 	createSection,
 	makeState,
@@ -207,4 +207,28 @@ test("code spans (%{color:red}..%) inside a shell block are moved outside the co
 	const out = textile(s);
 	// the %{} span must not be swallowed inside the code text unchanged
 	assert.match(out, /PASSED%/);
+});
+
+test("sectionsTextile renders only the given sections and their blocks", () => {
+	const keep = createSection("實作", true, [
+		{ type: "text", title: "子項目", contents: [], level: 1 },
+	]);
+	const skip = createSection("隱藏", false, [
+		{ type: "implementation", title: "a.c", contents: [], showWorkPath: false, level: 1 },
+	]);
+	const out = sectionsTextile([keep, skip]);
+	assert.match(out, /h3\. 實作/);
+	assert.match(out, /# 子項目/);
+	// The disabled section is still copied because the caller selects it explicitly.
+	assert.match(out, /a\.c/);
+	// No document header leaks in.
+	assert.doesNotMatch(out, /h2\./);
+});
+
+test("sectionsTextile echoes the section description under the h3", () => {
+	const section = createSection("驗證", true);
+	section.description = "前置: 板子已上電";
+	section.blocks = [];
+	const out = sectionsTextile([section]);
+	assert.match(out, /h3\. 驗證[\s\S]*前置: 板子已上電/);
 });

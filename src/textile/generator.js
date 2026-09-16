@@ -150,6 +150,25 @@ export function textile(state) {
 	return applyPreCodeWorkarounds(result);
 }
 
+// Render only the given sections as Textile, without the document header
+// (title / 結論 / 環境). Used by the "copy specified sections" button; the caller
+// passes exactly the sections the user selected, so no `enabled` filter is applied.
+export function sectionsTextile(sections = []) {
+	const outputLines = [];
+	sections.forEach((section) => {
+		addH3(outputLines, section.title);
+		if ((section.description || "").trim()) {
+			outputLines.push(section.description, "");
+		}
+		(section.blocks || []).forEach((blockData) => push(outputLines, blockData, section.unordered));
+		outputLines.push("");
+	});
+	return outputLines
+		.join("\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim() + "\n";
+}
+
 function blockLevel(blockData) {
 	const raw = Number(blockData?.level || 1);
 	return Math.max(1, Number.isFinite(raw) ? Math.floor(raw) : 1);
