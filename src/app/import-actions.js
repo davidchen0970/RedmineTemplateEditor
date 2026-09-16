@@ -5,6 +5,7 @@ import {
 	normalizeState,
 	createSection
 } from "../core/state.js";
+import { markdownToState } from "../markdown/parser.js";
 
 export function splitPatch(text) {
 	return String(text || "").split(/^diff --git /m).filter(Boolean)
@@ -52,6 +53,26 @@ export function setupImportActions({
 				renderer.toast("JSON 資料已匯入");
 			} catch (error) {
 				alert("JSON 匯入失敗：" + error.message);
+			}
+		};
+		reader.readAsText(file);
+		event.target.value = "";
+	};
+
+	document.getElementById("importMd").onclick = () => document.getElementById("mdFile").click();
+	document.getElementById("mdFile").onchange = (event) => {
+		const file = event.target.files[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => {
+			try {
+				const value = normalizeState(markdownToState(reader.result));
+				setState(value);
+				changed();
+				renderer.render();
+				renderer.toast("Markdown 已匯入");
+			} catch (error) {
+				alert("Markdown 匯入失敗：" + error.message);
 			}
 		};
 		reader.readAsText(file);
