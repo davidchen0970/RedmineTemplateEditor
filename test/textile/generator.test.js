@@ -14,6 +14,14 @@ test("environment emits only enabled and filled items", () => {
 	assert.doesNotMatch(out, /OS \/ Kernel/);
 });
 
+test("environment is omitted when environmentEnabled is false", () => {
+	const s = stateWithEnvironment();
+	s.environmentEnabled = false;
+	const out = textile(s);
+	assert.doesNotMatch(out, /測試環境/);
+	assert.doesNotMatch(out, /\* System Model: DVT2/);
+});
+
 test("textile starts with the doc title (h2)", () => {
 	const s = stateWithMermaid();
 	const out = textile(s);

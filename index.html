@@ -81,15 +81,27 @@
 						<label class="field"
 							>結論補充，每行一筆<textarea id="summary"></textarea>
 						</label>
-						<button
-							class="sub-toggle"
-							data-collapse-target="section-env"
-							aria-expanded="false"
-						>
-							測試環境
-						</button>
-						<div class="panel-body collapsed" id="section-env">
-							<div id="env"></div>
+						<div class="section">
+							<div class="section-head">
+								<label
+									><input type="checkbox" id="envEnabled" title="測試環境是否進輸出"
+								/></label>
+								<button
+									type="button"
+									class="section-title-btn"
+									data-collapse-target="section-env"
+									aria-expanded="false"
+								>
+									測試環境
+								</button>
+								<div class="actions">
+									<button type="button" class="small" id="envAddItem">新增測試項目</button>
+									<button type="button" class="small danger" id="envDelete">刪除</button>
+								</div>
+							</div>
+							<div class="section-body collapsed" id="section-env">
+								<div id="env"></div>
+							</div>
 						</div>
 						<div id="sections"></div>
 					</div>

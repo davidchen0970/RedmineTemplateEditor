@@ -1,4 +1,5 @@
 import { createEnvItem, normalizeEnvironment, presets, escapeHtml } from "../../core/state.js";
+import { confirmDelete } from "../dialogs/confirm-dialog.js";
 
 const ENV_HINTS = {
 	"CPLD 版本": "(ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)",
@@ -33,7 +34,43 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		bindInput("summary", state.summary, (value) => state.summary = value, changed);
 		bindInput("change", state.changeContent, (value) => state.changeContent = value, changed);
 		bindInput("ref", state.relatedRef, (value) => state.relatedRef = value, changed);
+		bindEnvHeader();
 		renderEnv();
+	}
+
+	function bindEnvHeader() {
+		const box = document.getElementById("envEnabled");
+		if (box) {
+			box.checked = getState().environmentEnabled !== false;
+			box.onchange = () => {
+				getState().environmentEnabled = box.checked;
+				changed();
+				renderAll();
+			};
+		}
+		const addBtn = document.getElementById("envAddItem");
+		if (addBtn) {
+			addBtn.onclick = () => {
+				getState().environment.push(createEnvItem("自訂項目", "", true, true));
+				changed();
+				renderAll();
+			};
+		}
+		const delBtn = document.getElementById("envDelete");
+		if (delBtn) {
+			delBtn.onclick = () => {
+				confirmDelete({
+					heading: "刪除測試環境",
+					text: "刪除後此環境不輸出，確定？",
+					confirmLabel: "刪除",
+					onConfirm: () => {
+						getState().environmentEnabled = false;
+						changed();
+						renderAll();
+					},
+				});
+			};
+		}
 	}
 
 	let envShownIds = null;

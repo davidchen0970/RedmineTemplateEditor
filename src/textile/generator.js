@@ -124,7 +124,7 @@ export function textile(state) {
 	} else {
 		outputLines.push("");
 	}
-	const environmentLines = (state.environment || [])
+	const environmentLines = (state.environmentEnabled !== false ? state.environment || [] : [])
 		.filter((item) => item.enabled)
 		.flatMap((item) => envTextileLines(item.label, item.value));
 	if (environmentLines.length) {

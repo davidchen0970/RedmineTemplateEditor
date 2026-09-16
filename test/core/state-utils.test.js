@@ -48,6 +48,16 @@ test("makeState keeps the test environment as 7 known items", () => {
 	assert.ok(env.every((item) => item.id && item.label));
 });
 
+test("environmentEnabled is true by default and survives normalize", () => {
+	assert.ok(makeState("porting").environmentEnabled === true);
+	const legacy = makeState("porting");
+	delete legacy.environmentEnabled;
+	assert.ok(normalizeState(legacy).environmentEnabled === true);
+	const off = makeState("porting");
+	off.environmentEnabled = false;
+	assert.ok(normalizeState(off).environmentEnabled === false);
+});
+
 test("normalizeState migrates a legacy environment object to items", () => {
 	const legacy = makeState("porting");
 	legacy.environment = { systemModel: "DVT2", bios: "", osKernel: "Ubuntu" };

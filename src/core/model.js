@@ -127,6 +127,7 @@ export function makeState(type = "porting") {
 		summary: "",
 		changeContent: preset.change,
 		relatedRef: "",
+		environmentEnabled: true,
 		environment: environmentFields.map(([, label]) => createEnvItem(label)),
 		sections: preset.sections,
 		ui: {
@@ -162,6 +163,7 @@ function migrateImplementationBlock(block) {
 export function normalizeState(state) {
 	if (!state) return state;
 	state.environment = normalizeEnvironment(state.environment);
+	state.environmentEnabled = state.environmentEnabled !== false;
 	state.sections = Array.isArray(state.sections) ? state.sections : [];
 	state.ui ||= {};
 	state.ui.collapsed ||= {};
