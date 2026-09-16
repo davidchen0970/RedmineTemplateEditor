@@ -119,7 +119,7 @@ export function markdownToState(content) {
 			continue;
 		}
 
-		if (!section) {
+		if (line && !section) {
 			section = createSection("段落", true, [], "");
 			state.sections.push(section);
 		}
