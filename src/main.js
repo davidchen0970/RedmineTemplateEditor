@@ -13,6 +13,7 @@ import { setupTextColorContextMenu } from "./ui/formatting/text-color-menu.js";
 import { setupImageDrop } from "./app/image-drop.js";
 import { setupTextCodeContextMenu } from "./ui/formatting/text-code-menu.js";
 import { setupKeyboardShortcuts } from "./app/keyboard-shortcuts.js";
+import { setupShortcutHelp } from "./ui/dialogs/shortcut-help-dialog.js";
 import { setupTextBackgroundContextMenu } from "./ui/formatting/text-background-menu.js";
 import { setupTheme } from "./ui/theme/theme.js";
 import { setupWorkspaceResize } from "./ui/shell/workspace-resize.js";
@@ -123,6 +124,7 @@ setupFileActions({
 
 bindViewButtons();
 bindEditorActions();
+setupShortcutHelp();
 setupTheme(LEGACY_STORAGE_KEY + ":theme");
 setupWorkspaceResize(LEGACY_STORAGE_KEY + ":workspaceLayout");
 setupKeyboardShortcuts({
