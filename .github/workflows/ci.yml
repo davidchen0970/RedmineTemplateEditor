@@ -49,14 +49,43 @@ jobs:
           set -euo pipefail
           find src test -name '*.js' -print0 | xargs -0 -n1 node --check
 
+  e2e:
+    name: e2e UI (playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dev dependencies
+        run: npm ci
+
+      - name: Install Chromium + system deps
+        run: npx playwright install --with-deps
+
+      - name: Run UI e2e, screenshots to e2e/test-results
+        run: npm run test:ui
+
+      - name: Upload UI screenshots & traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-e2e-artifacts
+          path: |
+            e2e/test-results
+            playwright-report
+          if-no-files-found: ignore
+
   pages:
     name: deploy to GitHub Pages
     runs-on: ubuntu-latest
     # Only publish on push to main (i.e. after the PR is merged), never on a PR run.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # `needs: test` makes GitHub skip this job unless the whole test matrix is
-    # green — CI can never publish a broken build.
-    needs: test
+    # `needs: [test, e2e]` also blocks the deploy when the e2e suite is red,
+    # so a broken build can never get published.
+    needs: [test, e2e]
     permissions:
       contents: read
       pages: write
