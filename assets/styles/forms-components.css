@@ -30,6 +30,15 @@
 	line-height: 1.45
 }
 
+.field-collapse {
+	margin: 12px 0;
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 700;
+	cursor: pointer;
+	user-select: none
+}
+
 .section-label {
 	margin: 14px 0 8px;
 	color: var(--muted);
