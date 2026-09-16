@@ -86,6 +86,14 @@ export function createSectionRenderer({
 		play();
 	}
 
+	function toggleOrder(sectionId) {
+		const section = find(sectionId);
+		if (!section) return;
+		section.unordered = section.unordered !== true;
+		changed();
+		renderAll();
+	}
+
 	function render({ openBlockId = null } = {}) {
 		const root = document.getElementById("sections");
 		root.replaceChildren();
@@ -108,6 +116,7 @@ export function createSectionRenderer({
 							<button type="button" data-add>新增區塊</button>
 							<button type="button" data-add-section>新增段落</button>
 							<button type="button" data-duplicate>複製段落</button>
+							<button type="button" data-order>${section.unordered ? "子項目改為有序排列" : "子項目改為無序排列"}</button>
 							<button type="button" class="danger" data-delete>刪除段落</button>
 						</div>
 					</div>
@@ -161,6 +170,7 @@ export function createSectionRenderer({
 			element.querySelectorAll("[data-duplicate]").forEach(btn => btn.onclick = () => duplicate(section.id));
 			element.querySelectorAll("[data-add-section]").forEach(btn => btn.onclick = () => add());
 			element.querySelectorAll("[data-delete]").forEach(btn => btn.onclick = () => remove(section.id));
+			element.querySelectorAll("[data-order]").forEach(btn => btn.onclick = () => toggleOrder(section.id));
 		});
 	}
 	return {

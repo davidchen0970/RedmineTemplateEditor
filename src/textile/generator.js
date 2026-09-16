@@ -138,7 +138,7 @@ export function textile(state) {
 			if ((section.description || "").trim()) {
 				outputLines.push(section.description, "");
 			}
-			(section.blocks || []).forEach((blockData) => push(outputLines, blockData));
+			(section.blocks || []).forEach((blockData) => push(outputLines, blockData, section.unordered));
 			outputLines.push("");
 		});
 
@@ -155,12 +155,13 @@ function blockLevel(blockData) {
 	return Math.max(1, Number.isFinite(raw) ? Math.floor(raw) : 1);
 }
 
-function blockMarker(blockData) {
-	return "#".repeat(blockLevel(blockData)) + " ";
+function blockMarker(blockData, unordered) {
+	const mark = unordered ? "*" : "#";
+	return mark.repeat(blockLevel(blockData)) + " ";
 }
 
-function pushPlainText(outputLines, blockData, content) {
-	const marker = blockMarker(blockData);
+function pushPlainText(outputLines, blockData, content, unordered) {
+	const marker = blockMarker(blockData, unordered);
 	const rawLines = String(content || "")
 		.replace(/\r\n?/g, "\n")
 		.split("\n");
@@ -188,9 +189,9 @@ function codeContentForTextile(content, codeLang) {
 	);
 }
 
-function push(outputLines, blockData) {
+function push(outputLines, blockData, unordered) {
 	ensureBlockContents(blockData);
-	const marker = blockMarker(blockData);
+	const marker = blockMarker(blockData, unordered);
 	const title = (blockData.title || "").trim(),
 		contents = blockData.contents.filter((contentItem) => itemContent(contentItem).trim());
 	if (blockData.type === "implementation") {
@@ -218,7 +219,7 @@ function push(outputLines, blockData) {
 	}
 	if (title && !["image", "plainText"].includes(blockData.type)) outputLines.push(marker + title);
 	if (blockData.type === "plainText") {
-		(contents.length ? contents : [""]).forEach((contentItem) => pushPlainText(outputLines, blockData, contentItem));
+		(contents.length ? contents : [""]).forEach((contentItem) => pushPlainText(outputLines, blockData, contentItem, unordered));
 	} else if (["command", "diff", "log"].includes(blockData.type))
 		contents.forEach((contentItem) => {
 			const codeLang = blockData.type === "command" ? "shell" : blockData.type;
@@ -255,7 +256,7 @@ function push(outputLines, blockData) {
 		);
 	else
 		contents.forEach((contentItem) => {
-			if (!title && blockLevel(blockData) > 1) pushPlainText(outputLines, blockData, contentItem);
+			if (!title && blockLevel(blockData) > 1) pushPlainText(outputLines, blockData, contentItem, unordered);
 			else outputLines.push(contentItem);
 		});
 }

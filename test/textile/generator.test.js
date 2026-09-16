@@ -154,6 +154,16 @@ test("plainText block at level 1 emits content untouched (not marker-prefixed)",
 	assert.ok(out.includes("第一行\n第二行"));
 });
 
+test("section child blocks are ordered by default and switch when the section is unordered", () => {
+	const orderedState = stateWith([{ type: "text", title: "sub", contents: [], level: 1 }]);
+	assert.match(textile(orderedState), /(^|\n)# sub/);
+	const unorderedState = stateWith([{ type: "text", title: "sub", contents: [], level: 1 }]);
+	unorderedState.sections[0].unordered = true;
+	assert.doesNotMatch(textile(unorderedState), /(^|\n)# sub/);
+	assert.match(textile(unorderedState), /(^|\n)\* sub/);
+});
+
+
 test("collapse block with several contents numbers each pane", () => {
 	const b = { type: "collapse", title: "附錄", contents: ["A", "B"], level: 1 };
 	const out = textile(stateWith([b]));
