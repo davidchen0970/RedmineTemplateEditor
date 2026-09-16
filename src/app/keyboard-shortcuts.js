@@ -10,8 +10,10 @@ export const SHORTCUTS = [
 ];
 
 // Screenshot_YYYYMMDD_HHMMSS.png (local time); disambiguate repeats.
-function screenshotPngName(index, names) {
-	const d = new Date();
+// `now` is injectable so the timestamp logic is unit-testable without a clock.
+// The app never passes it; the default is the real local clock.
+export function screenshotPngName(index, names, now = () => new Date()) {
+	const d = now();
 	const pad = (n) => String(n).padStart(2, "0");
 	const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}` +
 		`_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
