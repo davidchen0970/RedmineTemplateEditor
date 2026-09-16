@@ -23,6 +23,12 @@ function codeBlock(lang, items) {
 	};
 }
 
+function imageBlock(url) {
+	return { id: newId(), type: "image", title: "", level: 1, contents: [url] };
+}
+
+const IMAGE_LINE = /^!\[[^\]]*\]\(([^)]+)\)\s*$/;
+
 function blankState() {
 	return {
 		title: "",
@@ -93,12 +99,26 @@ export function markdownToState(content) {
 
 		const item = /^[-*] (.+)$/.exec(line);
 		if (item) {
+			const img = IMAGE_LINE.exec(item[1]);
+			if (img) {
+				if (block.cur.contents.length || block.cur.title) section.blocks.push(block.cur);
+				section.blocks.push(imageBlock(img[1]));
+				block = null;
+				continue;
+			}
 			if (!block.cur.contents.length && !block.cur.title) block.cur.title = "內文";
 			block.cur.contents.push(item[1]);
 			continue;
 		}
 
 		if (line) {
+			const img = IMAGE_LINE.exec(line);
+			if (img) {
+				if (block.cur.contents.length || block.cur.title) section.blocks.push(block.cur);
+				section.blocks.push(imageBlock(img[1]));
+				block = null;
+				continue;
+			}
 			if (!block.cur.contents.length && !block.cur.title) block.cur.title = "內文";
 			block.cur.contents.push(line);
 		}

@@ -36,3 +36,10 @@ test("md: falls back to an unnamed title", () => {
 	const s = markdownToState("## 只有一段\n");
 	assert.equal(s.title, "未命名");
 });
+
+test("md: turns an image link into an image block", () => {
+	const s = markdownToState("# t\n## 段\n![](http://a.png)\n- ![](http://b.png)");
+	const images = s.sections[0].blocks.filter((item) => item.type === "image");
+	assert.equal(images.length, 2);
+	assert.deepEqual(images.map((item) => item.contents), [["http://a.png"], ["http://b.png"]]);
+});
