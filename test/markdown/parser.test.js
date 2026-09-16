@@ -81,3 +81,12 @@ test("md: keeps each section's content when a later h2 starts", () => {
 	assert.deepEqual(byTitle.get("一").blocks.flatMap((b) => b.contents), ["a", "b"]);
 	assert.deepEqual(byTitle.get("二").blocks.flatMap((b) => b.contents), ["c"]);
 });
+
+test("md: parses a committed multi-section fixture end to end", () => {
+	const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/basic.md"), "utf8");
+	const s = markdownToState(fixture);
+	const byTitle = new Map(s.sections.map((sec) => [sec.title, sec]));
+	assert.deepEqual(byTitle.get("Target System").blocks.flatMap((b) => b.contents), ["SoC Model: ABC-100", "Board Rev: DVT2"]);
+	assert.deepEqual(byTitle.get("References").blocks.flatMap((b) => b.contents), ['"Datasheet":./docs/datasheet.md', '"Flash Layout":https://example.com/flash']);
+	assert.deepEqual(byTitle.get("Schematics Sample").blocks.map((b) => b.type), ["image"]);
+});
