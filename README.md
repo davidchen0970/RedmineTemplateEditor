@@ -57,17 +57,19 @@ Redmine Textile 輸出器是一個以 Redmine 筆記輸出為核心的前端工�
 
 目前支援以下區塊類型：
 
-- Implementation Unit
-- Text / Textile
+- 程式碼（Implementation Unit）
+- 內文（Text / Textile）
 - 純文字
-- Command Block
-- Diff Block
-- Log Block
-- Mermaid Block
-- Image
-- Collapse
+- 終端指令（Command Block）
+- 程式碼差異（Diff Block）
+- 執行日誌（Log Block）
+- 流程圖（Mermaid Block）
+- 圖片（Image）
+- 收合區塊（Collapse）
 
-其中 Implementation Unit 可額外記錄：
+新增區塊時，對話框會依所選類型帶出對應欄位：程式碼會先填語言與內容（工作路徑、Description 等摺在「其他」）；程式碼差異可直接上傳 `.diff / .patch / .txt` 檔，或直接貼內容；圖片填圖檔網址；純文字沒有標題。
+
+其中程式碼（Implementation Unit）可額外記錄：
 
 - 檔案或單元名稱
 - work path
@@ -208,7 +210,7 @@ localStorage 屬於瀏覽器本機資料，不會自動同步到其他瀏覽器�
 
 ## 專案目標
 
-
+它只是一個把表單輸入轉成 Redmine Textile 的輸出器，幫你把技術 / 測試紀錄快速整理成可貼到 Redmine 的格式。
 
 ## 開發（測試）
 
