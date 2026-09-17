@@ -1,4 +1,5 @@
 import { presets } from "../../core/state.js";
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 
 const EXTRA_SECTIONS = ["測試環境", "參考資料", "附圖", "結論補充"];
 
@@ -28,6 +29,8 @@ function ensureDialog() {
 			<button type="button" id="ndConfirm" class="primary">建立</button>
 		</div>`;
 	dialog.addEventListener("close", () => finish(null));
+	// Clicking the backdrop closes the dialog (cancels, finish(null)).
+	dismissOnBackdrop(dialog);
 	document.body.appendChild(dialog);
 	return dialog;
 }
