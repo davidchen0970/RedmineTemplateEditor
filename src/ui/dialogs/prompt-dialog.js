@@ -1,3 +1,5 @@
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
+
 let dialog = null;
 let pending = null;
 
@@ -26,6 +28,10 @@ function ensure() {
 		dialog.close();
 		if (job) job(value);
 	};
+	// Clicking the backdrop dismisses like cancel (no confirm action runs).
+	dismissOnBackdrop(dialog, () => {
+		pending = null;
+	});
 	return dialog;
 }
 

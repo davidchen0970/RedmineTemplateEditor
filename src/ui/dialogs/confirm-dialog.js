@@ -1,3 +1,5 @@
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
+
 let dialog = null;
 let pendingAction = null;
 
@@ -25,6 +27,10 @@ function ensure() {
 		dialog.close();
 		if (action) action();
 	};
+	// Clicking the backdrop dismisses like 取消 (no confirm action runs).
+	dismissOnBackdrop(dialog, () => {
+		pendingAction = null;
+	});
 	return dialog;
 }
 

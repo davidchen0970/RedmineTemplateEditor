@@ -1,5 +1,6 @@
 import { SHORTCUTS } from "../../app/keyboard-shortcuts.js";
 import { t } from "../../i18n.js";
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 
 let dialog = null;
 
@@ -30,9 +31,7 @@ function ensureDialog() {
 	};
 	dialog.querySelector("#shortcutClose").onclick = () => dialog.close();
 	// Clicking the backdrop closes the dialog too.
-	dialog.addEventListener("click", (event) => {
-		if (event.target === dialog) dialog.close();
-	});
+	dismissOnBackdrop(dialog);
 	document.body.appendChild(dialog);
 	return dialog;
 }

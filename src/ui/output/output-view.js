@@ -2,6 +2,7 @@ import { textile } from "../../textile/generator.js";
 import { textileToPreviewHtml } from "../../textile/preview.js";
 import { exportMermaidPng } from "./mermaid-export.js";
 import { onPreviewReRender } from "../editor/preview-scroll-burst.js";
+import { dismissOnBackdrop } from "../dialogs/dismiss-on-backdrop.js";
 
 export function renderOutput(state, view) {
 	const raw = textile(state);
@@ -169,6 +170,10 @@ function ensureMermaidExportDialog() {
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);
+	// Clicking the backdrop closes the dialog like cancel (aborts the export).
+	dismissOnBackdrop(dialog, () => {
+		pendingMermaidExport = null;
+	});
 	dialog.querySelector("#mermaidSizeMode").onchange = () => syncMermaidSizeFields(dialog);
 	dialog.querySelector("#mermaidExportCancel").onclick = () => {
 		pendingMermaidExport = null;
