@@ -5,6 +5,7 @@ import {
 	normalizeState,
 	createSection
 } from "../core/state.js";
+import { textileToState } from "../textile/parser.js";
 
 export function splitPatch(text) {
 	return String(text || "").split(/^diff --git /m).filter(Boolean)
@@ -61,6 +62,26 @@ export function setupImportActions({
 	const nextFrame = () => new Promise((resolve) =>
 		requestAnimationFrame(() => requestAnimationFrame(resolve))
 	);
+
+	document.getElementById("importTx").onclick = () => document.getElementById("txFile").click();
+	document.getElementById("txFile").onchange = (event) => {
+		const file = event.target.files[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => {
+			try {
+				const value = normalizeState(textileToState(reader.result));
+				setState(value);
+				changed();
+				renderer.render();
+				renderer.toast("Textile 已匯入");
+			} catch (error) {
+				alert("Textile 匯入失敗：" + error.message);
+			}
+		};
+		reader.readAsText(file);
+		event.target.value = "";
+	};
 
 	document.getElementById("patch").onclick = () => document.getElementById("patchFile").click();
 	document.getElementById("patchFile").onchange = (event) => {

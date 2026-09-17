@@ -38,7 +38,7 @@
 				<button id="json">匯出 JSON</button>
 				<button id="import">匯入 JSON</button>
 				<button id="patch">匯入 Patch</button>
-				<button id="shortcutHelp" type="button">快捷鍵</button>
+				<button id="importTx">匯入 Textile</button>
 				<button id="themeToggle" type="button">深色模式</button>
 				<button id="reset" class="danger">重設</button>
 				<input id="file" type="file" accept=".json,application/json" hidden />
@@ -46,6 +46,12 @@
 					id="patchFile"
 					type="file"
 					accept=".patch,.diff,text/plain"
+					hidden
+				/>
+				<input
+					id="txFile"
+					type="file"
+					accept=".textile,.txt,text/plain"
 					hidden
 				/>
 				<button id="source_code">source code</button>
