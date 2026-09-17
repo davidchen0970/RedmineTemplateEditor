@@ -10,8 +10,10 @@ test("storage 新增儲存 registers a new document in the picker", async ({ pag
 	await test.step("confirm the new-document dialog", async () => {
 		await page.click("#storageNew");
 		// #storageNew only opens a dialog (see new-doc-dialog.js); the record is
-		// created when 建立 (#ndConfirm) is pressed.
-		const dialog = page.locator("dialog.add-block-dialog");
+		// created when 建立 (#ndConfirm) is pressed. Target the new-doc dialog by
+		// id: the shared .add-block-dialog class is also on the always-mounted
+		// settings dialog, so a class locator is ambiguous.
+		const dialog = page.locator("dialog#ndDialog");
 		await expect(dialog).toBeVisible();
 		await dialog.locator("#ndConfirm").click();
 	});

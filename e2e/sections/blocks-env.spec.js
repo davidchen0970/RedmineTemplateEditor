@@ -64,9 +64,10 @@ test("環境開關：勾選時環境值進 #out，取消後不進", async ({ pag
 	});
 	await test.step("expect the env value to be in #out while enabled", async () => {
 		// Assumption: #envEnabled starts checked (environmentEnabled true). The
-		// generator emits "* 自訂項目: 7" for a single-line custom item value.
-		// generator.js:89 emits a single-line env as "* <label>: <value>".
-		await expect(page.locator("#out")).toHaveValue(/\* 自訂項目: 7/);
+		// generator emits a single-line env as "* <label>: <value>"
+		// (generator.js:89). The label is locale-dependent (customDefault is
+		// 自訂項目 / Custom Item), so keep the assertion language-neutral.
+		await expect(page.locator("#out")).toHaveValue(/\* .+: 7/);
 	});
 
 	await test.step("uncheck #envEnabled", async () => {
@@ -75,6 +76,6 @@ test("環境開關：勾選時環境值進 #out，取消後不進", async ({ pag
 	await test.step("expect #out to drop the environment", async () => {
 		// Assumption: unchecking flips environmentEnabled to false, and the
 		// generator's `environmentEnabled !== false` guard drops env lines.
-		await expect(page.locator("#out")).not.toHaveValue(/\* 自訂項目/);
+		await expect(page.locator("#out")).not.toHaveValue(/: 7/);
 	});
 });
