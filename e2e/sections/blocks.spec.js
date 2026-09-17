@@ -68,3 +68,36 @@ test("刪除 removes a block after confirming", async ({ page }) => {
 		await expect(blocks).toHaveCount(0);
 	});
 });
+
+test("block 其他 menu rides its block while the page scrolls", async ({ page }) => {
+	await test.step("open the editor, seed a block, and make the page scrollable", async () => {
+		await page.goto("/");
+		await seedBlock(page, page.locator("#sections .section").first());
+		// A tall spacer guarantees a real document scroll so the re-anchor path
+		// (window scroll listener in block-renderer.js) is actually exercised.
+		await page.evaluate(() => {
+			const spacer = document.createElement("div");
+			spacer.style.height = "2400px";
+			spacer.style.clear = "both";
+			document.body.appendChild(spacer);
+		});
+	});
+	await test.step("open the block more menu", async () => {
+		await page.locator("#sections [data-block-more]").first().click();
+		await expect(page.locator(".more-popup")).toBeVisible();
+	});
+	await test.step("scroll and expect the menu to keep tracking the toggle", async () => {
+		const gap = () => page.locator(".more-popup").evaluate((el) => {
+			const t = document.querySelector("[data-block-more]").getBoundingClientRect();
+			return el.getBoundingClientRect().top - t.bottom;
+		});
+		await page.mouse.wheel(0, 300);
+		// placeMore() re-anchors top = toggle.bottom + 4 on every scroll, so the
+		// gap stays between 0 and 20px. Without re-anchoring the position:fixed
+		// popup stays put and the gap grows by the scroll delta (~300px).
+		await expect.poll(async () => {
+			const g = await gap();
+			return g >= 0 && g <= 20;
+		}).toBe(true);
+	});
+});

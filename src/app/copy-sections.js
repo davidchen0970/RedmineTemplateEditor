@@ -1,4 +1,5 @@
 import { sectionsTextile } from "../textile/generator.js";
+import { dismissOnBackdrop } from "../ui/dialogs/dismiss-on-backdrop.js";
 
 export function setupCopySections({ getState, renderer }) {
 	document.getElementById("copySections").onclick = () => {
@@ -34,6 +35,8 @@ function ensureDialog() {
 		if (settle) settle([]);
 	});
 	boxRef.querySelector("[data-cancel]").onclick = () => boxRef.close();
+	// Clicking the backdrop closes the dialog too (treats as no selection).
+	dismissOnBackdrop(boxRef);
 	return boxRef;
 }
 
@@ -53,10 +56,7 @@ async function copySections(state, renderer) {
 	list.replaceChildren();
 	const checks = sections.map((section) => {
 		const label = document.createElement("label");
-		label.className = "field";
-		label.style.display = "flex";
-		label.style.alignItems = "center";
-		label.style.gap = "0.5rem";
+		label.className = "note";
 		const chk = document.createElement("input");
 		chk.type = "checkbox";
 		chk.checked = section.enabled;

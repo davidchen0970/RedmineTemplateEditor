@@ -19,4 +19,9 @@ test("confirm: runs the action on confirm and skips it on cancel", async () => {
 	confirmDelete({ heading: "h", text: "t", onConfirm: () => { acted += 1; } });
 	box.querySelector("[data-cancel]").click();
 	assert.equal(acted, 1, "cancel does not run the action");
+
+	confirmDelete({ heading: "h", text: "t", onConfirm: () => { acted += 1; } });
+	box.dispatchEvent(new w.Event("click", { bubbles: true }));
+	assert.equal(box.hasAttribute("open"), false, "backdrop closes the dialog");
+	assert.equal(acted, 1, "backdrop does not run the action");
 });

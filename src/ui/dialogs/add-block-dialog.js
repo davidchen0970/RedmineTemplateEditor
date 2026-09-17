@@ -1,6 +1,7 @@
 import { block, createImplementationBlock, DEFAULT_CODE_LANG } from "../../core/state.js";
 import { BLOCK_TYPES, defaultTitle, label } from "../editor/block-view.js";
 import { markEntering } from "../motion/card-stage.js";
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 import { blockCard } from "../dom/card.js";
 
 const IMPL_EXTRAS = [
@@ -192,6 +193,10 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			pendingSectionId = null;
 			dialog.close();
 		};
+		// Clicking the backdrop closes the dialog like 取消 (no block is added).
+		dismissOnBackdrop(dialog, () => {
+			pendingSectionId = null;
+		});
 		dialog.querySelector("#abForm").onsubmit = (event) => {
 			event.preventDefault();
 			if (!pendingSectionId) return;

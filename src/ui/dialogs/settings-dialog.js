@@ -1,4 +1,5 @@
 import { t } from "../../i18n.js";
+import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 
 // Settings dialog: hosts the three true-settings controls (language, dark mode,
 // keyboard shortcuts). Each control sits in its own labeled row so the dialog reads
@@ -61,9 +62,7 @@ export function setupSettingsDialog(rows = ROWS) {
 	document.body.appendChild(dialog);
 
 	// Clicking the backdrop closes the settings dialog.
-	dialog.addEventListener("click", (event) => {
-		if (event.target === dialog) dialog.close();
-	});
+	dismissOnBackdrop(dialog);
 
 	// Open when the (lazily created) #settingsOpen button is clicked.
 	document.addEventListener("click", (event) => {
