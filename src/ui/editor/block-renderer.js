@@ -31,6 +31,28 @@ export function createBlockRenderer({
 	// 區塊「其他」使用掛在 document.body 的共用 popup，逃離 .block 的 transform 層疊／裁切上下文。
 	let morePopup = null;
 	let moreAnchorId = null;
+	let moreToggleEl = null;
+
+	// popup 逃離 .block 的 transform／裁切上下文(掛在 body 上),所以改成每次
+	// scroll 都從 toggle 的 getBoundingClientRect() 重新錨定,讓它像內聯的
+	// section .more-items 一樣跟著區塊走,而不是固定在畫面上。
+	function placeMore(toggle) {
+		const rect = toggle.getBoundingClientRect();
+		morePopup.style.left = (rect.right - morePopup.offsetWidth) + "px";
+		morePopup.style.top = (rect.bottom + 4) + "px";
+	}
+	function repositionMore() {
+		if (!morePopup || morePopup.hidden || !moreToggleEl) return;
+		placeMore(moreToggleEl);
+	}
+	function hideMore() {
+		if (!morePopup) return;
+		morePopup.hidden = true;
+		morePopup.replaceChildren();
+		moreAnchorId = null;
+		moreToggleEl = null;
+		window.removeEventListener("scroll", repositionMore, true);
+	}
 
 	function getMorePopup() {
 		if (morePopup) return morePopup;
@@ -40,9 +62,7 @@ export function createBlockRenderer({
 		document.body.appendChild(morePopup);
 		document.addEventListener("click", (event) => {
 			if (!morePopup.hidden && !event.target.closest("[data-block-more]") && !morePopup.contains(event.target)) {
-				morePopup.hidden = true;
-				morePopup.replaceChildren();
-				moreAnchorId = null;
+				hideMore();
 			}
 		});
 		return morePopup;
@@ -53,7 +73,7 @@ export function createBlockRenderer({
 		button.type = "button";
 		if (danger) button.className = "danger";
 		button.textContent = label;
-		button.onclick = () => { onClick(); morePopup.hidden = true; morePopup.replaceChildren(); moreAnchorId = null; };
+		button.onclick = () => { onClick(); hideMore(); };
 		return button;
 	}
 
@@ -82,12 +102,11 @@ export function createBlockRenderer({
 	function openMore(toggle, sectionId, blockId) {
 		const popup = getMorePopup();
 		if (!popup.hidden && moreAnchorId === blockId) {
-			popup.hidden = true;
-			popup.replaceChildren();
-			moreAnchorId = null;
+			hideMore();
 			return;
 		}
 		moreAnchorId = blockId;
+		moreToggleEl = toggle;
 		const section = findSection(sectionId);
 		const index = section ? section.blocks.findIndex((item) => item.id === blockId) : -1;
 		popup.replaceChildren(
@@ -96,13 +115,13 @@ export function createBlockRenderer({
 			moreItem(t("block.copy"), false, () => duplicate(sectionId, findSection(sectionId).blocks.find((b) => b.id === blockId))),
 			moreItem(t("block.delete"), true, () => askDelete(sectionId, blockId)),
 		);
-		const rect = toggle.getBoundingClientRect();
 		popup.hidden = false;
 		popup.classList.remove("mo-pop");
 		void popup.offsetWidth;
 		popup.classList.add("mo-pop");
-		popup.style.left = (rect.right - popup.offsetWidth) + "px";
-		popup.style.top = (rect.bottom + 4) + "px";
+		placeMore(toggle);
+		// 跟著區塊在頁面／編輯器滾動,行為跟 section .more-items 一致。
+		window.addEventListener("scroll", repositionMore, true);
 	}
 
 	function duplicate(sectionId, source) {
