@@ -2,6 +2,7 @@
 export const zh = {
 	// header groups + flat actions
 	"header.group.notes": "文件清單",
+	"header.group.file": "檔案",
 	"header.group.settings": "更多",
 
 	"settings.open": "設定",

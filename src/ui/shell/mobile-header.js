@@ -31,15 +31,21 @@ function setupHeaderActionGroups() {
 	actions.appendChild(storageGroup.root);
 	groups.push(storageGroup);
 
-	// Primary action (copy) and the two hidden <input type=file> are not listed
-	// in any group, so they stay flat and never collapse. The true settings
+	// The two hidden <input type=file> are not listed in any group, so they stay
+	// invisible. The copy action lives in a "File" menu group. The true settings
 	// (language / theme / shortcuts) move into a separate 設定 dialog, so "更多"
-	// holds the overflow actions (incl. download .textile) plus its 設定 opener.
+	// holds the remaining overflow actions (incl. download .textile) plus its 設定
+	// opener.
 	const groupSpecs = [
+		{
+			name: "file",
+			labelKey: "header.group.file",
+			ids: ["copy", "copySections", "txt", "json", "import", "patch"],
+		},
 		{
 			name: "more",
 			labelKey: "header.group.settings",
-			ids: ["copySections", "txt", "json", "import", "patch", "source_code", "reset"],
+			ids: ["source_code", "reset"],
 		},
 	];
 
@@ -58,7 +64,7 @@ function setupHeaderActionGroups() {
 			open.id = "settingsOpen";
 			open.type = "button";
 			open.textContent = t("settings.open");
-			group.panel.appendChild(open);
+			group.panel.prepend(open);
 		}
 		actions.appendChild(group.root);
 		groups.push(group);

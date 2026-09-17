@@ -1,7 +1,8 @@
 // en dictionary for the Redmine Textile Exporter.
 export const en = {
 	// header groups + flat actions
-	"header.group.notes": "Notes",
+	"header.group.notes": "Note List",
+	"header.group.file": "File",
 	"header.group.settings": "More",
 
 	"settings.open": "Settings",
