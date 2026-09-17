@@ -1,5 +1,6 @@
 import { createEnvItem, normalizeEnvironment, presets, escapeHtml } from "../../core/state.js";
 import { confirmDelete } from "../dialogs/confirm-dialog.js";
+import { t } from "../../i18n.js";
 
 const ENV_HINTS = {
 	"CPLD 版本": "(ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)",
@@ -51,7 +52,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		const addBtn = document.getElementById("envAddItem");
 		if (addBtn) {
 			addBtn.onclick = () => {
-				getState().environment.push(createEnvItem("自訂項目", "", true, true));
+				getState().environment.push(createEnvItem(t("form.env.customDefault"), "", true, true));
 				changed();
 				renderAll();
 			};
@@ -60,9 +61,9 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		if (delBtn) {
 			delBtn.onclick = () => {
 				confirmDelete({
-					heading: "刪除測試環境",
-					text: "刪除後此環境不輸出，確定？",
-					confirmLabel: "刪除",
+					heading: t("form.env.delHeading"),
+					text: t("form.env.delText"),
+					confirmLabel: t("delete"),
 					onConfirm: () => {
 						getState().environmentEnabled = false;
 						changed();
@@ -120,9 +121,9 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 		const addBtn = document.createElement("button");
 		addBtn.type = "button";
 		addBtn.className = "env-add";
-		addBtn.textContent = "＋ 自定義測試環境項目";
+		addBtn.textContent = t("form.env.addCustom");
 		addBtn.onclick = () => {
-			getState().environment.push(createEnvItem("自訂項目", "", true, true));
+			getState().environment.push(createEnvItem(t("form.env.customDefault"), "", true, true));
 			changed();
 			renderAll();
 		};
@@ -166,7 +167,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 			if (item.custom) {
 				title.type = "text";
 				title.value = item.label;
-				title.placeholder = "自訂項目名稱";
+				title.placeholder = t("form.env.customPlaceholder");
 				title.oninput = () => {
 					const target = getState().environment.find((i) => i.id === item.id);
 					if (target) { target.label = title.value; changed(); }
@@ -184,7 +185,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 				const toggle = document.createElement("button");
 				toggle.type = "button";
 				toggle.className = "small";
-				toggle.textContent = "指令";
+				toggle.textContent = t("form.env.command");
 				toggle.onclick = () => {
 					if (hintEl) hintEl.hidden = !hintEl.hidden;
 				};
@@ -194,7 +195,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 			del.type = "button";
 			del.className = "small danger";
 			del.textContent = "✕";
-			del.title = "移除項目";
+			del.title = t("form.env.removeTitle");
 			del.onclick = () => {
 				const target = getState().environment.find((i) => i.id === item.id);
 				if (!target) return;
@@ -224,7 +225,7 @@ export function createFormRenderer({ getState, changed, onPresetClick, findSecti
 				const copy = document.createElement("button");
 				copy.type = "button";
 				copy.className = "small";
-				copy.textContent = "複製";
+				copy.textContent = t("copy");
 				copy.onclick = () => navigator.clipboard.writeText(hint);
 				hintEl.appendChild(code);
 				hintEl.appendChild(copy);

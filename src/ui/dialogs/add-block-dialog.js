@@ -129,6 +129,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 		for (const type of BLOCK_TYPES) {
 			const card = document.createElement("div");
 			card.className = "card" + (type === selectedType ? " active" : "");
+			card.dataset.abType = type;
 			const strong = document.createElement("strong");
 			strong.textContent = label(type);
 			const caption = document.createElement("span");

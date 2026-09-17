@@ -204,6 +204,31 @@
 	color: var(--primary);
 }
 
+/* --- 設定 dialog：一列一項目 --- */
+.settings-dialog .settings-body {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.settings-dialog .settings-row {
+	padding: 8px 2px;
+}
+.settings-dialog .settings-row + .settings-row {
+	border-top: 1px solid var(--line);
+}
+.settings-dialog .settings-row-title {
+	font-size: 12px;
+	color: var(--muted);
+	margin-bottom: 8px;
+	text-transform: none;
+}
+.settings-dialog .settings-row-control {
+	display: flex;
+}
+.settings-dialog .settings-row-control button {
+	flex: 1;
+}
+
 
 /* --- 新增文件 dialog：模板 / 段落 --- */
 .add-block-dialog .dialog-head {

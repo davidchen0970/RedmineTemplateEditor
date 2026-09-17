@@ -40,7 +40,7 @@ test("複製 duplicates a block in its section", async ({ page }) => {
 	await expect(blocks).toHaveCount(1);
 	await test.step("open the block more menu and copy", async () => {
 		await blocks.first().locator("[data-block-more]").click();
-		await page.locator(".more-popup").getByRole("button", { name: "複製" }).click();
+		await page.locator(".more-popup").getByRole("button", { name: /複製|Copy/ }).click();
 	});
 	await test.step("expect one more block", async () => {
 		await expect(blocks).toHaveCount(2);
@@ -56,7 +56,7 @@ test("刪除 removes a block after confirming", async ({ page }) => {
 	await expect(blocks).toHaveCount(1);
 	await test.step("open the block more menu and delete", async () => {
 		await blocks.first().locator("[data-block-more]").click();
-		await page.locator(".more-popup").getByRole("button", { name: "刪除" }).click();
+		await page.locator(".more-popup").getByRole("button", { name: /刪除|Delete/ }).click();
 	});
 	await test.step("confirm the delete dialog", async () => {
 		// The seed also creates #abDialog; "dialog.add-block-dialog" would match

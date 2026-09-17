@@ -26,7 +26,7 @@ function seedImageBlock(page, section, marker) {
 		await expect(dialog).toBeVisible();
 		// A plainText block has no real <pre>/<code> wrapper, so the image
 		// marker stays on its own top-level line and becomes an <img>.
-		await dialog.locator("#abTypes").getByText("純文字", { exact: true }).click();
+		await dialog.locator("#abTypes [data-ab-type='plainText']").click();
 		await dialog.locator("#abMain textarea").fill(marker);
 		await dialog.locator("#abForm button[type=submit]").click();
 		await expect(dialog).toBeHidden();

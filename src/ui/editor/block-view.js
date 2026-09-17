@@ -1,18 +1,20 @@
 import { escapeHtml } from "../../core/state.js";
+import { t } from "../../i18n.js";
 export const BLOCK_TYPES = ["implementation", "text", "plainText", "command", "diff", "log", "mermaid", "image", "collapse"];
 
 export function label(type) {
-	return ({
-		implementation: "程式碼",
-		text: "內文",
-		plainText: "純文字",
-		command: "終端指令",
-		diff: "程式碼差異",
-		log: "執行日誌",
-		mermaid: "流程圖",
-		image: "圖片",
-		collapse: "收合區塊",
-	})[type] ?? type;
+	const map = {
+		implementation: "blocktype.implementation",
+		text: "blocktype.text",
+		plainText: "blocktype.plainText",
+		command: "blocktype.command",
+		diff: "blocktype.diff",
+		log: "blocktype.log",
+		mermaid: "blocktype.mermaid",
+		image: "blocktype.image",
+		collapse: "blocktype.collapse",
+	};
+	return map[type] ? t(map[type]) : type;
 }
 
 export function titleDisabled(type) {
@@ -24,12 +26,12 @@ export function defaultTitle(type) {
 		implementation: "api.c",
 		text: "",
 		plainText: "",
-		command: "執行指令",
+		command: t("blocktitle.command"),
 		diff: "",
-		log: "執行日誌",
-		mermaid: "流程圖",
+		log: t("blocktitle.log"),
+		mermaid: t("blocktitle.mermaid"),
 		image: "",
-		collapse: "收合區段",
+		collapse: t("blocktitle.collapse"),
 	})[type] ?? "";
 }
 
@@ -37,7 +39,7 @@ export function applyDefaults(block) {
 	if (block.type === "implementation") {
 		block.title ||= "api.c";
 		block.workPath ||= "(docker)$ pwd";
-		block.workPathTitle ||= "work path";
+		block.workPathTitle ||= t("block.workPath");
 	}
 }
 
@@ -51,7 +53,7 @@ export function createBlockElement(block, maxLevel, { open = false, onToggle = n
 	const element = document.createElement("div");
 	element.className = "block";
 	const showWorkChecked = block.showWorkPath !== false ? "checked" : "";
-	const workTitle = escapeHtml(block.workPathTitle || "work path");
+	const workTitle = escapeHtml(block.workPathTitle || t("block.workPath"));
 	const workPath = escapeHtml(block.workPath || "(docker)$ pwd");
 	const description = escapeHtml(block.description || "");
 
@@ -76,27 +78,27 @@ export function createBlockElement(block, maxLevel, { open = false, onToggle = n
 		<div class="actions block-actions block-summary">
 			<button class="block-collapse-toggle" type="button" data-block-toggle aria-expanded="${String(open)}">
 				<span class="block-collapse-icon" aria-hidden="true">▾</span>
-				<span class="block-summary-title" title="${blockTitle || "無標題"}">${blockTitle || "無標題"}</span>
+				<span class="block-summary-title" title="${blockTitle || t("block.untitled")}">${blockTitle || t("block.untitled")}</span>
 				<span class="block-summary-meta">
 					<span class="block-summary-separator" aria-hidden="true">|</span>
 					<span class="block-type-label">${escapeHtml(blockTypeLabel)}</span>
 				</span>
 			</button>
 			<span>
-				<button class="small" data-bup>上移</button>
-				<button class="small" data-bdown>下移</button>
-				<button class="small" data-block-more>其他 ▾</button>
+				<button class="small" data-bup>${t("up")}</button>
+				<button class="small" data-bdown>${t("down")}</button>
+				<button class="small" data-block-more>${t("block.more")} ▾</button>
 			</span>
 		</div>
 		<div class="block-collapsible" data-block-collapsible>
 		<div class="grid-2">
-			<label class="field">區塊類型<select data-btype>${blockTypeOptions}</select></label>
-			<label class="field block-level-field">所在層級<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${blockLevel}"></label>
+			<label class="field">${t("block.type")}<select data-btype>${blockTypeOptions}</select></label>
+			<label class="field block-level-field">${t("block.level")}<input data-blevel type="number" min="1" max="${maxLevel}" step="1" value="${blockLevel}"></label>
 		</div>
-		<label class="field">區塊標題<input data-btitle value="${blockTitle}" ${titleDisabled(block.type) ? "disabled" : ""}></label>
+		<label class="field">${t("block.title")}<input data-btitle value="${blockTitle}" ${titleDisabled(block.type) ? "disabled" : ""}></label>
 		${implementation}
 		<div data-contents></div>
-		<button class="small primary" data-add-content>新增內容</button>
+		<button class="small primary" data-add-content>${t("block.addContent")}</button>
 		</div>
 	`;
 
@@ -129,20 +131,20 @@ export function renderContents(element, block) {
 		const contentClass = isImpl ? "content-editor-large" : "content-editor";
 		const contentText = isImpl ? escapeHtml(content?.content ?? "") : escapeHtml(content);
 		const langField = isImpl
-			? `<label class="field content-lang-field">語言<input data-cont-lang="${index}" value="${escapeHtml(content?.lang || "")}"></label>`
+			? `<label class="field content-lang-field">${t("block.lang")}<input data-cont-lang="${index}" value="${escapeHtml(content?.lang || "")}"></label>`
 			: "";
 
 		item.innerHTML = `
 			<div class="actions block-actions">
-				<span class="note">內容 #${index + 1}</span>
+				<span class="note">${t("block.contentLabel")} #${index + 1}</span>
 				<span>
-					<button class="small" data-dup-content="${index}">複製</button>
-					<button class="small danger" data-del-content="${index}">刪除</button>
+					<button class="small" data-dup-content="${index}">${t("copy")}</button>
+					<button class="small danger" data-del-content="${index}">${t("delete")}</button>
 				</span>
 			</div>
 			${langField}
 			<label class="field">
-				內容
+				${t("block.content")}
 				<textarea data-cont-index="${index}" class="${contentClass}">${contentText}</textarea>
 			</label>
 		`;

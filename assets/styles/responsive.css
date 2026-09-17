@@ -217,10 +217,6 @@
 		box-shadow: 0 12px 30px rgba(0, 0, 0, .15), var(--shadow);
 	}
 
-	.header-action-group[data-header-action-group="extra"] .header-action-group-panel {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
 	.header-action-group-panel > button {
 		width: 100%;
 		box-sizing: border-box;

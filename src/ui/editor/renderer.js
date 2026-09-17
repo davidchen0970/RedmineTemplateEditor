@@ -5,6 +5,7 @@ import { createSectionRenderer } from "./section-renderer.js";
 import { renderOutput } from "../output/output-view.js";
 import { toast, showPatchProgress, hidePatchProgress } from "../shell/notifications.js";
 import { addVerificationSnippet as appendVerificationSnippet } from "../formatting/verification-snippets.js";
+import { t } from "../../i18n.js";
 export { label } from "./block-view.js";
 
 export function createRenderer(context) {
@@ -53,9 +54,9 @@ export function createRenderer(context) {
 		const element = document.getElementById("save");
 		const status = getExportStatus();
 		if (element) {
-			const lastSave = getLastSaveText() || "已自動儲存 --";
-			const jsonStatus = `JSON ${status.json ? "已匯出" : "未匯出"}`;
-			const txtStatus = `TXT ${status.txt ? "已匯出" : "未匯出"}`;
+			const lastSave = getLastSaveText() || t("status.saveDefault");
+			const jsonStatus = `JSON ${status.json ? t("status.exported") : t("status.notExported")}`;
+			const txtStatus = `TXT ${status.txt ? t("status.exported") : t("status.notExported")}`;
 			element.textContent = [lastSave, jsonStatus, txtStatus].join(" · ");
 		}
 	}

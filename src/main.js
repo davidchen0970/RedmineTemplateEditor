@@ -18,6 +18,8 @@ import { setupTextBackgroundContextMenu } from "./ui/formatting/text-background-
 import { setupTheme } from "./ui/theme/theme.js";
 import { setupWorkspaceResize } from "./ui/shell/workspace-resize.js";
 import { setupImageReplacePicker } from "./ui/dialogs/image-replace-picker.js";
+import { setupSettingsDialog } from "./ui/dialogs/settings-dialog.js";
+import { applyStaticText, getLocale, setLocale, t } from "./i18n.js";
 
 let activeDocumentId = getActiveDocumentId();
 let state = normalizeState(loadState(activeDocumentId)) || makeState();
@@ -122,6 +124,32 @@ setupFileActions({
 	},
 });
 
+function setupI18n() {
+	document.documentElement.lang = getLocale() === "zh" ? "zh-Hant" : "en";
+	applyStaticText();
+
+	const langButton = document.getElementById("langToggle");
+	const syncLangButton = () => {
+		if (langButton) langButton.textContent = t("lang.toggle");
+	};
+
+	if (langButton) {
+		langButton.type = "button";
+		langButton.onclick = () => setLocale(getLocale() === "zh" ? "en" : "zh");
+	}
+
+	// setLocale() already re-applies [data-i18n], and re-renders the dynamic
+	// editor areas so generated labels/toasts come out in the new language too.
+	document.addEventListener("i18n:change", (event) => {
+		const lang = event.detail.locale;
+		document.documentElement.lang = lang === "zh" ? "zh-Hant" : "en";
+		syncLangButton();
+		renderer.render();
+		renderer.renderOut();
+	});
+	syncLangButton();
+}
+
 bindViewButtons();
 bindEditorActions();
 setupShortcutHelp();
@@ -140,5 +168,7 @@ setupTextBackgroundContextMenu();
 setupTextCodeContextMenu();
 setupImageDrop();
 setupImageReplacePicker(() => renderer.renderOut());
+setupSettingsDialog();
+setupI18n();
 save();
 renderer.render();
