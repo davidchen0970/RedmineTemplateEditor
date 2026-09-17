@@ -1,12 +1,13 @@
 import { textile } from "../textile/generator.js";
 import { exportMermaidPng } from "../ui/output/mermaid-export.js";
+import { t } from "../i18n.js";
 
 // Single source of truth for every shortcut the app registers. The keydown handler
 // and the 快捷鍵 help dialog both read from this list so they can never drift.
 export const SHORTCUTS = [
-	{ code: "KeyC", keys: "Ctrl/⌘ + Shift + C", action: "複製 Redmine Textile 到剪貼簿" },
-	{ code: "KeyJ", keys: "Ctrl/⌘ + Shift + J", action: "複製整份 JSON" },
-	{ code: "KeyS", keys: "Ctrl/⌘ + Shift + S", action: "匯出 Mermaid PNG 並複製 Textile" },
+	{ code: "KeyC", keys: "Ctrl/⌘ + Shift + C", actionKey: "shortcut.copy" },
+	{ code: "KeyJ", keys: "Ctrl/⌘ + Shift + J", actionKey: "shortcut.json" },
+	{ code: "KeyS", keys: "Ctrl/⌘ + Shift + S", actionKey: "shortcut.mermaid" },
 ];
 
 // Screenshot_YYYYMMDD_HHMMSS.png (local time); disambiguate repeats.
@@ -59,14 +60,14 @@ export function setupKeyboardShortcuts({ getState, renderer, setExportStatus }) 
 		try {
 			if (event.code === "KeyC") {
 				await navigator.clipboard.writeText(textile(getState()));
-				renderer.toast("已複製 Textile");
+				renderer.toast(t("toast.copied"));
 			} else if (event.code === "KeyJ") {
 				await navigator.clipboard.writeText(JSON.stringify(getState(), null, 2));
 				setExportStatus("json");
-				renderer.toast("已複製 JSON");
+				renderer.toast(t("toast.json"));
 			} else {
 				await exportMermaidAndCopy(getState());
-				renderer.toast("已下載 mermaid PNG 並複製 Textile");
+				renderer.toast(t("toast.mermaid"));
 			}
 		} catch (error) {
 			console.error("快捷鍵失敗:", error);
