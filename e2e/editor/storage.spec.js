@@ -3,8 +3,8 @@ import { test, expect } from "@playwright/test";
 test("storage 新增儲存 registers a new document in the picker", async ({ page }) => {
 	await test.step("open the editor, fold open the storage group", async () => {
 		await page.goto("/");
-		// The storage controls live in the folded 文件管理 group.
-		await page.getByRole("button", { name: "文件管理" }).click();
+		// The storage controls now fold under the 文件清單 (notes) group.
+		await page.locator('[data-header-action-group="notes"] .header-action-group-toggle').click();
 		await page.fill("#title", "doc-one");
 	});
 	await test.step("confirm the new-document dialog", async () => {
