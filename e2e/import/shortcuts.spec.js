@@ -2,8 +2,11 @@ import { test, expect } from "@playwright/test";
 
 test("shortcut help dialog lists every registered shortcut", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
-	await test.step("open the extra group and the dialog", async () => {
-		await page.getByRole("button", { name: "操作功能" }).click();
+	await test.step("open the 更多 group, the settings dialog, and the shortcut dialog", async () => {
+		// #shortcutHelp now lives as a row inside the 設定 dialog (which itself is
+		// opened through #settingsOpen in the 更多 group).
+		await page.locator('[data-header-action-group="more"] .header-action-group-toggle').click();
+		await page.click("#settingsOpen");
 		await page.click("#shortcutHelp");
 		const dialog = page.locator("dialog#shortcutDialog");
 		await expect(dialog).toBeVisible();
@@ -33,7 +36,9 @@ test("Ctrl+Shift+C copies the Textile and raises the copy toast", async ({ page,
 		await page.keyboard.press("Control+Shift+C");
 	});
 	await test.step("expect the copy toast", async () => {
-		await expect(page.locator("#toast")).toContainText("已複製 Textile");
+		// The toast is i18n-localized ("已複製 Textile" / "Textile copied"); assert
+		// the shared token rather than a pinned language.
+		await expect(page.locator("#toast")).toContainText(/Textile/);
 	});
 });
 
@@ -44,8 +49,8 @@ test("#copy also downloads a JSON snapshot", async ({ page, browserName }) => {
 		await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
 		await page.fill("#title", `copy-${Date.now()}`);
 	});
-	await test.step("fold open the extra group", async () => {
-		await page.getByRole("button", { name: "操作功能" }).click();
+	await test.step("fold open the File group", async () => {
+		await page.locator('[data-header-action-group="file"] .header-action-group-toggle').click();
 		await expect(page.locator("#copy")).toBeVisible();
 	});
 	await test.step("trigger the copy button", async () => {

@@ -23,6 +23,12 @@ test("switches between Textile, preview and JSON views", async ({ page }) => {
 		const parsed = JSON.parse(jsonText);
 		expect(Array.isArray(parsed.sections)).toBe(true);
 	});
+	await test.step("switch back to the Textile source view via #raw", async () => {
+		await page.click("#raw");
+		await expect(page.locator("#out")).toBeVisible();
+		const source = await page.inputValue("#out");
+		expect(source.startsWith("h2. Porting SOL function")).toBe(true);
+	});
 });
 
 test("theme toggle flips body back and forth light/dark", async ({ page }) => {
@@ -34,14 +40,16 @@ test("theme toggle flips body back and forth light/dark", async ({ page }) => {
 		await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
 	});
 	await test.step("toggle to dark", async () => {
-		// The toolbar buttons live in the folded 操作功能 group; open it. Clicking
-		// a panel button auto-collapses the group again.
-		await page.getByRole("button", { name: "操作功能" }).click();
+		// The theme toggle now lives inside the 設定 dialog: open the 更多 group,
+		// then its #settingsOpen opener, then the row. Clicking the group panel
+		// button auto-collapses the group, but the dialog stays up.
+		await page.locator('[data-header-action-group="more"] .header-action-group-toggle').click();
+		await page.click("#settingsOpen");
 		await page.click("#themeToggle");
 		await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
 	});
 	await test.step("toggle back to light", async () => {
-		await page.getByRole("button", { name: "操作功能" }).click();
+		// The settings dialog is still up, so #themeToggle is directly reachable.
 		await page.click("#themeToggle");
 		await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
 	});
@@ -87,7 +95,7 @@ test("plainText blocks disable the title field", async ({ page }) => {
 	});
 	await test.step("pick plainText and expect the title disabled", async () => {
 		const dialog = page.locator("dialog#abDialog");
-		await dialog.locator("#abTypes").getByText("純文字", { exact: true }).click();
+		await dialog.locator("#abTypes [data-ab-type='plainText']").click();
 		await expect(dialog.locator("#abTitle")).toBeDisabled();
 	});
 });
@@ -101,7 +109,7 @@ test("diff blocks expose the diff/patch upload field", async ({ page }) => {
 	});
 	await test.step("pick a diff block and expect the upload field", async () => {
 		const dialog = page.locator("dialog#abDialog");
-		await dialog.locator("#abTypes").getByText("程式碼差異", { exact: true }).click();
+		await dialog.locator("#abTypes [data-ab-type='diff']").click();
 		await expect(dialog.locator('[data-ab="diffFile"]')).toBeVisible();
 	});
 });

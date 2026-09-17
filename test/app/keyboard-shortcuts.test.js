@@ -7,7 +7,7 @@ test("shortcut: catalog pairs every shortcut with a non-empty action", () => {
 	for (const shortcut of SHORTCUTS) {
 		assert.ok(typeof shortcut.code === "string" && shortcut.code.length > 0);
 		assert.ok(typeof shortcut.keys === "string" && shortcut.keys.length > 0);
-		assert.ok(typeof shortcut.action === "string" && shortcut.action.length > 0);
+		assert.ok(typeof shortcut.actionKey === "string" && shortcut.actionKey.length > 0);
 	}
 });
 

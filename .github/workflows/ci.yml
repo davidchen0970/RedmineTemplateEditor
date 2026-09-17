@@ -26,9 +26,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      # This project has no dependencies and uses the built-in test runner,
-      # so there is no lockfile and no `npm install`/`npm ci` (that was the
-      # source of the "Dependencies lock file is not found" failure).
+      # The zero-build browser code is tested with `node --test` (built-in runner).
+      # jsdom-driven DOM tests need the dev deps installed, which the repo now
+      # pins in package-lock.json, so install before running the suite.
+      - name: Install dev dependencies
+        run: npm ci
+
       - name: Run test suite
         run: npm test
 

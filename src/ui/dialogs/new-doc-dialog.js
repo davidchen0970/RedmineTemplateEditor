@@ -8,6 +8,7 @@ let pendingResolve = null;
 function ensureDialog() {
 	if (dialog) return dialog;
 	dialog = document.createElement("dialog");
+	dialog.id = "ndDialog";
 	dialog.className = "add-block-dialog";
 	dialog.innerHTML = `
 		<div class="dialog-head">新增文件</div>

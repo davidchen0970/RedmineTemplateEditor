@@ -6,6 +6,7 @@ import { slideReorder } from "../motion/card-slide.js";
 import { markEntering, markLeaving } from "../motion/card-stage.js";
 import { confirmDelete } from "../dialogs/confirm-dialog.js";
 import { blockCard } from "../dom/card.js";
+import { t } from "../../i18n.js";
 
 export function createBlockRenderer({
 	getState,
@@ -71,9 +72,9 @@ export function createBlockRenderer({
 
 	function askDelete(sectionId, blockId) {
 		confirmDelete({
-			heading: "刪除區塊",
-			text: `刪除區塊「${showLabel(sectionId, blockId)}」？`,
-			confirmLabel: "刪除",
+			heading: t("block.delete"),
+			text: t("block.delText", { name: showLabel(sectionId, blockId) }),
+			confirmLabel: t("delete"),
 			onConfirm: () => doDelete(sectionId, blockId),
 		});
 	}
@@ -90,10 +91,10 @@ export function createBlockRenderer({
 		const section = findSection(sectionId);
 		const index = section ? section.blocks.findIndex((item) => item.id === blockId) : -1;
 		popup.replaceChildren(
-			moreItem("在區塊前新增區塊", false, () => addBlock(sectionId, index)),
-			moreItem("在區塊後新增區塊", false, () => addBlock(sectionId, index + 1)),
-			moreItem("複製", false, () => duplicate(sectionId, findSection(sectionId).blocks.find((b) => b.id === blockId))),
-			moreItem("刪除", true, () => askDelete(sectionId, blockId)),
+			moreItem(t("block.before"), false, () => addBlock(sectionId, index)),
+			moreItem(t("block.after"), false, () => addBlock(sectionId, index + 1)),
+			moreItem(t("block.copy"), false, () => duplicate(sectionId, findSection(sectionId).blocks.find((b) => b.id === blockId))),
+			moreItem(t("block.delete"), true, () => askDelete(sectionId, blockId)),
 		);
 		const rect = toggle.getBoundingClientRect();
 		popup.hidden = false;
@@ -192,7 +193,7 @@ export function createBlockRenderer({
 		if (workTitleInput) workTitleInput.oninput = (event) => {
 			block.workPathTitle = event.target.value;
 			const label = element.querySelector("[data-work-label]");
-			if (label) label.textContent = event.target.value || "work path";
+			if (label) label.textContent = event.target.value || t("block.workPath");
 			changed();
 		};
 		Object.entries(map).forEach(([name, key]) => {

@@ -5,6 +5,7 @@ import { markEntering, markLeaving } from "../motion/card-stage.js";
 import { confirmDelete } from "../dialogs/confirm-dialog.js";
 import { openPrompt } from "../dialogs/prompt-dialog.js";
 import { sectionCard } from "../dom/card.js";
+import { t } from "../../i18n.js";
 export function createSectionRenderer({
 	getState,
 	changed,
@@ -17,12 +18,12 @@ export function createSectionRenderer({
 	const find = (sectionId) => getState().sections.find((section) => section.id === sectionId);
 	const locate = sectionCard;
 
-	function add(title = "新增段落") {
+	function add(title = t("section.newDefault")) {
 		openPrompt({
-			heading: "新增段落",
-			label: "段落標題 h3.",
+			heading: t("section.newHeading"),
+			label: t("section.titleLabel"),
 			value: title,
-			confirmLabel: "新增",
+			confirmLabel: t("add"),
 			onConfirm: (value) => {
 				const section = createSection(value || title, true);
 				getState().sections.push(section);
@@ -39,7 +40,7 @@ export function createSectionRenderer({
 		if (!target) return;
 		const copy = JSON.parse(JSON.stringify(target));
 		copy.id = createId();
-		copy.title = (copy.title || "段落") + " copy";
+		copy.title = (copy.title || t("section.newDefault")) + t("section.copySuffix");
 		copy.blocks = (copy.blocks || []).map((item) => ({
 			...item,
 			id: createId()
@@ -57,9 +58,9 @@ export function createSectionRenderer({
 			section = find(sectionId);
 		if (!section) return;
 		confirmDelete({
-			heading: "刪除段落",
-			text: `刪除段落「${section.title}」？`,
-			confirmLabel: "刪除",
+			heading: t("section.delete"),
+			text: t("section.delText", { name: section.title }),
+			confirmLabel: t("delete"),
 			onConfirm: () => {
 				const current = find(sectionId);
 				if (!current) return;
@@ -119,17 +120,17 @@ export function createSectionRenderer({
 			const description = escapeHtml(section.description || "");
 			const actionsHtml = `
 				<div class="actions">
-					<button type="button" class="small" data-up>上移</button>
-					<button type="button" class="small" data-down>下移</button>
+					<button type="button" class="small" data-up>${t("up")}</button>
+					<button type="button" class="small" data-down>${t("down")}</button>
 					<div class="more-menu" data-more>
-						<button type="button" class="small" data-more-toggle>其他 ▾</button>
+						<button type="button" class="small" data-more-toggle>${t("section.more")} ▾</button>
 						<div class="more-items" hidden>
-							<button type="button" data-add>新增區塊</button>
-							<button type="button" data-add-section>新增段落</button>
-							<button type="button" data-duplicate>複製段落</button>
-							<button type="button" data-collapse-block>全部收闔區塊</button>
-							<button type="button" data-order>${section.unordered ? "子項目改為有序排列" : "子項目改為無序排列"}</button>
-							<button type="button" class="danger" data-delete>刪除段落</button>
+							<button type="button" data-add>${t("section.addBlock")}</button>
+							<button type="button" data-add-section>${t("section.addSection")}</button>
+							<button type="button" data-duplicate>${t("section.duplicate")}</button>
+							<button type="button" data-collapse-block>${t("section.collapseBlocks")}</button>
+							<button type="button" data-order>${section.unordered ? t("section.orderOrdered") : t("section.orderUnordered")}</button>
+							<button type="button" class="danger" data-delete>${t("section.delete")}</button>
 						</div>
 					</div>
 				</div>
@@ -145,8 +146,8 @@ export function createSectionRenderer({
 					${actionsHtml}
 				</div>
 				<div class="section-body ${bodyClass}" id="section-body-${section.id}">
-					<label class="field">段落標題 h3.<input data-title value="${title}"></label>
-					<label class="field">段落說明<textarea data-description>${description}</textarea></label>
+					<label class="field">${t("section.titleLabel")}<input data-title value="${title}"></label>
+					<label class="field">${t("section.descLabel")}<textarea data-description>${description}</textarea></label>
 					<div data-blocks></div>
 					<div class="section-footer" style="margin-top: 1rem; display: flex; justify-content: flex-end;">
 						${actionsHtml}

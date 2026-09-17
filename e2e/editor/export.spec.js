@@ -1,10 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 async function openExtraGroup(page) {
-	// The header buttons live in a folded group (see mobile-header.js). Its toggle
-	// is keyed by data-header-action-group="extra". Opening it is what makes #txt,
-	// #json, #themeToggle … clickable.
-	await page.locator('[data-header-action-group="extra"] .header-action-group-toggle').click();
+	// The download buttons now fold under the "file" group. Opening it is what makes
+	// #txt, #json … clickable.
+	await page.locator('[data-header-action-group="file"] .header-action-group-toggle').click();
 }
 
 test("downloads a .textile export", async ({ page }) => {
