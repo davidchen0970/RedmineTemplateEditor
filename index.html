@@ -11,8 +11,8 @@
 			<div class="header-main">
 				<div class="brand">
 					<div class="brand-copy">
-						<h1>Redmine Textile 輸出器</h1>
-						<p>以輸出為主，表單輔助整理，模板與段落收在側邊。</p>
+						<h1 data-i18n="brand.title">Redmine Textile 輸出器</h1>
+						<p data-i18n="brand.subtitle"></p>
 					</div>
 				</div>
 				<button
@@ -21,26 +21,27 @@
 					class="header-menu-toggle"
 					aria-controls="headerActions"
 					aria-expanded="false"
+					data-i18n-title="header.openMenuAria"
 					aria-label="展開頁首選單"
 				></button>
 			</div>
 			<div class="top-actions header-collapsible" id="headerActions">
 				<div class="storage-actions" aria-label="localStorage 文件管理">
-					<select id="storageDocSelect" title="讀取 localStorage 文件"></select>
-					<input id="storageDocName" type="text" placeholder="文件名稱" title="目前文件名稱" />
-					<button id="storageRename" type="button">改名</button>
-					<button id="storageNew" type="button">新增儲存</button>
-					<button id="storageDelete" type="button" class="danger">刪除儲存</button>
+					<select id="storageDocSelect" data-i18n-title="storage.selectTitle" title="讀取 localStorage 文件"></select>
+					<input id="storageDocName" type="text" data-i18n-ph="storage.namePlaceholder" data-i18n-title="storage.nameTitle" placeholder="文件名稱" title="目前文件名稱" />
+					<button id="storageRename" type="button" data-i18n="storage.rename">改名</button>
+					<button id="storageNew" type="button" data-i18n="storage.new">新增儲存</button>
+					<button id="storageDelete" type="button" class="danger" data-i18n="storage.delete">刪除儲存</button>
 				</div>
-				<button id="copy" class="primary">複製 Redmine Textile</button>
-				<button id="copySections">複製指定段落</button>
-				<button id="txt">下載 .textile</button>
-				<button id="json">匯出 JSON</button>
-				<button id="import">匯入 JSON</button>
-				<button id="patch">匯入 Patch</button>
-				<button id="shortcutHelp" type="button">快捷鍵</button>
+				<button id="copy" class="primary" data-i18n="action.copy">複製 Redmine Textile</button>
+				<button id="copySections" data-i18n="action.copySections">複製段落</button>
+				<button id="txt" data-i18n="action.download">下載 .textile</button>
+				<button id="json" data-i18n="action.export">匯出 JSON</button>
+				<button id="import" data-i18n="action.import">匯入 JSON</button>
+				<button id="patch" data-i18n="action.patch">匯入 Patch</button>
+				<button id="shortcutHelp" type="button" data-i18n="action.shortcuts">快捷鍵</button>
 				<button id="themeToggle" type="button">深色模式</button>
-				<button id="reset" class="danger">重設</button>
+				<button id="reset" class="danger" data-i18n="action.reset">重設</button>
 				<input id="file" type="file" accept=".json,application/json" hidden />
 				<input
 					id="patchFile"
@@ -48,7 +49,8 @@
 					accept=".patch,.diff,text/plain"
 					hidden
 				/>
-				<button id="source_code">source code</button>
+				<button id="source_code" data-i18n="action.source">source code</button>
+				<button id="langToggle" type="button"></button>
 			</div>
 		</header>
 
@@ -60,15 +62,15 @@
 						data-collapse-target="panel-form"
 						aria-expanded="true"
 					>
-						<span>互動式表單</span><small>填寫表單以生成內容</small>
+						<span data-i18n="form.panel.title">互動式表單</span><small data-i18n="form.panel.desc">填寫表單以生成內容</small>
 					</button>
 					<div class="panel-body" id="panel-form">
 						<div class="grid-2">
 							<label class="field"
-								>標題 h2.<input id="title" type="text"
+								><span data-i18n="form.title">標題 h2.</span><input id="title" type="text"
 							/></label>
 							<label class="field"
-								>執行狀態<select id="status">
+								><span data-i18n="form.status">執行狀態</span><select id="status">
 									<option>PASS</option>
 									<option>FAILED</option>
 									<option>WIP</option>
@@ -76,17 +78,17 @@
 								</select></label
 							>
 						</div>
-						<label class="field">簡要說明<textarea id="ref"></textarea></label>
+						<label class="field"><span data-i18n="form.ref">簡要說明</span><textarea id="ref"></textarea></label>
 						<label class="field"
-							>修改目標<textarea id="change"></textarea>
+							><span data-i18n="form.change">修改目標</span><textarea id="change"></textarea>
 						</label>
 						<label class="field"
-							>結論補充，每行一筆<textarea id="summary"></textarea>
+							><span data-i18n="form.summary">結論補充，每行一筆</span><textarea id="summary"></textarea>
 						</label>
 						<div class="section">
 							<div class="section-head">
 								<label
-									><input type="checkbox" id="envEnabled" title="測試環境是否進輸出"
+									><input type="checkbox" id="envEnabled" data-i18n-title="form.env.enabledTitle" title="測試環境是否進輸出"
 								/></label>
 								<button
 									type="button"
@@ -94,11 +96,11 @@
 									data-collapse-target="section-env"
 									aria-expanded="false"
 								>
-									測試環境
+									<span data-i18n="form.env.title">測試環境</span>
 								</button>
 								<div class="actions">
-									<button type="button" class="small" id="envAddItem">新增測試項目</button>
-									<button type="button" class="small danger" id="envDelete">刪除</button>
+									<button type="button" class="small" id="envAddItem" data-i18n="form.env.addItem">新增測試項目</button>
+									<button type="button" class="small danger" id="envDelete" data-i18n="delete">刪除</button>
 								</div>
 							</div>
 							<div class="section-body collapsed" id="section-env">
@@ -116,6 +118,7 @@
 				id="workspaceResizer"
 				role="separator"
 				aria-orientation="vertical"
+				data-i18n-title="workspace.resizerAria"
 				aria-label="調整輸出區與表單區寬度"
 				tabindex="0"
 			></div>
@@ -123,13 +126,13 @@
 			<section class="panel output-panel">
 				<div class="panel-title output-title">
 					<div>
-						<span class="eyebrow">主要工作區</span>
-						<h2>Redmine 輸出</h2>
+						<span class="eyebrow" data-i18n="output.eyebrow">主要工作區</span>
+						<h2 data-i18n="output.title">Redmine 輸出</h2>
 					</div>
 					<div class="segmented" role="group" aria-label="輸出檢視">
-						<button id="raw" class="active">Textile</button>
-						<button id="previewbtn">預覽</button>
-						<button id="statebtn">JSON</button>
+						<button id="raw" class="active" data-i18n="output.textile">Textile</button>
+						<button id="previewbtn" data-i18n="output.preview">預覽</button>
+						<button id="statebtn" data-i18n="output.json">JSON</button>
 					</div>
 				</div>
 				<div class="output-toolbar">
