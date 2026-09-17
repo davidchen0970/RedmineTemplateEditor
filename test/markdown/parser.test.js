@@ -90,3 +90,17 @@ test("md: parses a committed multi-section fixture end to end", () => {
 	assert.deepEqual(byTitle.get("References").blocks.flatMap((b) => b.contents), ['"Datasheet":./docs/datasheet.md', '"Flash Layout":https://example.com/flash']);
 	assert.deepEqual(byTitle.get("Schematics Sample").blocks.map((b) => b.type), ["image"]);
 });
+
+const FIXTURES = ["basic.md", "checklist.md", "config.md", "troubleshooting.md"];
+
+for (const name of FIXTURES) {
+	test(`md: parses the committed ${name} fixture completely`, () => {
+		const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), `fixtures/${name}`), "utf8");
+		const s = markdownToState(fixture);
+		assert.ok(s.title, "a h1 title was read");
+		assert.ok(s.sections.length >= 2, "at least two heading sections were kept");
+		for (const sec of s.sections) {
+			assert.ok(sec.blocks.length > 0, `section "${sec.title}" kept its content`);
+		}
+	});
+}
