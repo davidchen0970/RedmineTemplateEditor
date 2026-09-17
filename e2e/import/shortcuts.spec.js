@@ -1,0 +1,56 @@
+import { test, expect } from "@playwright/test";
+
+test("shortcut help dialog lists every registered shortcut", async ({ page }) => {
+	await test.step("open the editor", () => page.goto("/"));
+	await test.step("open the extra group and the dialog", async () => {
+		await page.getByRole("button", { name: "操作功能" }).click();
+		await page.click("#shortcutHelp");
+		const dialog = page.locator("dialog#shortcutDialog");
+		await expect(dialog).toBeVisible();
+	});
+	await test.step("expect 3 shortcut rows and a modifier hint", async () => {
+		const dialog = page.locator("dialog#shortcutDialog");
+		await expect(dialog.locator(".shortcut-row")).toHaveCount(3);
+		await expect(dialog.locator(".shortcut-note")).toContainText("Ctrl");
+	});
+	await test.step("close the dialog", async () => {
+		await page.click("#shortcutClose");
+		await expect(page.locator("dialog#shortcutDialog")).toBeHidden();
+	});
+});
+
+test("Ctrl+Shift+C copies the Textile and raises the copy toast", async ({ page, browserName }) => {
+	// Headless Firefox does not reliably grant clipboard-write, so the copy flows
+	// are Chromium-only; the copy toast only fires after a successful write.
+	test.skip(browserName === "firefox", "clipboard grant is unreliable for firefox");
+	await test.step("open the editor and grant clipboard write", async () => {
+		await page.goto("/");
+		// navigator.clipboard is only usable once Chromium/Firefox grant it.
+		await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+		await page.fill("#title", `快捷-${Date.now()}`);
+	});
+	await test.step("press the Textile-copy shortcut", async () => {
+		await page.keyboard.press("Control+Shift+C");
+	});
+	await test.step("expect the copy toast", async () => {
+		await expect(page.locator("#toast")).toContainText("已複製 Textile");
+	});
+});
+
+test("#copy also downloads a JSON snapshot", async ({ page, browserName }) => {
+	test.skip(browserName === "firefox", "clipboard grant is unreliable for firefox");
+	await test.step("open the editor and grant clipboard write", async () => {
+		await page.goto("/");
+		await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+		await page.fill("#title", `copy-${Date.now()}`);
+	});
+	await test.step("fold open the extra group", async () => {
+		await page.getByRole("button", { name: "操作功能" }).click();
+		await expect(page.locator("#copy")).toBeVisible();
+	});
+	await test.step("trigger the copy button", async () => {
+		const downloadPromise = page.waitForEvent("download");
+		await page.click("#copy");
+		expect((await downloadPromise).suggestedFilename()).toMatch(/\.json$/);
+	});
+});

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { replaceMermaidBlocks, SHORTCUTS } from "../../src/app/keyboard-shortcuts.js";
+import { replaceMermaidBlocks, screenshotPngName, SHORTCUTS } from "../../src/app/keyboard-shortcuts.js";
 
 test("shortcut: catalog pairs every shortcut with a non-empty action", () => {
 	assert.ok(Array.isArray(SHORTCUTS) && SHORTCUTS.length > 0);
@@ -51,4 +51,20 @@ test("shortcut: maps multiple mermaid blocks to names in order", () => {
 	].join("\n");
 	const out = replaceMermaidBlocks(text, ["one.png", "two.png"]);
 	assert.deepEqual(out.split("\n"), ["!one.png!", "text in between", "!two.png!"]);
+});
+
+test("shortcut: closes an unterminated trailing mermaid block", () => {
+	const out = replaceMermaidBlocks(" {{mermaid\nA-->B", ["x.png"]);
+	assert.equal(out, "!x.png!");
+});
+
+test("shortcut: screenshotPngName emits a local Screenshot_<timestamp>.png name", () => {
+	const name = screenshotPngName(0, [], () => new Date(2026, 0, 2, 3, 4, 5));
+	assert.equal(name, "Screenshot_20260102_030405.png");
+});
+
+test("shortcut: screenshotPngName disambiguates an already-taken name", () => {
+	const clock = () => new Date(2026, 0, 2, 3, 4, 5);
+	const base = screenshotPngName(0, [], clock);
+	assert.equal(screenshotPngName(1, [base], clock), "Screenshot_20260102_030405_2.png");
 });
