@@ -23,6 +23,12 @@ test("switches between Textile, preview and JSON views", async ({ page }) => {
 		const parsed = JSON.parse(jsonText);
 		expect(Array.isArray(parsed.sections)).toBe(true);
 	});
+	await test.step("switch back to the Textile source view via #raw", async () => {
+		await page.click("#raw");
+		await expect(page.locator("#out")).toBeVisible();
+		const source = await page.inputValue("#out");
+		expect(source.startsWith("h2. Porting SOL function")).toBe(true);
+	});
 });
 
 test("theme toggle flips body back and forth light/dark", async ({ page }) => {
