@@ -11,7 +11,12 @@ export default defineConfig({
 	fullyParallel: false,
 	workers: 1,
 	retries: 2,
-	reporter: [["list"]],
+	// "list" keeps the console terse; "html" builds the browsable per-category
+	// report that CI already uploads as the playwright-report artifact.
+	reporter: [
+		["list"],
+		["html", { open: "never", outputFolder: "playwright-report" }],
+	],
 	use: {
 		baseURL: BASE,
 		headless: true,
