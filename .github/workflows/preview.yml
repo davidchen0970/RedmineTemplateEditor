@@ -1,0 +1,55 @@
+name: Branch previews on GitHub Pages
+
+# Serves EVERY branch as its own site on GitHub Pages.
+#   main      → https://<owner>.github.io/<repo>/main/
+#   feature/x → https://<owner>.github.io/<repo>/feature/x/
+# The publish path is the branch name, so the URL is just the branch name.
+#
+# NOTE (one-time, in repo Settings):
+#   Pages → Source = "Deploy from a branch" → branch gh-pages / root.
+#   This replaces the deploy-pages job (which can only serve one site from Actions);
+#   keep using that ci.yml `pages` job ONLY if you want just the single root
+#   site for main instead of per-branch URLs.
+
+on:
+  push:              # every branch name becomes its own preview path
+  pull_request:       # also deploy PR head so reviewers can click the branch URL
+
+permissions:
+  contents: write
+
+concurrency:
+  group: branch-preview-${{ github.ref_name || github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Only deploy PRs that come from this repo (forks can't reach gh-pages write).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Cheap syntax gate so we never publish a broken preview.
+      - name: Parse every source & test module
+        run: |
+          set -euo pipefail
+          find src test -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      # The branch name IS the URL path: deploy this push under gh-pages/<branch>/.
+      - name: Resolve publish path
+        id: path
+        run: echo "branch=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish preview to gh-pages/<branch>
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          destination_dir: ${{ steps.path.outputs.branch }}
+          publish_message: "deploy ${{ github.ref_name }}"
