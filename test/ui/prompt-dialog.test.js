@@ -22,4 +22,10 @@ test("prompt: confirm resolves the typed value and cancel settles with none", as
 	openPrompt({ heading: "h", label: "l", value: "v", onConfirm: (value) => confirmed.push(value) });
 	box.querySelector("[data-cancel]").click();
 	assert.deepEqual(confirmed, ["重命名"], "cancel does not run onConfirm");
+
+	// A backdrop click (a click on the dialog's own background) dismisses too.
+	openPrompt({ heading: "h", label: "l", value: "v", onConfirm: (value) => confirmed.push(value) });
+	box.dispatchEvent(new w.Event("click", { bubbles: true }));
+	assert.equal(box.hasAttribute("open"), false, "backdrop closes the dialog");
+	assert.deepEqual(confirmed, ["重命名"], "backdrop does not run onConfirm");
 });
