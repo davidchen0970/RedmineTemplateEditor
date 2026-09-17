@@ -23,3 +23,21 @@ test("storage 新增儲存 registers a new document in the picker", async ({ pag
 		expect(options).toBeGreaterThan(1);
 	});
 });
+
+test("storage 改名/刪除: rename updates the picker, deleting the last doc is guarded", async ({ page }) => {
+	await test.step("fold open the notes group and rename the current document", async () => {
+		await page.goto("/");
+		await page.locator('[data-header-action-group="notes"] .header-action-group-toggle').click();
+		await page.fill("#storageDocName", "備註一");
+		await page.click("#storageRename");
+		await expect(page.locator("#toast")).toContainText("名稱已更新");
+	});
+	await test.step("deleting the only remaining document is refused", async () => {
+		// A storage action closes its 文件清單 group (mobile-header collapse), so
+		// reopen it before the delete button can be hit.
+		await page.locator('[data-header-action-group="notes"] .header-action-group-toggle').click();
+		await page.once("dialog", (dialog) => dialog.accept());
+		await page.click("#storageDelete");
+		await expect(page.locator("#toast")).toContainText("至少需要保留一份文件");
+	});
+});

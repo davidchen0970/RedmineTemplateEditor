@@ -79,3 +79,24 @@ test("環境開關：勾選時環境值進 #out，取消後不進", async ({ pag
 		await expect(page.locator("#out")).not.toHaveValue(/: 7/);
 	});
 });
+
+test("環境開關：envDelete 確認後將整段環境從 #out 移除", async ({ page }) => {
+	await test.step("add a custom environment value", async () => {
+		await page.goto("/");
+		await page.click("#envAddItem");
+		const card = page.locator("#env [data-env-id]");
+		await expect(card).toHaveCount(1);
+		await card.locator("textarea").fill("7");
+		await expect(page.locator("#out")).toHaveValue(/\* .+: 7/);
+	});
+	await test.step("hit #envDelete and confirm", async () => {
+		await page.click("#envDelete");
+		const box = page.locator("dialog[open]");
+		await expect(box).toBeVisible();
+		await box.locator("[data-confirm]").click();
+	});
+	await test.step("expect the environment to drop from #out", async () => {
+		await expect(page.locator("#envEnabled")).not.toBeChecked();
+		await expect(page.locator("#out")).not.toHaveValue(/: 7/);
+	});
+});
