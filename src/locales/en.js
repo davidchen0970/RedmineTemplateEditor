@@ -118,7 +118,6 @@ export const en = {
 
 	// form (static panel)
 	"form.panel.title": "Interactive Form",
-	"form.panel.desc": "Fill in the form to generate text content",
 	"form.title": "Title (h2.)",
 	"form.status": "Execution Status",
 	"form.ref": "Summary / Reference",

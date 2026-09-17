@@ -118,7 +118,6 @@ export const zh = {
 
 	// form (static panel)
 	"form.panel.title": "互動式表單",
-	"form.panel.desc": "填寫表單內容以產生文字",
 	"form.title": "標題 (h2.)",
 	"form.status": "執行狀態",
 	"form.ref": "摘要 / 參考資訊",
