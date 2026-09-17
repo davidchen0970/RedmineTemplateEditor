@@ -317,7 +317,37 @@
 	flex: 1
 }
 
-/* --- 新增文件 dialog：box-sizing 統一，padding/margin 都算在內 --- */
+.add-block-dialog [data-list] {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	max-height: 250px;
+	overflow: auto;
+	padding: 6px;
+	align-content: start
+}
+.add-block-dialog [data-list] .note {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	padding: 10px 12px;
+	background: var(--panel-2);
+	font-size: 13px;
+	color: var(--text);
+	transition: transform .15s, border-color .2s, background .2s
+}
+.add-block-dialog [data-list] .note:hover {
+	border-color: var(--primary)
+}
+.add-block-dialog [data-list] .note input {
+	flex: 0 0 auto;
+	width: auto;
+	margin: 0
+}
+
+
 .add-block-dialog,
 .add-block-dialog *,
 .add-block-dialog *::before,
