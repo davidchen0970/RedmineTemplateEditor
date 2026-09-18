@@ -256,6 +256,10 @@
 	flex: 1 1 100%;
 	min-width: 0
 }
+.add-block-dialog.nd-single-col .template-list,
+.add-block-dialog.nd-single-col .toggle-list {
+	grid-template-columns: 1fr
+}
 .add-block-dialog .template-list .card:hover {
 	border-color: var(--primary);
 	transform: translateY(-1px)
