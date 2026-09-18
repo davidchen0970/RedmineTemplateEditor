@@ -12,7 +12,12 @@ const extraSections = () => EXTRA_SECTIONS[getLocale() === "en" ? "en" : "zh"];
 // Localizable preset content (labels/descs/section rows). zh stays as model presets.
 const inEn = () => getLocale() === "en";
 const presetEn = (preset, key) => (inEn() && presetsEn[key] ? presetsEn[key] : preset);
-const sectionsOf = (type) => presetEn(presets[type], type).sections || [];
+// Normalize to { title } rows: zh presets are section objects, presetsEn are
+// plain strings — callers rely on section.title, so map strings into objects.
+const sectionsOf = (type) =>
+	(presetEn(presets[type], type).sections || []).map((entry) => ({
+		title: typeof entry === "string" ? entry : entry.title,
+	}));
 
 let dialog = null;
 let pendingResolve = null;
