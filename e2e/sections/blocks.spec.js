@@ -101,3 +101,56 @@ test("block 其他 menu rides its block while the page scrolls", async ({ page }
 		}).toBe(true);
 	});
 });
+
+test("diff block uploads preview each patch file and adds the selected blocks", async ({ page }) => {
+	await test.step("open the editor and seed a block", async () => {
+		await page.goto("/");
+		await seedBlock(page, page.locator("#sections .section").first());
+	});
+	await test.step("open the add-block dialog and pick the diff type", async () => {
+		const section = page.locator("#sections .section").first();
+		await section.locator("[data-more-toggle]").first().click();
+		await section.locator("[data-more]").first().locator("[data-add]").first().click();
+		const dialog = page.locator("dialog#abDialog");
+		await dialog.locator("#abTypes [data-ab-type='diff']").click();
+	});
+	const blocks = page.locator("#sections [data-block]");
+	const patch = [
+		"diff --git a/ci/app.c b/ci/app.c",
+		"@@ -0,0 +1,2 @@",
+		"+int app;",
+		"diff --git a/ci/drv.c b/ci/drv.c",
+		"@@ -0,0 +1,2 @@",
+		"+int drv;",
+	].join("\n");
+	await test.step("upload a 2-file patch and preview both files", async () => {
+		const dialog = page.locator("dialog#abDialog");
+		await dialog.locator('[data-ab="diffFile"]').setInputFiles({
+			name: "ci.patch",
+			mimeType: "text/plain",
+			buffer: Buffer.from(patch),
+		});
+		const rows = page.locator("#abDiffPreview .note");
+		await expect(rows).toHaveCount(2);
+		await expect(rows.nth(0)).toContainText("app.c");
+		await expect(rows.nth(1)).toContainText("drv.c");
+		await expect(rows.nth(0).locator(".diff-body")).toHaveText("ci/app.c");
+		await expect(rows.nth(1).locator("input")).toBeChecked();
+	});
+	await test.step("uncheck the second file and add only the first", async () => {
+		const dialog = page.locator("dialog#abDialog");
+		await page.locator("#abDiffPreview .note").nth(1).locator("input").uncheck();
+		const before = await blocks.count();
+		await dialog.locator("#abForm button[type=submit]").click();
+		await expect(dialog).toBeHidden();
+		await expect(blocks).toHaveCount(before + 1);
+	});
+	await test.step("the added block carries the file path", async () => {
+		await expect.poll(async () => {
+			const titles = await page.locator("#sections [data-block] [data-btitle]").evaluateAll((els) =>
+				els.map((el) => el.value)
+			);
+			return titles.filter((value) => value === "app.c").length;
+		}).toBe(1);
+	});
+});
