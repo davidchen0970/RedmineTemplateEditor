@@ -26,6 +26,14 @@
 	font-weight: 700
 }
 
+/* The custom test-environment item is an <input> (only that one is type="text"):
+   cap its width so it does not flex across the whole .section-head. */
+.section-title-btn[type="text"] {
+	flex: 0 1 220px;
+	max-width: 220px;
+	min-width: 0;
+}
+
 .section-body {
 	padding: 10px
 }
