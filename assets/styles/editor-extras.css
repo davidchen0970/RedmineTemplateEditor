@@ -251,13 +251,15 @@
 	transition: border-color .2s, background .2s, transform .15s,
 		box-shadow .2s
 }
-/* English template labels are longer: lay the new-note cards in one column. */
+/* New Note (新增文件): every component is two columns in zh, one in en. */
+#ndDialog .toggle-list {
+	grid-template-columns: repeat(2, minmax(0, 1fr))
+}
 .add-block-dialog.nd-single-col .template-list .card {
 	flex: 1 1 100%;
 	min-width: 0
 }
-.add-block-dialog.nd-single-col .template-list,
-.add-block-dialog.nd-single-col .toggle-list {
+#ndDialog.nd-single-col .toggle-list {
 	grid-template-columns: 1fr
 }
 .add-block-dialog .template-list .card:hover {
