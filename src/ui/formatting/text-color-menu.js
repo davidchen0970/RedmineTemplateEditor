@@ -5,6 +5,7 @@ import {
 	removeStyleProperty,
 	findStyleSpan,
 } from "./inline-styles.js";
+import { applyStaticText } from "../../i18n.js";
 
 function applyColorToTextareaSelection(inputElement, color) {
 	const start = inputElement.selectionStart;
@@ -154,12 +155,14 @@ export function setupTextColorContextMenu() {
 	menu.id = "textColorMenu";
 	menu.className = "text-color-menu";
 	menu.innerHTML = `
-		<button type="button" class="red" data-color="red">標成紅色</button>
-		<button type="button" class="green" data-color="green">標成綠色</button>
-		<button type="button" class="orange" data-color="orange">標成橘色</button>
-		<button type="button" data-clear-color="true">清除顏色</button>
+		<button type="button" class="red" data-color="red" data-i18n="fmt.red"></button>
+		<button type="button" class="green" data-color="green" data-i18n="fmt.green"></button>
+		<button type="button" class="orange" data-color="orange" data-i18n="fmt.orange"></button>
+		<button type="button" data-clear-color="true" data-i18n="fmt.clearColor"></button>
 	`;
 	document.body.appendChild(menu);
+	applyStaticText(menu);
+	document.addEventListener("i18n:change", () => applyStaticText(menu));
 
 	const hideMenu = () => {
 		menu.classList.remove("show");

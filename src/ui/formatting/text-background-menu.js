@@ -5,6 +5,7 @@ import {
 	removeStyleProperty,
 	findStyleSpan,
 } from "./inline-styles.js";
+import { applyStaticText } from "../../i18n.js";
 
 function applyBackgroundToTextareaSelection(inputElement, backgroundColor) {
 	const start = inputElement.selectionStart;
@@ -189,13 +190,14 @@ export function setupTextBackgroundContextMenu() {
 			"beforeend",
 			`
 				<div class="text-background-menu-divider" aria-hidden="true"></div>
-				<button type="button" class="b_yellow" data-background-color="yellow">背景黃色</button>
-				<button type="button" class="b_cyan" data-background-color="cyan">背景青色</button>
-				<button type="button" class="b_lightgreen" data-background-color="lightgreen">背景淺綠</button>
-				<button type="button" data-clear-background="true">清除背景</button>
+				<button type="button" class="b_yellow" data-background-color="yellow" data-i18n="fmt.bgYellow"></button>
+				<button type="button" class="b_cyan" data-background-color="cyan" data-i18n="fmt.bgCyan"></button>
+				<button type="button" class="b_lightgreen" data-background-color="lightgreen" data-i18n="fmt.bgLightgreen"></button>
+				<button type="button" data-clear-background="true" data-i18n="fmt.clearBg"></button>
 			`,
 		);
 		activeMenu.dataset.backgroundMenuReady = "true";
+		applyStaticText(activeMenu);
 		return activeMenu;
 	};
 
