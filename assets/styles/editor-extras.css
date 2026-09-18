@@ -313,6 +313,58 @@
 .add-block-dialog #ndSections .note button:hover {
 	color: var(--danger)
 }
+.add-block-dialog #abDiffPreview {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px;
+	max-height: 240px;
+	overflow: auto;
+	padding: 2px;
+	align-content: start
+}
+.add-block-dialog #abDiffPreview[hidden] {
+	display: none
+}
+.add-block-dialog #abDiffPreview .note {
+	display: grid;
+	gap: 4px;
+	padding: 7px 9px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: var(--panel-2)
+}
+.add-block-dialog #abDiffPreview .note:hover {
+	border-color: var(--primary)
+}
+.add-block-dialog #abDiffPreview .note.nd-unused {
+	opacity: .5
+}
+.add-block-dialog #abDiffPreview .note .pick {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 12px;
+	color: var(--text);
+	cursor: pointer
+}
+.add-block-dialog #abDiffPreview .note .pick input {
+	margin: 0;
+	accent-color: var(--primary)
+}
+.add-block-dialog #abDiffPreview .note .path {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap
+}
+.add-block-dialog #abDiffPreview .note .diff-body {
+	font-size: 10px;
+	line-height: 1.5;
+	color: var(--muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap
+}
 .add-block-dialog .actions {
 	display: flex;
 	align-items: center;
