@@ -77,7 +77,7 @@ export const zh = {
 	"block.workPath": "工作路徑",
 	"block.delete": "刪除區塊",
 	"block.delText": "確定要刪除區塊「{name}」嗎？",
-	"block.more": "其他",
+	"block.more": "更多",
 	"block.untitled": "無標題",
 	"block.type": "區塊類型",
 	"block.level": "所在層級",
@@ -92,6 +92,34 @@ export const zh = {
 	"block.imageUrl": "圖片網址",
 	"block.diffFile": "上傳 diff / patch",
 	"block.diffFallback": "或直接貼上內容",
+
+	"ndd.name": "文件名稱",
+	"ndd.template": "模板",
+	"ndd.sections": "段落（勾選要帶的，可增減）",
+	"ndd.addSectionPlaceholder": "新增段落名稱",
+	"ndd.addSection": "＋新增段落",
+	"ndd.remove": "移除",
+	"ndd.create": "建立",
+	"ndd.defaultName": "新文件",
+	"ndd.create": "建立",
+
+	// confirm dialog (delete document)
+	"confirm.deleteTitle": "刪除文件",
+	"confirm.deleteMsg": "確定要刪除文件「{name}」？",
+	"storage.toast.deleted": "已刪除文件",
+	"storage.toast.guard": "至少需要保留一份文件",
+
+	// right-click formatting menus
+	"fmt.red": "標成紅色",
+	"fmt.green": "標成綠色",
+	"fmt.orange": "標成橘色",
+	"fmt.clearColor": "清除顏色",
+	"fmt.inlineCode": "標示為程式碼",
+	"fmt.clearCode": "清除程式碼標示",
+	"fmt.bgYellow": "背景黃色",
+	"fmt.bgCyan": "背景青色",
+	"fmt.bgLightgreen": "背景淺綠",
+	"fmt.clearBg": "清除背景",
 
 	// block type one-liners
 	"blockdesc.implementation": "工作路徑 + 多語言程式碼",

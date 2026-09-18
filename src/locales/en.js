@@ -93,6 +93,34 @@ export const en = {
 	"block.diffFile": "Upload diff / patch",
 	"block.diffFallback": "or paste content directly",
 
+	// new-document dialog (新增文件 / New Note)
+	"ndd.name": "Document name",
+	"ndd.template": "Templates",
+	"ndd.sections": "Sections (check what to include; add/remove)",
+	"ndd.addSectionPlaceholder": "New section name",
+	"ndd.addSection": "＋ Add section",
+	"ndd.remove": "Remove",
+	"ndd.create": "Create",
+	"ndd.defaultName": "New note",
+
+	// confirm dialog (delete document)
+	"confirm.deleteTitle": "Delete Document",
+	"confirm.deleteMsg": "Are you sure you want to delete document “{name}”?",
+	"storage.toast.deleted": "Document deleted",
+	"storage.toast.guard": "You must keep at least one document",
+
+	// right-click formatting menus
+	"fmt.red": "Mark red",
+	"fmt.green": "Mark green",
+	"fmt.orange": "Mark orange",
+	"fmt.clearColor": "Clear color",
+	"fmt.inlineCode": "Mark as code",
+	"fmt.clearCode": "Clear code mark",
+	"fmt.bgYellow": "Yellow background",
+	"fmt.bgCyan": "Cyan background",
+	"fmt.bgLightgreen": "Light-green background",
+	"fmt.clearBg": "Clear background",
+
 	// block type one-liners
 	"blockdesc.implementation": "Working path + multi-language code",
 	"blockdesc.text": "Multi-section Textile content",

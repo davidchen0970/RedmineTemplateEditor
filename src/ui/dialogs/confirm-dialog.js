@@ -1,4 +1,5 @@
 import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
+import { t } from "../../i18n.js";
 
 let dialog = null;
 let pendingAction = null;
@@ -17,6 +18,7 @@ function ensure() {
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);
+	dialog.querySelector("[data-cancel]").textContent = t("cancel");
 	dialog.querySelector("[data-cancel]").onclick = () => {
 		pendingAction = null;
 		dialog.close();

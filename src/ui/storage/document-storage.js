@@ -13,6 +13,8 @@ import {
 } from "../../core/state.js";
 import { resetPreviewScroll } from "../editor/preview-scroll-burst.js";
 import { openNewDocDialog } from "../dialogs/new-doc-dialog.js";
+import { confirmDelete } from "../dialogs/confirm-dialog.js";
+import { t } from "../../i18n.js";
 
 function asciiCompare(leftValue, rightValue) {
 	const left = String(leftValue || "");
@@ -84,7 +86,7 @@ export function setupDocumentStorage({
 	};
 	newBtn.onclick = async () => {
 		const current = getState();
-		const choice = await openNewDocDialog(current.title || "新文件");
+		const choice = await openNewDocDialog(current.title || t("ndd.defaultName"));
 		if (!choice) return;
 		const nextState = makeState(choice.noteType);
 		nextState.title = choice.name;
@@ -94,12 +96,19 @@ export function setupDocumentStorage({
 	};
 	deleteBtn.onclick = () => {
 		const documentRecord = getActiveDocument();
-		if (!documentRecord || !confirm(`刪除 localStorage 文件「${documentRecord.name}」？`)) return;
-		if (!deleteDocument(getActiveId())) {
-			renderer.toast("至少需要保留一份文件");
-			return;
-		}
-		activate(getActiveDocumentId(), "已刪除文件");
+		if (!documentRecord) return;
+		confirmDelete({
+			heading: t("confirm.deleteTitle"),
+			text: t("confirm.deleteMsg", { name: documentRecord.name }),
+			confirmLabel: t("delete"),
+			onConfirm: () => {
+				if (!deleteDocument(getActiveId())) {
+					renderer.toast(t("storage.toast.guard"));
+					return;
+				}
+				activate(getActiveDocumentId(), t("storage.toast.deleted"));
+			},
+		});
 	};
 
 	renderPicker();

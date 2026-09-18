@@ -36,8 +36,11 @@ test("storage 改名/刪除: rename updates the picker, deleting the last doc is
 		// A storage action closes its 文件清單 group (mobile-header collapse), so
 		// reopen it before the delete button can be hit.
 		await page.locator('[data-header-action-group="notes"] .header-action-group-toggle').click();
-		await page.once("dialog", (dialog) => dialog.accept());
+		// Delete is now a custom confirmation dialog, not a native confirm() box.
 		await page.click("#storageDelete");
+		const confirmDialog = page.locator("dialog[open]");
+		await expect(confirmDialog).toBeVisible();
+		await confirmDialog.locator("[data-confirm]").click();
 		await expect(page.locator("#toast")).toContainText("至少需要保留一份文件");
 	});
 });
