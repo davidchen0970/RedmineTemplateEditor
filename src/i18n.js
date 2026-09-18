@@ -1,7 +1,8 @@
 // Minimal zero-build i18n for the Redmine Textile 輸出器.
 //
-// - locale is chosen at startup from navigator.language ("zh*" -> zh, else en)
-//   and is NOT persisted (per requirement: re-detect each load).
+// - locale is chosen at startup from a saved preference (localStorage key
+//   "redmine.locale"), falling back to navigator.language ("zh*" -> zh, else en).
+//   setLocale() persists the choice so the chosen language survives a reload.
 // - t(key) reads the current locale's dictionary.
 // - applyStaticText(locale) pushes locale strings into [data-i18n] / [data-i18n-ph]
 //   / [data-i18n-title] elements.
@@ -14,9 +15,23 @@ import { en } from "./locales/en.js";
 
 export const LOCALES = { zh, en };
 
+const LOCALE_STORAGE_KEY = "redmine.locale";
+
+function readStoredLocale() {
+	try {
+		const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
+		if (saved === "zh" || saved === "en") return saved;
+	} catch {
+		// localStorage unavailable — fall back to navigator detection.
+	}
+	return null;
+}
+
 let locale = detectLocale();
 
 function detectLocale() {
+	const stored = readStoredLocale();
+	if (stored) return stored;
 	if (typeof navigator !== "undefined" && navigator.language) {
 		return /^zh/i.test(navigator.language) ? "zh" : "en";
 	}
@@ -30,6 +45,11 @@ export function getLocale() {
 export function setLocale(next) {
 	if (!(next in LOCALES) || next === locale) return;
 	locale = next;
+	try {
+		localStorage.setItem(LOCALE_STORAGE_KEY, next);
+	} catch {
+		// ignore persistence errors
+	}
 	if (typeof document !== "undefined") {
 		applyStaticText();
 		document.dispatchEvent(new CustomEvent("i18n:change", { detail: { locale } }));
