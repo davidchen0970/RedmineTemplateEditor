@@ -50,6 +50,8 @@ function ensureDialog() {
 	dismissOnBackdrop(dialog);
 	document.body.appendChild(dialog);
 	applyStaticText(dialog);
+	// English template labels are long; lay the cards out in a single column.
+	dialog.classList.toggle("nd-single-col", getLocale() === "en");
 	return dialog;
 }
 
@@ -90,6 +92,7 @@ export function openNewDocDialog(defaultName = t("ndd.defaultName")) {
 	onLocaleChange = () => {
 		if (!dialog || !dialog.open) return;
 		applyStaticText(dialog);
+		dialog.classList.toggle("nd-single-col", getLocale() === "en");
 		renderTemplateCards();
 		renderSectionRows();
 	};
