@@ -86,6 +86,23 @@ export const zh = {
 	"block.content": "內容",
 	"block.contentLabel": "內容",
 	"block.lang": "語言",
+	"block.workPathTitle": "工作路徑標題",
+	"block.showWorkPath": "顯示工作路徑",
+	"block.titleUnavailable": "標題不可用",
+	"block.imageUrl": "圖片網址",
+	"block.diffFile": "上傳 diff / patch",
+	"block.diffFallback": "或直接貼上內容",
+
+	// block type one-liners
+	"blockdesc.implementation": "工作路徑 + 多語言程式碼",
+	"blockdesc.text": "多段 Textile 內文",
+	"blockdesc.plainText": "無標題純文字",
+	"blockdesc.command": "一段終端機指令",
+	"blockdesc.diff": "程式碼差異對照",
+	"blockdesc.log": "執行日誌 / 記錄",
+	"blockdesc.mermaid": "Mermaid 流程圖",
+	"blockdesc.image": "嵌入一張圖片",
+	"blockdesc.collapse": "可收合的一段內容",
 
 	// block types
 	"blocktype.implementation": "程式碼",

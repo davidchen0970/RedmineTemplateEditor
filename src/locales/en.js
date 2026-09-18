@@ -86,6 +86,23 @@ export const en = {
 	"block.content": "Content",
 	"block.contentLabel": "Content",
 	"block.lang": "Language",
+	"block.workPathTitle": "Working Path Title",
+	"block.showWorkPath": "Show working path",
+	"block.titleUnavailable": "Title unavailable",
+	"block.imageUrl": "Image URL",
+	"block.diffFile": "Upload diff / patch",
+	"block.diffFallback": "or paste content directly",
+
+	// block type one-liners
+	"blockdesc.implementation": "Working path + multi-language code",
+	"blockdesc.text": "Multi-section Textile content",
+	"blockdesc.plainText": "Untitled plain text",
+	"blockdesc.command": "A terminal command",
+	"blockdesc.diff": "Code diff",
+	"blockdesc.log": "Execution log",
+	"blockdesc.mermaid": "Mermaid flowchart",
+	"blockdesc.image": "Embed an image",
+	"blockdesc.collapse": "A collapsible block",
 
 	// block types
 	"blocktype.implementation": "Code",
