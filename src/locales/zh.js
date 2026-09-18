@@ -108,6 +108,11 @@ export const zh = {
 	"confirm.deleteMsg": "確定要刪除文件「{name}」？",
 	"storage.toast.deleted": "已刪除文件",
 	"storage.toast.guard": "至少需要保留一份文件",
+	"storage.unnamed": "未命名",
+	"storage.toast.loaded": "已讀取 {name}",
+	"storage.toast.renamed": "名稱已更新",
+	"storage.toast.missing": "找不到目前文件",
+	"storage.toast.created": "已建立 {name}",
 
 	// right-click formatting menus
 	"fmt.red": "標成紅色",

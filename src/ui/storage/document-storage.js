@@ -45,7 +45,7 @@ export function setupDocumentStorage({
 		select.replaceChildren(...documents.map((documentRecord) => {
 			const option = document.createElement("option");
 			option.value = documentRecord.id;
-			option.textContent = documentRecord.name || "未命名";
+			option.textContent = documentRecord.name || t("storage.unnamed");
 			return option;
 		}));
 		select.value = getActiveId();
@@ -73,7 +73,7 @@ export function setupDocumentStorage({
 
 	select.onchange = () => {
 		if (select.value && select.value !== getActiveId()) {
-			activate(select.value, "已讀取 " + (getActiveDocument()?.name || "文件"));
+			activate(select.value, t("storage.toast.loaded", { name: getActiveDocument()?.name || t("storage.unnamed") }));
 		}
 	};
 	nameInput.onkeydown = (event) => {
@@ -82,7 +82,7 @@ export function setupDocumentStorage({
 	renameBtn.onclick = () => {
 		const documentRecord = renameDocument(getActiveId(), nameInput.value);
 		renderPicker();
-		renderer.toast(documentRecord ? "名稱已更新" : "找不到目前文件");
+		renderer.toast(documentRecord ? t("storage.toast.renamed") : t("storage.toast.missing"));
 	};
 	newBtn.onclick = async () => {
 		const current = getState();
@@ -92,7 +92,7 @@ export function setupDocumentStorage({
 		nextState.title = choice.name;
 		nextState.sections = choice.sections.map((row) => createSection(row.title, row.enabled));
 		const documentRecord = createDocument(choice.name, nextState);
-		activate(documentRecord.id, "已建立 " + documentRecord.name);
+		activate(documentRecord.id, t("storage.toast.created", { name: documentRecord.name }));
 	};
 	deleteBtn.onclick = () => {
 		const documentRecord = getActiveDocument();

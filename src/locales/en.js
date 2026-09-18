@@ -108,6 +108,11 @@ export const en = {
 	"confirm.deleteMsg": "Are you sure you want to delete document “{name}”?",
 	"storage.toast.deleted": "Document deleted",
 	"storage.toast.guard": "You must keep at least one document",
+	"storage.unnamed": "Untitled",
+	"storage.toast.loaded": "Loaded {name}",
+	"storage.toast.renamed": "Name updated",
+	"storage.toast.missing": "Current document not found",
+	"storage.toast.created": "Created {name}",
 
 	// right-click formatting menus
 	"fmt.red": "Mark red",
