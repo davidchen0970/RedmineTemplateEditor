@@ -87,6 +87,9 @@ export function openNewDocDialog(defaultName = t("ndd.defaultName")) {
 	let noteType = "porting";
 	let sectionRows = [];
 
+	// Re-apply on every open, not just first mount: locale may have changed
+	// while this dialog was closed (i18n:change is guarded by dialog.open).
+	root.classList.toggle("nd-single-col", getLocale() === "en");
 	applyStaticText(root);
 	if (onLocaleChange) document.removeEventListener("i18n:change", onLocaleChange);
 	onLocaleChange = () => {
