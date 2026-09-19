@@ -1,4 +1,5 @@
 import { applyCodeWrap, clearCodeWrap } from "./code-markers.js";
+import { applyStaticText } from "../../i18n.js";
 
 function applyEdit(inputElement, result) {
 	if (!result) return false;
@@ -83,11 +84,12 @@ export function setupTextCodeContextMenu() {
 			"beforeend",
 			`
 				<div class="text-code-menu-divider" aria-hidden="true"></div>
-				<button type="button" class="inline_code" data-inline-code="true">標示為程式碼</button>
-				<button type="button" data-clear-inline-code="true">清除程式碼標示</button>
+				<button type="button" class="inline_code" data-inline-code="true" data-i18n="fmt.inlineCode"></button>
+				<button type="button" data-clear-inline-code="true" data-i18n="fmt.clearCode"></button>
 			`,
 		);
 		activeMenu.dataset.codeMenuReady = "true";
+		applyStaticText(activeMenu);
 		return activeMenu;
 	};
 

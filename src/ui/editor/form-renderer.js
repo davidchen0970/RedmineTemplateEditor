@@ -3,7 +3,7 @@ import { confirmDelete } from "../dialogs/confirm-dialog.js";
 import { t } from "../../i18n.js";
 
 const ENV_HINTS = {
-	"CPLD 版本": "(ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)",
+	"CPLD Version": "(ipmitool raw 0x32 0x1a 0xf1 / i2cget -y 7 0x071 0xf1)",
 };
 
 function bindInput(elementId, value, setter, changed) {

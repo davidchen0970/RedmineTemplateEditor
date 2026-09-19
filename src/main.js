@@ -30,7 +30,7 @@ let renderDocumentPicker = () => {};
 
 function save() {
 	saveState(state, activeDocumentId);
-	lastSaveText = "已自動儲存 " + new Date().toLocaleTimeString();
+	lastSaveText = t("status.saveDefault") + " " + new Date().toLocaleTimeString();
 	renderer.renderSaveStatus();
 	renderDocumentPicker();
 }

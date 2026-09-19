@@ -13,6 +13,8 @@ import {
 } from "../../core/state.js";
 import { resetPreviewScroll } from "../editor/preview-scroll-burst.js";
 import { openNewDocDialog } from "../dialogs/new-doc-dialog.js";
+import { confirmDelete } from "../dialogs/confirm-dialog.js";
+import { t } from "../../i18n.js";
 
 function asciiCompare(leftValue, rightValue) {
 	const left = String(leftValue || "");
@@ -43,7 +45,7 @@ export function setupDocumentStorage({
 		select.replaceChildren(...documents.map((documentRecord) => {
 			const option = document.createElement("option");
 			option.value = documentRecord.id;
-			option.textContent = documentRecord.name || "未命名";
+			option.textContent = documentRecord.name || t("storage.unnamed");
 			return option;
 		}));
 		select.value = getActiveId();
@@ -71,7 +73,7 @@ export function setupDocumentStorage({
 
 	select.onchange = () => {
 		if (select.value && select.value !== getActiveId()) {
-			activate(select.value, "已讀取 " + (getActiveDocument()?.name || "文件"));
+			activate(select.value, t("storage.toast.loaded", { name: getActiveDocument()?.name || t("storage.unnamed") }));
 		}
 	};
 	nameInput.onkeydown = (event) => {
@@ -80,26 +82,33 @@ export function setupDocumentStorage({
 	renameBtn.onclick = () => {
 		const documentRecord = renameDocument(getActiveId(), nameInput.value);
 		renderPicker();
-		renderer.toast(documentRecord ? "名稱已更新" : "找不到目前文件");
+		renderer.toast(documentRecord ? t("storage.toast.renamed") : t("storage.toast.missing"));
 	};
 	newBtn.onclick = async () => {
 		const current = getState();
-		const choice = await openNewDocDialog(current.title || "新文件");
+		const choice = await openNewDocDialog(current.title || t("ndd.defaultName"));
 		if (!choice) return;
 		const nextState = makeState(choice.noteType);
 		nextState.title = choice.name;
 		nextState.sections = choice.sections.map((row) => createSection(row.title, row.enabled));
 		const documentRecord = createDocument(choice.name, nextState);
-		activate(documentRecord.id, "已建立 " + documentRecord.name);
+		activate(documentRecord.id, t("storage.toast.created", { name: documentRecord.name }));
 	};
 	deleteBtn.onclick = () => {
 		const documentRecord = getActiveDocument();
-		if (!documentRecord || !confirm(`刪除 localStorage 文件「${documentRecord.name}」？`)) return;
-		if (!deleteDocument(getActiveId())) {
-			renderer.toast("至少需要保留一份文件");
-			return;
-		}
-		activate(getActiveDocumentId(), "已刪除文件");
+		if (!documentRecord) return;
+		confirmDelete({
+			heading: t("confirm.deleteTitle"),
+			text: t("confirm.deleteMsg", { name: documentRecord.name }),
+			confirmLabel: t("delete"),
+			onConfirm: () => {
+				if (!deleteDocument(getActiveId())) {
+					renderer.toast(t("storage.toast.guard"));
+					return;
+				}
+				activate(getActiveDocumentId(), t("storage.toast.deleted"));
+			},
+		});
 	};
 
 	renderPicker();

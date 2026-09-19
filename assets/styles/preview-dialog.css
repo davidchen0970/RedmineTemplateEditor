@@ -155,6 +155,7 @@
 
 .add-block-dialog .dialog-body {
 	padding: 14px;
+	overflow-wrap: anywhere;
 }
 
 .add-block-dialog .dialog-actions {
@@ -164,6 +165,7 @@
 	padding: 12px 14px;
 	border-top: 1px solid var(--line);
 	background: var(--panel-head);
+	flex-wrap: wrap;
 }
 
 body[data-theme="dark"] .add-block-dialog::backdrop {

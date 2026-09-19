@@ -1,10 +1,27 @@
-import { presets } from "../../core/state.js";
+import { presets, presetsEn } from "../../core/state.js";
 import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
+import { applyStaticText, getLocale, t } from "../../i18n.js";
 
-const EXTRA_SECTIONS = ["測試環境", "參考資料", "附圖", "結論補充"];
+// Localizable test-environment boilerplate: the dialog lets you add/remove these
+// pre-filled section names. en is swapped in when the app runs in English.
+const EXTRA_SECTIONS = {
+	zh: ["測試環境", "參考資料", "附圖", "結論補充"],
+	en: ["Test environment", "Reference", "Screenshot", "Conclusion supplement"],
+};
+const extraSections = () => EXTRA_SECTIONS[getLocale() === "en" ? "en" : "zh"];
+// Localizable preset content (labels/descs/section rows). zh stays as model presets.
+const inEn = () => getLocale() === "en";
+const presetEn = (preset, key) => (inEn() && presetsEn[key] ? presetsEn[key] : preset);
+// Normalize to { title } rows: zh presets are section objects, presetsEn are
+// plain strings — callers rely on section.title, so map strings into objects.
+const sectionsOf = (type) =>
+	(presetEn(presets[type], type).sections || []).map((entry) => ({
+		title: typeof entry === "string" ? entry : entry.title,
+	}));
 
 let dialog = null;
 let pendingResolve = null;
+let onLocaleChange = null;
 
 function ensureDialog() {
 	if (dialog) return dialog;
@@ -12,26 +29,29 @@ function ensureDialog() {
 	dialog.id = "ndDialog";
 	dialog.className = "add-block-dialog";
 	dialog.innerHTML = `
-		<div class="dialog-head">新增文件</div>
+		<div class="dialog-head" data-i18n="storage.new"></div>
 		<div class="dialog-body">
-			<label class="field">文件名稱<input id="ndName" type="text"></label>
-			<div class="section-label">模板</div>
+			<label class="field"><span data-i18n="ndd.name"></span><input id="ndName" type="text"></label>
+			<div class="section-label" data-i18n="ndd.template"></div>
 			<div class="template-list" id="ndTemplates"></div>
-			<div class="section-label">段落（勾選要帶的，可增減）</div>
+			<div class="section-label" data-i18n="ndd.sections"></div>
 			<div class="toggle-list" id="ndSections"></div>
 			<div class="actions">
-				<input id="ndSectionInput" type="text" placeholder="新增段落名稱">
-				<button type="button" id="ndSectionAdd">＋新增段落</button>
+				<input id="ndSectionInput" type="text" data-i18n-ph="ndd.addSectionPlaceholder">
+				<button type="button" id="ndSectionAdd" data-i18n="ndd.addSection">＋新增段落</button>
 			</div>
 		</div>
 		<div class="dialog-actions">
-			<button type="button" id="ndCancel">取消</button>
-			<button type="button" id="ndConfirm" class="primary">建立</button>
+			<button type="button" id="ndCancel" data-i18n="cancel"></button>
+			<button type="button" id="ndConfirm" class="primary" data-i18n="ndd.create">建立</button>
 		</div>`;
 	dialog.addEventListener("close", () => finish(null));
 	// Clicking the backdrop closes the dialog (cancels, finish(null)).
 	dismissOnBackdrop(dialog);
 	document.body.appendChild(dialog);
+	applyStaticText(dialog);
+	// English template labels are long; lay the cards out in a single column.
+	dialog.classList.toggle("nd-single-col", getLocale() === "en");
 	return dialog;
 }
 
@@ -54,7 +74,7 @@ function closeAnimated() {
 	dialog.addEventListener("animationend", onEnd);
 }
 
-export function openNewDocDialog(defaultName = "新文件") {
+export function openNewDocDialog(defaultName = t("ndd.defaultName")) {
 	const root = ensureDialog();
 	const nameInput = root.querySelector("#ndName");
 	const templatesRoot = root.querySelector("#ndTemplates");
@@ -67,17 +87,34 @@ export function openNewDocDialog(defaultName = "新文件") {
 	let noteType = "porting";
 	let sectionRows = [];
 
+	// Re-apply on every open, not just first mount: locale may have changed
+	// while this dialog was closed (i18n:change is guarded by dialog.open).
+	root.classList.toggle("nd-single-col", getLocale() === "en");
+	applyStaticText(root);
+	if (onLocaleChange) document.removeEventListener("i18n:change", onLocaleChange);
+	onLocaleChange = () => {
+		if (!dialog || !dialog.open) return;
+		applyStaticText(dialog);
+		dialog.classList.toggle("nd-single-col", getLocale() === "en");
+		renderTemplateCards();
+		renderSectionRows();
+	};
+	document.addEventListener("i18n:change", onLocaleChange);
+
 	const baseSections = () => [
-		...(presets[noteType].sections || []).map((section) => ({ title: section.title, enabled: true })),
-		...EXTRA_SECTIONS.map((title) => ({ title, enabled: false })),
+		...(sectionsOf(noteType) || []).map((section) => ({ title: section.title, enabled: true })),
+		...extraSections().map((title) => ({ title, enabled: false })),
 	];
 
 	const renderTemplateCards = () => {
 		templatesRoot.replaceChildren();
 		for (const [key, preset] of Object.entries(presets)) {
 			const card = document.createElement("div");
+			const localized = inEn() && presetsEn[key] ? presetsEn[key] : {};
+			const label = localized.label || preset.label;
+			const desc = localized.desc ?? preset.desc;
 			card.className = "card" + (key === noteType ? " active" : "");
-			card.innerHTML = `<strong>${preset.label}</strong><span>${preset.desc}</span>`;
+			card.innerHTML = `<strong>${label}</strong><span>${desc}</span>`;
 			card.onclick = () => {
 				noteType = key;
 				sectionRows = baseSections();
@@ -104,7 +141,7 @@ export function openNewDocDialog(defaultName = "新文件") {
 			title.textContent = row.title;
 			const remove = document.createElement("button");
 			remove.type = "button";
-			remove.textContent = "移除";
+			remove.textContent = t("ndd.remove");
 			remove.onclick = () => {
 				sectionRows.splice(index, 1);
 				renderSectionRows();
@@ -145,7 +182,7 @@ export function openNewDocDialog(defaultName = "新文件") {
 		if (event.key === "Enter") { event.preventDefault(); addSection(); }
 	};
 
-	sectionRows = (presets[noteType].sections || []).map((section) => ({
+	sectionRows = (sectionsOf(noteType) || []).map((section) => ({
 		title: section.title,
 		enabled: true,
 	}));

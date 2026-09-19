@@ -3,8 +3,8 @@ import { DEFAULT_CODE_LANG } from "./text.js";
 export const environmentFields = [
 	["systemModel", "System Model"],
 	["bios", "BIOS"],
-	["bmcVersion", "BMC 版本"],
-	["cpldVersion", "CPLD 版本"],
+	["bmcVersion", "BMC Version"],
+	["cpldVersion", "CPLD Version"],
 	["cpuInformation", "CPU Information"],
 	["osKernel", "OS / Kernel"],
 	["others", "Others"],
@@ -114,6 +114,30 @@ export const presets = {
 		title: "",
 		status: "N/A",
 		change: "",
+		sections: [],
+	},
+};
+
+// English content lookups for the new-document dialog (新增文件). State is still
+// seeded from the zh `presets` in makeState(); only what the dialog DISPLAYS and
+// passes back (labels, descs, section rows) is swapped to these English strings,
+// so a note built while the app is in en ends up with English section titles.
+export const presetsEn = {
+	hardware: {
+		desc: "Schematic check",
+		sections: ["Check items", "Check results", "Schematic / diagram"],
+	},
+	porting: {
+		desc: "Feature porting / config changes",
+		sections: ["Modified content", "Implementation flow", "Verification results"],
+	},
+	debug: {
+		desc: "Troubleshooting / FAILED note",
+		sections: ["Observed issue", "Root cause analysis", "Fixed content"],
+	},
+	blank: {
+		label: "Blank",
+		desc: "Fully custom",
 		sections: [],
 	},
 };
