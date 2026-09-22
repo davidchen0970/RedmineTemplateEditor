@@ -191,4 +191,14 @@ export const en = {
 	// theme toggle (label = the theme you will switch to)
 	"theme.dark": "Dark Mode",
 	"theme.light": "Light Mode",
+
+	// copy-sections picker
+	"copySections.heading": "Copy Sections",
+	"copySections.all": "All",
+	"copySections.copy": "Copy",
+	"copySections.unnamed": "(Untitled section)",
+	"toast.copySections.empty": "No sections to copy",
+	"toast.copySections.cancelled": "Copy sections cancelled",
+	"toast.copySections.copied": "Copied {count} sections",
+
 };

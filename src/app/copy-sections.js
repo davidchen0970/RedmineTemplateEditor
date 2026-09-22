@@ -1,5 +1,6 @@
 import { sectionsTextile } from "../textile/generator.js";
 import { dismissOnBackdrop } from "../ui/dialogs/dismiss-on-backdrop.js";
+import { t } from "../i18n.js";
 
 export function setupCopySections({ getState, renderer }) {
 	document.getElementById("copySections").onclick = () => {
@@ -19,12 +20,12 @@ function ensureDialog() {
 	boxRef.className = "add-block-dialog";
 	boxRef.innerHTML = `
 		<form method="dialog">
-			<div class="dialog-head">複製段落</div>
+			<div class="dialog-head">${t("copySections.heading")}</div>
 			<div class="dialog-body" data-list></div>
 			<div class="dialog-actions">
-				<button type="button" data-all>全選</button>
-				<button type="button" data-cancel>取消</button>
-				<button type="button" class="primary" data-confirm>複製</button>
+				<button type="button" data-all>${t("copySections.all")}</button>
+				<button type="button" data-cancel>${t("cancel")}</button>
+				<button type="button" class="primary" data-confirm>${t("copySections.copy")}</button>
 			</div>
 		</form>`;
 	document.body.appendChild(boxRef);
@@ -44,7 +45,7 @@ async function copySections(state, renderer) {
 	const sections = (state.sections || []).filter((section) => section && section.id);
 	if (typeof HTMLDialogElement === "undefined" || !sections.length) {
 		if (!sections.length) {
-			renderer.toast("沒有可複製的段落");
+			renderer.toast(t("toast.copySections.empty"));
 			return;
 		}
 		await writeClipboard(sectionsTextile(sections), renderer, sections.length);
@@ -60,7 +61,7 @@ async function copySections(state, renderer) {
 		const chk = document.createElement("input");
 		chk.type = "checkbox";
 		chk.checked = section.enabled;
-		label.append(chk, " ", section.title || "(未命名段落)");
+		label.append(chk, " ", section.title || t("copySections.unnamed"));
 		list.appendChild(label);
 		return chk;
 	});
@@ -79,7 +80,7 @@ async function copySections(state, renderer) {
 
 	const selected = await new Promise((resolve) => { resolveSelected = resolve; box.showModal(); });
 	if (!selected.length) {
-		renderer.toast("已取消複製段落");
+		renderer.toast(t("toast.copySections.cancelled"));
 		return;
 	}
 	await writeClipboard(sectionsTextile(selected), renderer, selected.length);
@@ -99,5 +100,5 @@ async function writeClipboard(text, renderer, count) {
 		document.execCommand("copy");
 		box.remove();
 	}
-	renderer.toast(`已複製 ${count} 個段落`);
+	renderer.toast(t("toast.copySections.copied", { count }));
 }

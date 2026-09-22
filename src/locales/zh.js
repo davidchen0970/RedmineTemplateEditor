@@ -191,4 +191,13 @@ export const zh = {
 	// theme toggle (label = the theme you will switch to)
 	"theme.dark": "深色主題",
 	"theme.light": "淺色主題",
+
+	"copySections.heading": "複製段落",
+	"copySections.all": "全選",
+	"copySections.copy": "複製",
+	"copySections.unnamed": "(未命名段落)",
+	"toast.copySections.empty": "沒有可複製的段落",
+	"toast.copySections.cancelled": "已取消複製段落",
+	"toast.copySections.copied": "已複製 {count} 個段落",
+
 };
