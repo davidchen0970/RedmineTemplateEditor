@@ -1,4 +1,4 @@
-// Minimal zero-build i18n for the Redmine Textile 輸出器.
+// Minimal zero-build i18n for the Redmine Textile outputer.
 //
 // - locale is chosen at startup from a saved preference (localStorage key
 //   "redmine.locale"), falling back to navigator.language ("zh*" -> zh, else en).

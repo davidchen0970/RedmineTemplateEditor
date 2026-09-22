@@ -1,4 +1,4 @@
-// zh (Traditional Chinese) dictionary for the Redmine Textile 輸出器.
+// zh (Traditional Chinese) dictionary for the Redmine Textile outputer.
 export const zh = {
 	// header groups + flat actions
 	"header.group.notes": "文件清單",

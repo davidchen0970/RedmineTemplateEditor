@@ -96,7 +96,7 @@ export const en = {
 	"block.diffFile": "Upload diff / patch",
 	"block.diffFallback": "or paste content directly",
 
-	// new-document dialog (新增文件 / New Note)
+	// new-document dialog (New Note form)
 	"ndd.name": "Document name",
 	"ndd.template": "Templates",
 	"ndd.sections": "Sections (check what to include; add/remove)",
