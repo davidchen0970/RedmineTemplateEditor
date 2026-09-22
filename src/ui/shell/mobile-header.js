@@ -33,8 +33,8 @@ function setupHeaderActionGroups() {
 
 	// The two hidden <input type=file> are not listed in any group, so they stay
 	// invisible. The copy action lives in a "File" menu group. The true settings
-	// (language / theme / shortcuts) move into a separate 設定 dialog, so "更多"
-	// holds the remaining overflow actions (incl. download .textile) plus its 設定
+	// (language / theme / shortcuts) move into a separate settings dialog, so "More"
+	// holds the remaining overflow actions (incl. download .textile) plus its settings
 	// opener.
 	const groupSpecs = [
 		{

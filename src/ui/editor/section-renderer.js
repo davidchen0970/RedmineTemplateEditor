@@ -52,7 +52,7 @@ export function createSectionRenderer({
 		markEntering(copy.id, locate);
 	}
 
-	// state 需在 onConfirm 時另行讀取（dialog 是異步回的）
+	// state must be re-read when onConfirm runs (the dialog returns asynchronously)
 	function remove(sectionId) {
 		const state = getState(),
 			section = find(sectionId);
