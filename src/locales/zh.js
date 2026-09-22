@@ -199,5 +199,13 @@ export const zh = {
 	"toast.copySections.empty": "沒有可複製的段落",
 	"toast.copySections.cancelled": "已取消複製段落",
 	"toast.copySections.copied": "已複製 {count} 個段落",
+	"import.invalid": "格式不符合",
+	"import.toast.done": "JSON 資料已匯入",
+	"import.alert.fail": "JSON 匯入失敗：{msg}",
+	"import.patch.none": "變更集匯入失敗：找不到差異區塊",
+	"import.patch.progress": "轉換檔案 {converted}/{total}：{name}",
+	"import.patch.done": "已匯入 {total} 個檔案！",
+	"import.toast.patchDone": "已匯入 {total} 個程式碼單元",
+	"import.resetConfirm": "清除目前文件並重設？",
 
 };

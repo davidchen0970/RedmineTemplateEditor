@@ -200,5 +200,14 @@ export const en = {
 	"toast.copySections.empty": "No sections to copy",
 	"toast.copySections.cancelled": "Copy sections cancelled",
 	"toast.copySections.copied": "Copied {count} sections",
+	// import / patch
+	"import.invalid": "Invalid format",
+	"import.toast.done": "JSON data imported",
+	"import.alert.fail": "JSON import failed: {msg}",
+	"import.patch.none": "Patch import failed: no diff blocks found",
+	"import.patch.progress": "Converting file {converted}/{total}: {name}",
+	"import.patch.done": "Imported {total} files!",
+	"import.toast.patchDone": "Imported {total} code units",
+	"import.resetConfirm": "Clear the current document and reset?",
 
 };

@@ -1,5 +1,18 @@
 import { test, expect } from "@playwright/test";
 
+// This spec asserts zh toasts (已匯入 … / JSON 資料已匯入), so lock the locale to
+// zh before the app boots. #langToggle sits in a hidden group; seed the preference
+// instead of clicking it (see storage.spec.js for the same pattern).
+test.beforeEach(async ({ page }) => {
+	await page.addInitScript(() => {
+		try {
+			localStorage.setItem("redmine.locale", "zh");
+		} catch {
+			/* localStorage unavailable — navigator detection still applied */
+		}
+	});
+});
+
 test("patch import turns diff chunks into implementation blocks", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const patch = [
