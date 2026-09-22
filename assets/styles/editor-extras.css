@@ -216,7 +216,7 @@
 	color: var(--primary);
 }
 
-/* --- 設定 dialog：一列一項目 --- */
+/* --- settings dialog: one item per row --- */
 .settings-dialog .settings-body {
 	display: flex;
 	flex-direction: column;
@@ -242,7 +242,7 @@
 }
 
 
-/* --- 新增文件 dialog：模板 / 段落 --- */
+/* --- new-document dialog: templates / sections --- */
 .add-block-dialog .dialog-head {
 	font-weight: 700
 }
@@ -263,7 +263,7 @@
 	transition: border-color .2s, background .2s, transform .15s,
 		box-shadow .2s
 }
-/* New Note (新增文件): every component is two columns in zh, one in en. */
+/* New Note: every component is two columns in zh, one in en. */
 #ndDialog .toggle-list {
 	grid-template-columns: repeat(2, minmax(0, 1fr))
 }
@@ -465,7 +465,7 @@
 	box-sizing: border-box
 }
 
-/* --- 快捷鍵 help dialog --- */
+/* --- shortcut-help dialog --- */
 .shortcut-dialog .shortcut-list {
 	display: grid;
 	gap: 9px;
