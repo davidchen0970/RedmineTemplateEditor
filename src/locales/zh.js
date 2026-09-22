@@ -213,5 +213,6 @@ export const zh = {
 	"shortcut.err.run": "快捷鍵失敗: {msg}",
 	"preview.empty": "尚無可預覽內容",
 	"image.loadFailTitle": "圖片載入失敗，點一下可重新選擇圖片",
+	"toast.exportCopied": "已複製 Textile，並同時儲存成 JSON 檔案",
 
 };

@@ -41,3 +41,15 @@ test("exports the current state as JSON", async ({ page }) => {
 		expect(download.suggestedFilename()).toMatch(/\.json$/);
 	});
 });
+
+test("copy button surfaces the localized toast", async ({ page }) => {
+	await test.step("open the editor and the file group", async () => {
+		await page.goto("/");
+		await openExtraGroup(page);
+		await expect(page.locator("#copy")).toBeVisible();
+	});
+	await test.step("hitting #copy shows toast.exportCopied (en default)", async () => {
+		await page.click("#copy");
+		await expect(page.locator("#toast")).toContainText("Textile copied, and a JSON file was also saved");
+	});
+});

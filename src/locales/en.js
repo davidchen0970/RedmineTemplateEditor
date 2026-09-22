@@ -218,5 +218,7 @@ export const en = {
 	// preview / image replace
 	"preview.empty": "Nothing to preview yet",
 	"image.loadFailTitle": "Image failed to load; click to re-pick an image",
+	// export toast
+	"toast.exportCopied": "Textile copied, and a JSON file was also saved",
 
 };
