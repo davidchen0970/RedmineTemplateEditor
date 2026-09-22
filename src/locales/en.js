@@ -209,5 +209,8 @@ export const en = {
 	"import.patch.done": "Imported {total} files!",
 	"import.toast.patchDone": "Imported {total} code units",
 	"import.resetConfirm": "Clear the current document and reset?",
+	// dialogs / confirm / prompt
+	"dialog.confirm": "Confirm",
+	"dialog.ok": "OK",
 
 };

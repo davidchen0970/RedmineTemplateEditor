@@ -207,5 +207,7 @@ export const zh = {
 	"import.patch.done": "已匯入 {total} 個檔案！",
 	"import.toast.patchDone": "已匯入 {total} 個程式碼單元",
 	"import.resetConfirm": "清除目前文件並重設？",
+	"dialog.confirm": "確認",
+	"dialog.ok": "確定",
 
 };
