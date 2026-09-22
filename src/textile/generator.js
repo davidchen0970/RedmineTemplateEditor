@@ -151,7 +151,7 @@ export function textile(state) {
 }
 
 // Render only the given sections as Textile, without the document header
-// (title / 結論 / 環境). Used by the "copy specified sections" button; the caller
+// (title / conclusion / environment). Used by the "copy specified sections" button; the caller
 // passes exactly the sections the user selected, so no `enabled` filter is applied.
 export function sectionsTextile(sections = []) {
 	const outputLines = [];

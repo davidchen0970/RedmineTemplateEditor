@@ -118,7 +118,7 @@ export const presets = {
 	},
 };
 
-// English content lookups for the new-document dialog (新增文件). State is still
+// English content lookups for the new-document dialog (New Note). State is still
 // seeded from the zh `presets` in makeState(); only what the dialog DISPLAYS and
 // passes back (labels, descs, section rows) is swapped to these English strings,
 // so a note built while the app is in en ends up with English section titles.
