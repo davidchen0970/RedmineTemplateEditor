@@ -19,3 +19,19 @@ test("language toggle flips <html lang> and back", async ({ page }) => {
 			.toBe(before);
 	});
 });
+
+test("output stats line reflects output.charLine in the active language", async ({ page }) => {
+	await test.step("open the editor and type so the stats line updates", async () => {
+		await page.goto("/");
+		await page.fill("#title", "stats-check");
+		// Out-of-preview view renders the stats line from t("output.charLine").
+		// In the en default it uses chars · lines.
+		await expect(page.locator("#stats")).toContainText("chars");
+	});
+	await test.step("switch to zh and the stats line adopts the zh units", async () => {
+		await page.locator('[data-header-action-group="more"] .header-action-group-toggle').click();
+		await page.click("#settingsOpen");
+		await page.click("#langToggle");
+		await expect(page.locator("#stats")).toContainText("字元");
+	});
+});

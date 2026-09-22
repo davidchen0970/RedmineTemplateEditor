@@ -220,5 +220,19 @@ export const en = {
 	"image.loadFailTitle": "Image failed to load; click to re-pick an image",
 	// export toast
 	"toast.exportCopied": "Textile copied, and a JSON file was also saved",
+	// mermaid export / output stats
+	"mermaid.exportTitle": "Download PNG",
+	"mermaid.size": "Resize method",
+	"mermaid.optionScale": "Scale (native resolution × factor)",
+	"mermaid.optionWidth": "Fixed width (px)",
+	"mermaid.scale": "Scale",
+	"mermaid.width": "Width (px; height scales to keep the aspect)",
+	"mermaid.download": "Download",
+	"mermaid.error.download": "Mermaid PNG download failed:",
+	"mermaid.error.svgSize": "Could not get the SVG size",
+	"mermaid.error.svgLoad": "SVG could not be loaded as an image",
+	"mermaid.error.canvas": "Browser could not create a Canvas 2D environment",
+	"mermaid.error.png": "Browser could not create the PNG",
+	"output.charLine": "{chars} chars · {lines} lines",
 
 };

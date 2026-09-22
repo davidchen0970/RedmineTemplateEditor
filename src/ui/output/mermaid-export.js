@@ -2,6 +2,7 @@ const EXPORT_SCALE = 2;
 const RENDER_WAIT_MS = 600;
 
 import { resolveLabelColor, wrapLabelRuns } from "./mermaid-label.js";
+import { t } from "../../i18n.js";
 
 export function exportMermaidPng(svgElement, fileName, options = {}) {
 	if (!svgElement) return Promise.resolve();
@@ -13,7 +14,7 @@ export function exportMermaidPng(svgElement, fileName, options = {}) {
 			const blob = await svgToPngBlob(prepared, scale);
 			downloadBlob(blob, fileName);
 		} catch (error) {
-			console.error("Mermaid PNG 下載失敗:", error);
+			console.error(t("mermaid.error.download"), error);
 			downloadSvgFallback(preparedSvgText(svgElement), fileName);
 		}
 	})();
@@ -251,7 +252,7 @@ function preparedSvgText(svgElement) {
 
 async function svgToPngBlob(prepared, scale = EXPORT_SCALE) {
 	const { svgText, width, height } = prepared;
-	if (!(width > 0) || !(height > 0)) throw new Error("無法取得 SVG 尺寸");
+	if (!(width > 0) || !(height > 0)) throw new Error(t("mermaid.error.svgSize"));
 
 	const svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
 	const objectUrl = URL.createObjectURL(svgBlob);
@@ -259,7 +260,7 @@ async function svgToPngBlob(prepared, scale = EXPORT_SCALE) {
 		const image = new Image();
 		await new Promise((resolve, reject) => {
 			image.onload = () => setTimeout(resolve, RENDER_WAIT_MS);
-			image.onerror = () => reject(new Error("SVG 無法載入為圖片"));
+			image.onerror = () => reject(new Error(t("mermaid.error.svgLoad")));
 			image.src = objectUrl;
 		});
 
@@ -267,13 +268,13 @@ async function svgToPngBlob(prepared, scale = EXPORT_SCALE) {
 		canvas.width = Math.max(1, Math.ceil(width * scale));
 		canvas.height = Math.max(1, Math.ceil(height * scale));
 		const ctx = canvas.getContext("2d");
-		if (!ctx) throw new Error("瀏覽器無法建立 Canvas 2D 環境");
+		if (!ctx) throw new Error(t("mermaid.error.canvas"));
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
 		const blob = await new Promise((resolve, reject) => {
 			try {
-				canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("瀏覽器未能建立 PNG"))), "image/png");
+				canvas.toBlob((b) => (b ? resolve(b) : reject(new Error(t("mermaid.error.png")))), "image/png");
 			} catch (error) {
 				reject(error);
 			}

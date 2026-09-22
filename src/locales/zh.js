@@ -214,5 +214,18 @@ export const zh = {
 	"preview.empty": "尚無可預覽內容",
 	"image.loadFailTitle": "圖片載入失敗，點一下可重新選擇圖片",
 	"toast.exportCopied": "已複製 Textile，並同時儲存成 JSON 檔案",
+	"mermaid.exportTitle": "下載 PNG",
+	"mermaid.size": "尺寸方式",
+	"mermaid.optionScale": "倍率（原生解析度 x 倍數）",
+	"mermaid.optionWidth": "固定寬度（px）",
+	"mermaid.scale": "倍率",
+	"mermaid.width": "寬度（px，高度自動等比例）",
+	"mermaid.download": "下載",
+	"mermaid.error.download": "Mermaid PNG 下載失敗:",
+	"mermaid.error.svgSize": "無法取得 SVG 尺寸",
+	"mermaid.error.svgLoad": "SVG 無法載入為圖片",
+	"mermaid.error.canvas": "瀏覽器無法建立 Canvas 2D 環境",
+	"mermaid.error.png": "瀏覽器未能建立 PNG",
+	"output.charLine": "{chars} 字元 · {lines} 行",
 
 };
