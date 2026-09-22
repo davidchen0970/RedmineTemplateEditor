@@ -209,5 +209,7 @@ export const zh = {
 	"import.resetConfirm": "清除目前文件並重設？",
 	"dialog.confirm": "確認",
 	"dialog.ok": "確定",
+	"preset.confirmReplace": "切換模板會取代目前表單，確定？",
+	"shortcut.err.run": "快捷鍵失敗: {msg}",
 
 };

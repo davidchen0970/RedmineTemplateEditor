@@ -51,7 +51,7 @@ const renderer = createRenderer({
 	changed,
 	getShowLevel: () => showBlockLevel.isVisible(),
 	onPresetClick: (type) => {
-		if (!confirm("切換模板會取代目前表單，確定？")) return;
+		if (!confirm(t("preset.confirmReplace"))) return;
 		state = makeState(type);
 		changed();
 		renderer.render();

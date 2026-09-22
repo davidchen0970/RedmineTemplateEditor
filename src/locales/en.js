@@ -212,5 +212,8 @@ export const en = {
 	// dialogs / confirm / prompt
 	"dialog.confirm": "Confirm",
 	"dialog.ok": "OK",
+	// preset-switch guard / shortcuts
+	"preset.confirmReplace": "Switching the template will replace the current form. Continue?",
+	"shortcut.err.run": "Shortcut failed: {msg}",
 
 };

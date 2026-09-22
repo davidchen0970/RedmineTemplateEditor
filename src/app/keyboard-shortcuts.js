@@ -70,7 +70,7 @@ export function setupKeyboardShortcuts({ getState, renderer, setExportStatus }) 
 				renderer.toast(t("toast.mermaid"));
 			}
 		} catch (error) {
-			console.error("快捷鍵失敗:", error);
+			console.error(t("shortcut.err.run", { msg: error.message || error }));
 		}
 	});
 }
