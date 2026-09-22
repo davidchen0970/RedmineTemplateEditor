@@ -215,5 +215,8 @@ export const en = {
 	// preset-switch guard / shortcuts
 	"preset.confirmReplace": "Switching the template will replace the current form. Continue?",
 	"shortcut.err.run": "Shortcut failed: {msg}",
+	// preview / image replace
+	"preview.empty": "Nothing to preview yet",
+	"image.loadFailTitle": "Image failed to load; click to re-pick an image",
 
 };

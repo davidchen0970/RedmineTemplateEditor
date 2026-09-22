@@ -1,5 +1,6 @@
 import { escapeHtml } from "../core/state.js";
 import { normalizePreviewCssStyle } from "./preview-style.js";
+import { t } from "../i18n.js";
 import {
 	renderInlineTextile,
 	escapePreviewHtml,
@@ -351,5 +352,5 @@ export function textileToPreviewHtml(text) {
 	if (inMermaid) flushMermaid();
 	if (inCollapse) flushCollapse();
 	closeFlowBlocks();
-	return html.join("\n") || '<p class="note">尚無可預覽內容</p>';
+	return html.join("\n") || `<p class="note">${t("preview.empty")}</p>`;
 }

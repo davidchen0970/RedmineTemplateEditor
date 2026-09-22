@@ -211,5 +211,7 @@ export const zh = {
 	"dialog.ok": "確定",
 	"preset.confirmReplace": "切換模板會取代目前表單，確定？",
 	"shortcut.err.run": "快捷鍵失敗: {msg}",
+	"preview.empty": "尚無可預覽內容",
+	"image.loadFailTitle": "圖片載入失敗，點一下可重新選擇圖片",
 
 };

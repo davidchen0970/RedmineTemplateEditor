@@ -79,7 +79,11 @@ test("plain heading text wraps in a <p>", () => {
 });
 
 test("empty input renders the empty-preview note", () => {
-	assert.match(textileToPreviewHtml(""), /尚無可預覽內容/);
+	// The note text is locale-driven (t("preview.empty")), so assert the
+	// container contract instead of a zh/en-specific string.
+	const html = textileToPreviewHtml("");
+	assert.match(html, /<p class="note">/);
+	assert.ok(html.length > 0);
 });
 
 test("a standalone !image! line renders an <img> without throwing", () => {
