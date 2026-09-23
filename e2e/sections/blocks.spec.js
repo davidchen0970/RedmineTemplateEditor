@@ -31,6 +31,24 @@ test("新增段落 adds a section", async ({ page }) => {
 	});
 });
 
+test("新增段落 at the form bottom adds a section", async ({ page }) => {
+	await test.step("open the editor", () => page.goto("/"));
+	const sections = page.locator("#sections .section");
+	const before = await sections.count();
+	await test.step("use the bottom add-section button and confirm", async () => {
+		await page.locator("#formAddSection").click();
+		// Same prompt dialog as [data-add-section] (prompt-dialog.js): [data-value]
+		// names it, [data-confirm] confirms, and the dialog must then dismiss.
+		await expect(page.locator("[data-value]")).toBeVisible();
+		await page.locator("[data-value]").fill(`e2e-bottom-${Date.now()}`);
+		await page.locator("[data-confirm]").click();
+		await expect(page.locator("[data-value]")).toBeHidden();
+	});
+	await test.step("expect one more section", async () => {
+		await expect(sections).toHaveCount(before + 1);
+	});
+});
+
 test("複製 duplicates a block in its section", async ({ page }) => {
 	await test.step("open the editor and seed a block", async () => {
 		await page.goto("/");
