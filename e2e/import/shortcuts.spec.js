@@ -23,9 +23,9 @@ test("shortcut help dialog lists every registered shortcut", async ({ page }) =>
 });
 
 test("Ctrl+Shift+C copies the Textile and raises the copy toast", async ({ page, browserName }) => {
-	// Headless Firefox does not reliably grant clipboard-write, so the copy flows
-	// are Chromium-only; the copy toast only fires after a successful write.
-	test.skip(browserName === "firefox", "clipboard grant is unreliable for firefox");
+	// Headless Firefox/WebKit do not reliably grant clipboard-write, so the copy
+	// flows are Chromium-only; the copy toast only fires after a successful write.
+	test.skip(browserName === "firefox" || browserName === "webkit", "clipboard grant is unreliable for firefox/webkit");
 	await test.step("open the editor and grant clipboard write", async () => {
 		await page.goto("/");
 		// navigator.clipboard is only usable once Chromium/Firefox grant it.
@@ -43,7 +43,7 @@ test("Ctrl+Shift+C copies the Textile and raises the copy toast", async ({ page,
 });
 
 test("#copy also downloads a JSON snapshot", async ({ page, browserName }) => {
-	test.skip(browserName === "firefox", "clipboard grant is unreliable for firefox");
+	test.skip(browserName === "firefox" || browserName === "webkit", "clipboard grant is unreliable for firefox/webkit");
 	await test.step("open the editor and grant clipboard write", async () => {
 		await page.goto("/");
 		await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);

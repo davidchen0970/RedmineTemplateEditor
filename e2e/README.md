@@ -1,6 +1,6 @@
 # UI e2e 覆蓋對照
 
-Playwright 在 GitHub Actions 的 `e2e` job 分 chromium + firefox 各跑一輪；`playwright-report/`
+Playwright 在 GitHub Actions 的 `e2e` job 分 chromium + firefox + webkit(Safari) 各跑一輪；`playwright-report/`
 會上傳成 CI artifacts，開 HTML 可以按類別直接跳。
 
 資料夾就是「類別」，list 報表第一眼就看得到。
