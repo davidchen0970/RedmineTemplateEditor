@@ -53,6 +53,35 @@
 	align-items: center
 }
 
+.panel-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px dashed var(--line)
+}
+
+#formAddSection {
+	padding: 8px 14px;
+	border: 1px solid var(--primary);
+	border-radius: 11px;
+	background: var(--soft);
+	color: var(--primary);
+	font-weight: 600;
+	transition: background .2s, color .2s
+}
+
+#formAddSection::before {
+	content: "＋ ";
+	font-weight: 700
+}
+
+#formAddSection:hover {
+	background: var(--primary);
+	color: #fff
+}
+
 .toast {
 	position: fixed;
 	right: 18px;
