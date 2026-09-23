@@ -83,6 +83,7 @@ export function createBlockElement(block, maxLevel, { open = false, onToggle = n
 					<span class="block-summary-separator" aria-hidden="true">|</span>
 					<span class="block-type-label">${escapeHtml(blockTypeLabel)}</span>
 				</span>
+				<span class="block-level-label">L${blockLevel}</span>
 			</button>
 			<span>
 				<button class="small" data-bup>${t("up")}</button>

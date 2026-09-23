@@ -101,6 +101,15 @@
 .content-editor { min-height: 120px; }
 .content-editor-large { min-height: 170px; }
 
+.block-level-label {
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.2;
+	white-space: nowrap;
+	opacity: 0.72;
+	margin-left: auto;
+}
+
 .block-summary {
 	align-items: center;
 	min-height: 32px;
@@ -158,7 +167,10 @@
 }
 
 @container block-toggle (max-width: 360px) {
-	.block-summary-meta {
+	/* Keep the level on small widths; drop the type label (and its leading
+	   separator) so the title gives up room instead of hiding the hierarchy cue. */
+	.block-type-label,
+	.block-summary-separator {
 		display: none;
 	}
 }
