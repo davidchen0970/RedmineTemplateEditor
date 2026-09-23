@@ -13,7 +13,7 @@ function ensure() {
 			<div class="dialog-body"><label class="field"><span data-label></span><input data-value type="text"></label></div>
 			<div class="dialog-actions">
 				<button type="button" data-cancel>取消</button>
-				<button type="button" class="primary" data-confirm>確定</button>
+				<button type="submit" class="primary" data-confirm>確定</button>
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);
@@ -21,7 +21,8 @@ function ensure() {
 		pending = null;
 		dialog.close();
 	};
-	dialog.querySelector("[data-confirm]").onclick = () => {
+	dialog.querySelector("form").onsubmit = (event) => {
+		event.preventDefault();
 		const job = pending;
 		pending = null;
 		const value = dialog.querySelector("[data-value]").value;

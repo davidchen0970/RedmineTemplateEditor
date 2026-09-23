@@ -15,7 +15,11 @@ test("prompt: confirm resolves the typed value and cancel settles with none", as
 	assert.equal(box.querySelector("[data-value]").value, "doc");
 
 	box.querySelector("[data-value]").value = "重命名";
-	box.querySelector("[data-confirm]").click();
+	const form = box.querySelector("form");
+	const submit = new w.Event("submit", { bubbles: true, cancelable: true });
+	form.dispatchEvent(submit);
+	assert.equal(submit.defaultPrevented, true, "onsubmit guards against implicit dialog close");
+	assert.equal(box.hasAttribute("open"), false, "confirm closes the dialog");
 	assert.deepEqual(confirmed, ["重命名"]);
 
 	// Open again; cancel keeps onConfirm untouched.
