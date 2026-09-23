@@ -1,4 +1,5 @@
 import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
+import { t } from "../../i18n.js";
 
 let dialog = null;
 let pending = null;
@@ -49,6 +50,7 @@ export function openPrompt({ heading, label, value = "", confirmLabel = "確定"
 	const box = ensure();
 	box.querySelector("[data-head]").textContent = heading;
 	box.querySelector("[data-label]").textContent = label;
+	box.querySelector("[data-cancel]").textContent = t("cancel");
 	const input = box.querySelector("[data-value]");
 	input.value = value;
 	box.querySelector("[data-confirm]").textContent = confirmLabel;
