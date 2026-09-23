@@ -1,4 +1,4 @@
-// zh (Traditional Chinese) dictionary for the Redmine Textile 輸出器.
+// zh (Traditional Chinese) dictionary for the Redmine Textile outputer.
 export const zh = {
 	// header groups + flat actions
 	"header.group.notes": "文件清單",
@@ -191,4 +191,41 @@ export const zh = {
 	// theme toggle (label = the theme you will switch to)
 	"theme.dark": "深色主題",
 	"theme.light": "淺色主題",
+
+	"copySections.heading": "複製段落",
+	"copySections.all": "全選",
+	"copySections.copy": "複製",
+	"copySections.unnamed": "(未命名段落)",
+	"toast.copySections.empty": "沒有可複製的段落",
+	"toast.copySections.cancelled": "已取消複製段落",
+	"toast.copySections.copied": "已複製 {count} 個段落",
+	"import.invalid": "格式不符合",
+	"import.toast.done": "JSON 資料已匯入",
+	"import.alert.fail": "JSON 匯入失敗：{msg}",
+	"import.patch.none": "變更集匯入失敗：找不到差異區塊",
+	"import.patch.progress": "轉換檔案 {converted}/{total}：{name}",
+	"import.patch.done": "已匯入 {total} 個檔案！",
+	"import.toast.patchDone": "已匯入 {total} 個程式碼單元",
+	"import.resetConfirm": "清除目前文件並重設？",
+	"dialog.confirm": "確認",
+	"dialog.ok": "確定",
+	"preset.confirmReplace": "切換模板會取代目前表單，確定？",
+	"shortcut.err.run": "快捷鍵失敗: {msg}",
+	"preview.empty": "尚無可預覽內容",
+	"image.loadFailTitle": "圖片載入失敗，點一下可重新選擇圖片",
+	"toast.exportCopied": "已複製 Textile，並同時儲存成 JSON 檔案",
+	"mermaid.exportTitle": "下載 PNG",
+	"mermaid.size": "尺寸方式",
+	"mermaid.optionScale": "倍率（原生解析度 x 倍數）",
+	"mermaid.optionWidth": "固定寬度（px）",
+	"mermaid.scale": "倍率",
+	"mermaid.width": "寬度（px，高度自動等比例）",
+	"mermaid.download": "下載",
+	"mermaid.error.download": "Mermaid PNG 下載失敗:",
+	"mermaid.error.svgSize": "無法取得 SVG 尺寸",
+	"mermaid.error.svgLoad": "SVG 無法載入為圖片",
+	"mermaid.error.canvas": "瀏覽器無法建立 Canvas 2D 環境",
+	"mermaid.error.png": "瀏覽器未能建立 PNG",
+	"output.charLine": "{chars} 字元 · {lines} 行",
+
 };

@@ -1,5 +1,18 @@
 import { test, expect } from "@playwright/test";
 
+// This spec asserts the zh cancel toast, so lock the locale to zh
+// before the app boots. #langToggle sits in a hidden group; seed the preference
+// instead of clicking it (see storage.spec.js for the same pattern).
+test.beforeEach(async ({ page }) => {
+	await page.addInitScript(() => {
+		try {
+			localStorage.setItem("redmine.locale", "zh");
+		} catch {
+			/* localStorage unavailable — navigator detection still applied */
+		}
+	});
+});
+
 test("複製段落 opens the section picker and cancels with a toast", async ({ page }) => {
 	await test.step("open the editor and the file group, hit #copySections", async () => {
 		await page.goto("/");

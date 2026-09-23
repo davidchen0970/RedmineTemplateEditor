@@ -1,5 +1,6 @@
 import { registerPreviewImage } from "../../textile/preview.js";
 import { readFileAsDataUrl } from "../io/read.js";
+import { t } from "../../i18n.js";
 
 export function setupImageReplacePicker(renderPreview) {
 	const preview = document.getElementById("preview");
@@ -20,7 +21,7 @@ export function setupImageReplacePicker(renderPreview) {
 			const img = event.target;
 			if (!img.dataset.previewName) return;
 			img.classList.add("preview-image-pick");
-			img.title = "圖片載入失敗，點一下可重新選擇圖片";
+			img.title = t("image.loadFailTitle");
 		},
 		true,
 	);

@@ -241,7 +241,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			pendingSectionId = null;
 			dialog.close();
 		};
-		// Clicking the backdrop closes the dialog like 取消 (no block is added).
+		// Clicking the backdrop closes the dialog like Cancel (no block is added).
 		dismissOnBackdrop(dialog, () => {
 			pendingSectionId = null;
 		});
@@ -320,7 +320,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 	return { add };
 }
 
-// Pure mapping for the 新增區塊 的「程式碼差異」preview: selected patch files become
+// Pure mapping for the new-block "diff" preview: selected patch files become
 // one implementation block each (title=file name, workPath=folder, diff content).
 export function buildDiffUnits(chosen, level) {
 	return chosen.map((item) => {

@@ -13,8 +13,8 @@ function ensure() {
 			<div class="dialog-head" data-head></div>
 			<div class="dialog-body"><p data-text></p></div>
 			<div class="dialog-actions">
-				<button type="button" data-cancel>取消</button>
-				<button type="button" class="primary" data-confirm>確認</button>
+				<button type="button" data-cancel>${t("cancel")}</button>
+				<button type="button" class="primary" data-confirm>${t("dialog.confirm")}</button>
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);
@@ -29,14 +29,14 @@ function ensure() {
 		dialog.close();
 		if (action) action();
 	};
-	// Clicking the backdrop dismisses like 取消 (no confirm action runs).
+	// Clicking the backdrop dismisses like Cancel (no confirm action runs).
 	dismissOnBackdrop(dialog, () => {
 		pendingAction = null;
 	});
 	return dialog;
 }
 
-export function confirmDelete({ heading, text, onConfirm, confirmLabel = "確認" }) {
+export function confirmDelete({ heading, text, onConfirm, confirmLabel = t("dialog.confirm") }) {
 	if (typeof HTMLDialogElement === "undefined") {
 		if (window.confirm(text)) onConfirm();
 		return;

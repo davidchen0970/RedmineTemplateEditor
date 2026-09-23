@@ -1,6 +1,7 @@
 import { safe } from "../core/state.js";
 import { textile } from "../textile/generator.js";
 import { triggerDownload } from "../ui/io/download.js";
+import { t } from "../i18n.js";
 
 export function setupExportActions({ getState, renderer, setExportStatus }) {
 	document.getElementById("copy").onclick = async () => {
@@ -13,7 +14,7 @@ export function setupExportActions({ getState, renderer, setExportStatus }) {
 			document.getElementById("out").select();
 			document.execCommand("copy");
 		}
-		renderer.toast("已複製 Textile，並同時儲存成 JSON 檔案");
+		renderer.toast(t("toast.exportCopied"));
 		setExportStatus("json");
 	};
 	document.getElementById("txt").onclick = () => {

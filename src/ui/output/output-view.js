@@ -3,6 +3,7 @@ import { textileToPreviewHtml } from "../../textile/preview.js";
 import { exportMermaidPng } from "./mermaid-export.js";
 import { onPreviewReRender } from "../editor/preview-scroll-burst.js";
 import { dismissOnBackdrop } from "../dialogs/dismiss-on-backdrop.js";
+import { t } from "../../i18n.js";
 
 export function renderOutput(state, view) {
 	const raw = textile(state);
@@ -21,7 +22,7 @@ export function renderOutput(state, view) {
 	document.getElementById(activeId)?.classList.add("active");
 	slideSegmentedIndicator();
 	const stats = document.getElementById("stats");
-	if (stats) stats.textContent = `${raw.length} 字元 · ${raw.split("\n").length} 行`;
+	if (stats) stats.textContent = t("output.charLine", { chars: raw.length, lines: raw.split("\n").length });
 }
 
 export function segmentedIndicatorPosition(groupRect, buttonRect) {
@@ -102,7 +103,7 @@ function addMermaidDownloadButtons(preview) {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.className = "mermaid-download";
-		button.title = "下載 PNG";
+		button.title = t("mermaid.exportTitle");
 		button.textContent = "↓ PNG";
 		button.addEventListener("click", () => {
 			openMermaidExportDialog(svgElement, screenshotFileName());
@@ -140,17 +141,17 @@ function ensureMermaidExportDialog() {
 	dialog.className = "add-block-dialog";
 	dialog.innerHTML = `
 		<form method="dialog" id="mermaidExportForm">
-			<div class="dialog-head">下載 PNG</div>
+			<div class="dialog-head">${t("mermaid.exportTitle")}</div>
 			<div class="dialog-body">
 				<div class="field">
-					<label>尺寸方式</label>
+					<label>${t("mermaid.size")}</label>
 					<select id="mermaidSizeMode">
-						<option value="scale">倍率（原生解析度 x 倍數）</option>
-						<option value="width">固定寬度（px）</option>
+						<option value="scale">${t("mermaid.optionScale")}</option>
+						<option value="width">${t("mermaid.optionWidth")}</option>
 					</select>
 				</div>
 				<div class="field" id="mermaidScaleWrap">
-					<label>倍率</label>
+					<label>${t("mermaid.scale")}</label>
 					<select id="mermaidScale">
 						<option value="1">x1</option>
 						<option value="1.5">x1.5</option>
@@ -160,13 +161,13 @@ function ensureMermaidExportDialog() {
 					</select>
 				</div>
 				<div class="field" id="mermaidWidthWrap" style="display:none">
-					<label>寬度（px，高度自動等比例）</label>
+					<label>${t("mermaid.width")}</label>
 					<input id="mermaidWidth" type="number" min="16" step="1" value="1920">
 				</div>
 			</div>
 			<div class="dialog-actions">
-				<button type="button" id="mermaidExportCancel">取消</button>
-				<button type="submit" class="primary">下載</button>
+				<button type="button" id="mermaidExportCancel">${t("cancel")}</button>
+				<button type="submit" class="primary">${t("mermaid.download")}</button>
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);

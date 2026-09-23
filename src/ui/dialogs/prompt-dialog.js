@@ -13,11 +13,12 @@ function ensure() {
 			<div class="dialog-head" data-head></div>
 			<div class="dialog-body"><label class="field"><span data-label></span><input data-value type="text"></label></div>
 			<div class="dialog-actions">
-				<button type="button" data-cancel>取消</button>
-				<button type="submit" class="primary" data-confirm>確定</button>
+				<button type="button" data-cancel>${t("cancel")}</button>
+				<button type="button" class="primary" data-confirm>${t("dialog.ok")}</button>
 			</div>
 		</form>`;
 	document.body.appendChild(dialog);
+	dialog.querySelector("[data-cancel]").textContent = t("cancel");
 	dialog.querySelector("[data-cancel]").onclick = () => {
 		pending = null;
 		dialog.close();
@@ -41,7 +42,7 @@ function ensure() {
 	return dialog;
 }
 
-export function openPrompt({ heading, label, value = "", confirmLabel = "確定", onConfirm }) {
+export function openPrompt({ heading, label, value = "", confirmLabel = t("dialog.ok"), onConfirm }) {
 	if (typeof HTMLDialogElement === "undefined") {
 		const typed = window.prompt(label, value);
 		if (typed !== null) onConfirm(typed);

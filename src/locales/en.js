@@ -96,7 +96,7 @@ export const en = {
 	"block.diffFile": "Upload diff / patch",
 	"block.diffFallback": "or paste content directly",
 
-	// new-document dialog (新增文件 / New Note)
+	// new-document dialog (New Note form)
 	"ndd.name": "Document name",
 	"ndd.template": "Templates",
 	"ndd.sections": "Sections (check what to include; add/remove)",
@@ -191,4 +191,48 @@ export const en = {
 	// theme toggle (label = the theme you will switch to)
 	"theme.dark": "Dark Mode",
 	"theme.light": "Light Mode",
+
+	// copy-sections picker
+	"copySections.heading": "Copy Sections",
+	"copySections.all": "All",
+	"copySections.copy": "Copy",
+	"copySections.unnamed": "(Untitled section)",
+	"toast.copySections.empty": "No sections to copy",
+	"toast.copySections.cancelled": "Copy sections cancelled",
+	"toast.copySections.copied": "Copied {count} sections",
+	// import / patch
+	"import.invalid": "Invalid format",
+	"import.toast.done": "JSON data imported",
+	"import.alert.fail": "JSON import failed: {msg}",
+	"import.patch.none": "Patch import failed: no diff blocks found",
+	"import.patch.progress": "Converting file {converted}/{total}: {name}",
+	"import.patch.done": "Imported {total} files!",
+	"import.toast.patchDone": "Imported {total} code units",
+	"import.resetConfirm": "Clear the current document and reset?",
+	// dialogs / confirm / prompt
+	"dialog.confirm": "Confirm",
+	"dialog.ok": "OK",
+	// preset-switch guard / shortcuts
+	"preset.confirmReplace": "Switching the template will replace the current form. Continue?",
+	"shortcut.err.run": "Shortcut failed: {msg}",
+	// preview / image replace
+	"preview.empty": "Nothing to preview yet",
+	"image.loadFailTitle": "Image failed to load; click to re-pick an image",
+	// export toast
+	"toast.exportCopied": "Textile copied, and a JSON file was also saved",
+	// mermaid export / output stats
+	"mermaid.exportTitle": "Download PNG",
+	"mermaid.size": "Resize method",
+	"mermaid.optionScale": "Scale (native resolution × factor)",
+	"mermaid.optionWidth": "Fixed width (px)",
+	"mermaid.scale": "Scale",
+	"mermaid.width": "Width (px; height scales to keep the aspect)",
+	"mermaid.download": "Download",
+	"mermaid.error.download": "Mermaid PNG download failed:",
+	"mermaid.error.svgSize": "Could not get the SVG size",
+	"mermaid.error.svgLoad": "SVG could not be loaded as an image",
+	"mermaid.error.canvas": "Browser could not create a Canvas 2D environment",
+	"mermaid.error.png": "Browser could not create the PNG",
+	"output.charLine": "{chars} chars · {lines} lines",
+
 };

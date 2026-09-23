@@ -29,14 +29,15 @@ export function createBlockRenderer({
 		play();
 	}
 
-	// 區塊「其他」使用掛在 document.body 的共用 popup，逃離 .block 的 transform 層疊／裁切上下文。
+	// The per-block "more" menu uses one shared popup mounted on document.body so
+	// it escapes .block's transform stacking / clipping context.
 	let morePopup = null;
 	let moreAnchorId = null;
 	let moreToggleEl = null;
 
-	// popup 逃離 .block 的 transform／裁切上下文(掛在 body 上),所以改成每次
-	// scroll 都從 toggle 的 getBoundingClientRect() 重新錨定,讓它像內聯的
-	// section .more-items 一樣跟著區塊走,而不是固定在畫面上。
+	// The popup escapes .block's transform / clipping context (hangs on body), so
+	// every scroll re-anchors it from the toggle's getBoundingClientRect(), making
+	// it scroll with the block like the inline section .more-items, not stay fixed.
 	function placeMore(toggle) {
 		const rect = toggle.getBoundingClientRect();
 		morePopup.style.left = (rect.right - morePopup.offsetWidth) + "px";
@@ -121,7 +122,7 @@ export function createBlockRenderer({
 		void popup.offsetWidth;
 		popup.classList.add("mo-pop");
 		placeMore(toggle);
-		// 跟著區塊在頁面／編輯器滾動,行為跟 section .more-items 一致。
+		// Scroll with the block in the page/editor, matching section .more-items.
 		window.addEventListener("scroll", repositionMore, true);
 	}
 

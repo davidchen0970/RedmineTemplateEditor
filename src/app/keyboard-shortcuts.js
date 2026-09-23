@@ -3,7 +3,7 @@ import { exportMermaidPng } from "../ui/output/mermaid-export.js";
 import { t } from "../i18n.js";
 
 // Single source of truth for every shortcut the app registers. The keydown handler
-// and the 快捷鍵 help dialog both read from this list so they can never drift.
+// and the shortcut-help dialog both read from this list so they can never drift.
 export const SHORTCUTS = [
 	{ code: "KeyC", keys: "Ctrl/⌘ + Shift + C", actionKey: "shortcut.copy" },
 	{ code: "KeyJ", keys: "Ctrl/⌘ + Shift + J", actionKey: "shortcut.json" },
@@ -70,7 +70,7 @@ export function setupKeyboardShortcuts({ getState, renderer, setExportStatus }) 
 				renderer.toast(t("toast.mermaid"));
 			}
 		} catch (error) {
-			console.error("快捷鍵失敗:", error);
+			console.error(t("shortcut.err.run", { msg: error.message || error }));
 		}
 	});
 }

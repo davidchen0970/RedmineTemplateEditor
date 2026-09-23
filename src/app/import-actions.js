@@ -5,6 +5,7 @@ import {
 	normalizeState,
 	createSection
 } from "../core/state.js";
+import { t } from "../i18n.js";
 
 export function splitPatch(text) {
 	return String(text || "").split(/^diff --git /m).filter(Boolean)
@@ -45,13 +46,13 @@ export function setupImportActions({
 		reader.onload = () => {
 			try {
 				const value = JSON.parse(reader.result);
-				if (!value.environment || !Array.isArray(value.sections)) throw Error("格式不符合");
+				if (!value.environment || !Array.isArray(value.sections)) throw Error(t("import.invalid"));
 				setState(normalizeState(value));
 				changed();
 				renderer.render();
-				renderer.toast("JSON 資料已匯入");
+				renderer.toast(t("import.toast.done"));
 			} catch (error) {
-				alert("JSON 匯入失敗：" + error.message);
+				alert(t("import.alert.fail", { msg: error.message }));
 			}
 		};
 		reader.readAsText(file);
@@ -70,7 +71,7 @@ export function setupImportActions({
 		reader.onload = async () => {
 			const files = splitPatch(reader.result);
 			const total = files.length;
-			if (!total) return alert("變更集匯入失敗：找不到差異區塊");
+			if (!total) return alert(t("import.patch.none"));
 
 			const state = getState();
 			let section = state.sections.find((item) => item.title === "實作流程");
@@ -86,22 +87,22 @@ export function setupImportActions({
 				section.blocks.push(unit);
 				converted++;
 				const percent = Math.round((converted / total) * 100);
-				renderer.showPatchProgress(`轉換檔案 ${converted}/${total}：${elide(item.name)}`, percent);
+				renderer.showPatchProgress(t("import.patch.progress", { converted, total, name: elide(item.name) }), percent);
 				await nextFrame();
 			}
 
 			changed();
 			renderer.render();
-			renderer.showPatchProgress(`已匯入 ${total} 個檔案！`, 100);
+			renderer.showPatchProgress(t("import.patch.done", { total }), 100);
 			renderer.hidePatchProgress();
-			renderer.toast(`已匯入 ${total} 個程式碼單元`);
+			renderer.toast(t("import.toast.patchDone", { total }));
 		};
 		reader.readAsText(file);
 		event.target.value = "";
 	};
 
 	document.getElementById("reset").onclick = () => {
-		if (!confirm("清除目前文件並重設？")) return;
+		if (!confirm(t("import.resetConfirm"))) return;
 		localStorage.removeItem(documentStateKey(getActiveId()));
 		setState(makeState());
 		changed();
