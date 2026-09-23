@@ -11,6 +11,8 @@ export const en = {
 	"settings.theme": "Dark mode",
 	"settings.shortcuts": "Keyboard Shortcuts",
 	"settings.blockLevel": "Show block level",
+	"blockLevel.hide": "Hide",
+	"blockLevel.show": "Show",
 	"close": "Close",
 
 	// shortcut help dialog + shortcut toasts

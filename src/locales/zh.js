@@ -11,6 +11,8 @@ export const zh = {
 	"settings.theme": "深色模式",
 	"settings.shortcuts": "快捷鍵",
 	"settings.blockLevel": "顯示區塊層級",
+	"blockLevel.hide": "隱藏",
+	"blockLevel.show": "顯示",
 	"close": "關閉",
 
 	// shortcut help dialog + shortcut toasts
