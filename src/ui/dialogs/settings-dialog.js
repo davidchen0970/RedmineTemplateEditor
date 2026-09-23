@@ -8,6 +8,7 @@ import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 const ROWS = [
 	{ id: "langToggle", key: "settings.lang" },
 	{ id: "themeToggle", key: "settings.theme" },
+	{ id: "blockLevelToggle", key: "settings.blockLevel" },
 	{ id: "shortcutHelp", key: "settings.shortcuts" },
 ];
 

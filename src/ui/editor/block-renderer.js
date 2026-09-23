@@ -13,7 +13,8 @@ export function createBlockRenderer({
 	findSection,
 	changed,
 	renderAll,
-	addBlock
+	addBlock,
+	getShowLevel
 }) {
 	function move(sectionId, blockId, direction) {
 		const section = findSection(sectionId);
@@ -231,7 +232,11 @@ export function createBlockRenderer({
 		const maxLevel = getMaxBlockLevel(section, index);
 		block.level = normalizeBlockLevel(block.level, maxLevel);
 		applyDefaults(block);
-		const element = createBlockElement(block, maxLevel, { open, onToggle });
+		const element = createBlockElement(block, maxLevel, {
+			open,
+			onToggle,
+			showLevel: getShowLevel ? getShowLevel() : true,
+		});
 		element.dataset.block = block.id;
 		renderContents(element, block);
 		bind(element, sectionId, block, maxLevel, index);

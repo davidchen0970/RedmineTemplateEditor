@@ -15,7 +15,8 @@ export function createRenderer(context) {
 		getExportStatus,
 		getLastSaveText,
 		changed,
-		onPresetClick
+		onPresetClick,
+		getShowLevel
 	} = context;
 	let sections;
 	const renderOut = () => renderOutput(getState(), getView());
@@ -31,7 +32,8 @@ export function createRenderer(context) {
 		findSection,
 		changed,
 		renderAll,
-		addBlock: dialog.add
+		addBlock: dialog.add,
+		getShowLevel
 	});
 	const forms = createFormRenderer({
 		getState,
