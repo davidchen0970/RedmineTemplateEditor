@@ -16,6 +16,7 @@ import { setupKeyboardShortcuts } from "./app/keyboard-shortcuts.js";
 import { setupShortcutHelp } from "./ui/dialogs/shortcut-help-dialog.js";
 import { setupTextBackgroundContextMenu } from "./ui/formatting/text-background-menu.js";
 import { setupTheme } from "./ui/theme/theme.js";
+import { setupBlockLevelToggle } from "./ui/theme/block-level.js";
 import { setupWorkspaceResize } from "./ui/shell/workspace-resize.js";
 import { setupImageReplacePicker } from "./ui/dialogs/image-replace-picker.js";
 import { setupSettingsDialog } from "./ui/dialogs/settings-dialog.js";
@@ -27,6 +28,7 @@ let view = "raw";
 let exportStatus = { json: false, txt: false };
 let lastSaveText = "";
 let renderDocumentPicker = () => {};
+const showBlockLevel = setupBlockLevelToggle(LEGACY_STORAGE_KEY + ":showBlockLevel");
 
 function save() {
 	saveState(state, activeDocumentId);
@@ -47,6 +49,7 @@ const renderer = createRenderer({
 	getExportStatus: () => exportStatus,
 	getLastSaveText: () => lastSaveText,
 	changed,
+	getShowLevel: () => showBlockLevel.isVisible(),
 	onPresetClick: (type) => {
 		if (!confirm("切換模板會取代目前表單，確定？")) return;
 		state = makeState(type);
@@ -154,6 +157,7 @@ bindViewButtons();
 bindEditorActions();
 setupShortcutHelp();
 setupTheme(LEGACY_STORAGE_KEY + ":theme");
+showBlockLevel.onChange(() => renderer.render());
 setupWorkspaceResize(LEGACY_STORAGE_KEY + ":workspaceLayout");
 setupKeyboardShortcuts({
 	getState: () => state,
