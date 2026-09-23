@@ -19,17 +19,23 @@ test("prompt: confirm resolves the typed value and cancel settles with none", as
 	const submit = new w.Event("submit", { bubbles: true, cancelable: true });
 	form.dispatchEvent(submit);
 	assert.equal(submit.defaultPrevented, true, "onsubmit guards against implicit dialog close");
-	assert.equal(box.hasAttribute("open"), false, "confirm closes the dialog");
+	assert.equal(box.hasAttribute("open"), false, "Enter submits and closes the dialog");
 	assert.deepEqual(confirmed, ["重命名"]);
+
+	openPrompt({ heading: "h", label: "l", value: "x", onConfirm: (value) => confirmed.push(value) });
+	box.querySelector("[data-value]").value = "點擊";
+	box.querySelector("[data-confirm]").click();
+	assert.equal(box.hasAttribute("open"), false, "clicking 確定 closes the dialog");
+	assert.deepEqual(confirmed, ["重命名", "點擊"]);
 
 	// Open again; cancel keeps onConfirm untouched.
 	openPrompt({ heading: "h", label: "l", value: "v", onConfirm: (value) => confirmed.push(value) });
 	box.querySelector("[data-cancel]").click();
-	assert.deepEqual(confirmed, ["重命名"], "cancel does not run onConfirm");
+	assert.deepEqual(confirmed, ["重命名", "點擊"], "cancel does not run onConfirm");
 
 	// A backdrop click (a click on the dialog's own background) dismisses too.
 	openPrompt({ heading: "h", label: "l", value: "v", onConfirm: (value) => confirmed.push(value) });
 	box.dispatchEvent(new w.Event("click", { bubbles: true }));
 	assert.equal(box.hasAttribute("open"), false, "backdrop closes the dialog");
-	assert.deepEqual(confirmed, ["重命名"], "backdrop does not run onConfirm");
+	assert.deepEqual(confirmed, ["重命名", "點擊"], "backdrop does not run onConfirm");
 });

@@ -21,13 +21,17 @@ function ensure() {
 		pending = null;
 		dialog.close();
 	};
-	dialog.querySelector("form").onsubmit = (event) => {
-		event.preventDefault();
+	const confirm = () => {
 		const job = pending;
 		pending = null;
 		const value = dialog.querySelector("[data-value]").value;
 		dialog.close();
 		if (job) job(value);
+	};
+	dialog.querySelector("[data-confirm]").onclick = confirm;
+	dialog.querySelector("form").onsubmit = (event) => {
+		event.preventDefault();
+		confirm();
 	};
 	// Clicking the backdrop dismisses like cancel (no confirm action runs).
 	dismissOnBackdrop(dialog, () => {
