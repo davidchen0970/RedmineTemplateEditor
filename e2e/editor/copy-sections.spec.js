@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 	});
 });
 
-test("複製段落 opens the section picker and cancels with a toast", async ({ page }) => {
+test("copy sections opens the section picker and cancels with a toast", async ({ page }) => {
 	await test.step("open the editor and the file group, hit #copySections", async () => {
 		await page.goto("/");
 		await page.locator('[data-header-action-group="file"] .header-action-group-toggle').click();
@@ -30,7 +30,7 @@ test("複製段落 opens the section picker and cancels with a toast", async ({ 
 	});
 });
 
-test("複製段落 backdrop click dismisses without copying", async ({ page }) => {
+test("copy sections backdrop click dismisses without copying", async ({ page }) => {
 	await test.step("open the picker", async () => {
 		await page.goto("/");
 		await page.locator('[data-header-action-group="file"] .header-action-group-toggle').click();
