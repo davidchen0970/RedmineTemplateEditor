@@ -40,8 +40,24 @@ export function createBlockRenderer({
 	// it scroll with the block like the inline section .more-items, not stay fixed.
 	function placeMore(toggle) {
 		const rect = toggle.getBoundingClientRect();
-		morePopup.style.left = (rect.right - morePopup.offsetWidth) + "px";
-		morePopup.style.top = (rect.bottom + 4) + "px";
+		const gap = 4;
+		const margin = 6;
+		const popRect = morePopup.getBoundingClientRect();
+		let top = rect.bottom + gap;
+		let flipped = false;
+		if (top + popRect.height > window.innerHeight - margin) {
+			top = rect.top - gap - popRect.height;
+			if (top < margin) top = margin;
+			flipped = true;
+		}
+		let left = rect.right - morePopup.offsetWidth;
+		if (left < margin) left = margin;
+		if (left + popRect.width > window.innerWidth - margin) {
+			left = window.innerWidth - margin - popRect.width;
+			if (left < margin) left = margin;
+		}
+		morePopup.style.left = left + "px";
+		morePopup.style.top = Math.max(margin, top) + "px";
 	}
 	function repositionMore() {
 		if (!morePopup || morePopup.hidden || !moreToggleEl) return;
