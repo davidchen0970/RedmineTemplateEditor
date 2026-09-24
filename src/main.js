@@ -69,6 +69,25 @@ function bindViewButtons() {
 }
 
 function bindEditorActions() {
+	// The section More Options menu (.more-items) is absolutely positioned and scrolls
+	// with its section, so it only needs a measurement on open and on scroll. When it
+	// would spill past the bottom viewport edge we flip it above its toggle and give it
+	// the rising pop-in, mirroring the block .more-popup handling instead of being
+	// pinned to the "last section" case.
+	const anchorMoreItems = (menu) => {
+		// Decide from the toggle's stable position plus the menu's untransformed
+		// height, never from the menu's own (possibly animated / already-flipped)
+		// bounds. Measuring its own bottom was the bug: once flipped up it "fits",
+		// so the next pass un-flipped it, and it jittered up/down forever.
+		const box = menu.closest("[data-more]");
+		const toggle = box.querySelector("[data-more-toggle]").getBoundingClientRect();
+		menu.classList.toggle("up", toggle.bottom + 4 + menu.offsetHeight > window.innerHeight - 6);
+	};
+	const anchorVisibleSectionMenus = () => {
+		document.querySelectorAll("[data-more] .more-items:not([hidden])").forEach((menu) => anchorMoreItems(menu));
+	};
+	window.addEventListener("scroll", anchorVisibleSectionMenus, true);
+
 	document.addEventListener("click", (event) => {
 		const moreToggle = event.target.closest("[data-more-toggle]");
 		if (moreToggle) {
@@ -76,7 +95,10 @@ function bindEditorActions() {
 			const all = [...document.querySelectorAll("[data-more] .more-items")];
 			all.forEach((menu) => { if (menu !== box.querySelector(".more-items")) menu.hidden = true; });
 			const menu = box.querySelector(".more-items");
-			if (menu) menu.hidden = !menu.hidden;
+			if (menu) {
+				menu.hidden = !menu.hidden;
+				if (!menu.hidden) anchorMoreItems(menu);
+			}
 			return;
 		}
 		document.querySelectorAll("[data-more] .more-items").forEach((menu) => { menu.hidden = true; });
