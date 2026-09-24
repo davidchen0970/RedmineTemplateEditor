@@ -199,6 +199,15 @@
 	display: none;
 }
 
+@keyframes mo-float-up {
+	from { opacity: 0; transform: translateY(-8px); }
+	to { opacity: 1; transform: none; }
+}
+
+.more-popup.flip {
+	animation: mo-float-up var(--mo) var(--mo-ease) both;
+}
+
 .more-popup button {
 	border: none;
 	background: transparent;

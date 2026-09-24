@@ -34,6 +34,7 @@ export function createBlockRenderer({
 	let morePopup = null;
 	let moreAnchorId = null;
 	let moreToggleEl = null;
+	let morePopupFlipped = false;
 
 	// The popup escapes .block's transform / clipping context (hangs on body), so
 	// every scroll re-anchors it from the toggle's getBoundingClientRect(), making
@@ -56,6 +57,16 @@ export function createBlockRenderer({
 			left = window.innerWidth - margin - popRect.width;
 			if (left < margin) left = margin;
 		}
+		if (flipped !== morePopupFlipped) {
+			morePopupFlipped = flipped;
+			if (flipped) {
+				morePopup.classList.remove("flip");
+				void morePopup.offsetWidth;
+				morePopup.classList.add("flip");
+			} else {
+				morePopup.classList.remove("flip");
+			}
+		}
 		morePopup.style.left = left + "px";
 		morePopup.style.top = Math.max(margin, top) + "px";
 	}
@@ -67,8 +78,10 @@ export function createBlockRenderer({
 		if (!morePopup) return;
 		morePopup.hidden = true;
 		morePopup.replaceChildren();
+		morePopup.classList.remove("flip");
 		moreAnchorId = null;
 		moreToggleEl = null;
+		morePopupFlipped = false;
 		window.removeEventListener("scroll", repositionMore, true);
 	}
 
