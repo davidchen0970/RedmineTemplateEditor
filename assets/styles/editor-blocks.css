@@ -175,9 +175,14 @@
 	display: none
 }
 
-.section:last-child .more-items {
+/* When the menu would spill past the bottom viewport edge, main.js flips it above its
+   toggle by adding .up. It then rises into view (mo-float-up) instead of using
+   mo-pop's drop-down translate, keeping the direction natural, just like the block
+   more-popup flip. */
+.more-items.up {
 	top: auto;
 	bottom: calc(100% + 4px);
+	animation: mo-float-up var(--mo) var(--mo-ease) both;
 }
 
 .more-popup {
@@ -197,6 +202,15 @@
 
 .more-popup[hidden] {
 	display: none;
+}
+
+@keyframes mo-float-up {
+	from { opacity: 0; transform: translateY(-8px); }
+	to { opacity: 1; transform: none; }
+}
+
+.more-popup.flip {
+	animation: mo-float-up var(--mo) var(--mo-ease) both;
 }
 
 .more-popup button {

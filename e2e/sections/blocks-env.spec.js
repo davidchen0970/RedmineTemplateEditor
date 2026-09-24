@@ -14,7 +14,7 @@ async function seedBlock(page, section) {
 	await expect(dialog).toBeHidden();
 }
 
-test("block 層級上限：第二塊層級被夾到前一塊+1", async ({ page }) => {
+test("block level is clamped to the previous block level plus one", async ({ page }) => {
 	await test.step("open the editor and seed two blocks", async () => {
 		await page.goto("/");
 		const section = page.locator("#sections .section").first();
@@ -43,7 +43,7 @@ test("block 層級上限：第二塊層級被夾到前一塊+1", async ({ page }
 	});
 });
 
-test("環境開關：勾選時環境值進 #out，取消後不進", async ({ page }) => {
+test("environment toggle includes values in output only when enabled", async ({ page }) => {
 	await test.step("open the editor and expand the 測試環境 panel", async () => {
 		await page.goto("/");
 		// Assumption: section-env starts collapsed (index.html) and clicking the
@@ -80,7 +80,7 @@ test("環境開關：勾選時環境值進 #out，取消後不進", async ({ pag
 	});
 });
 
-test("環境開關：envDelete 確認後將整段環境從 #out 移除", async ({ page }) => {
+test("environment delete removes the environment from output after confirmation", async ({ page }) => {
 	await test.step("add a custom environment value", async () => {
 		await page.goto("/");
 		await page.click("#envAddItem");

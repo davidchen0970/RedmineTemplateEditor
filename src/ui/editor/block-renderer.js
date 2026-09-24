@@ -34,14 +34,41 @@ export function createBlockRenderer({
 	let morePopup = null;
 	let moreAnchorId = null;
 	let moreToggleEl = null;
+	let morePopupFlipped = false;
 
 	// The popup escapes .block's transform / clipping context (hangs on body), so
 	// every scroll re-anchors it from the toggle's getBoundingClientRect(), making
 	// it scroll with the block like the inline section .more-items, not stay fixed.
 	function placeMore(toggle) {
 		const rect = toggle.getBoundingClientRect();
-		morePopup.style.left = (rect.right - morePopup.offsetWidth) + "px";
-		morePopup.style.top = (rect.bottom + 4) + "px";
+		const gap = 4;
+		const margin = 6;
+		const popRect = morePopup.getBoundingClientRect();
+		let top = rect.bottom + gap;
+		let flipped = false;
+		if (top + popRect.height > window.innerHeight - margin) {
+			top = rect.top - gap - popRect.height;
+			if (top < margin) top = margin;
+			flipped = true;
+		}
+		let left = rect.right - morePopup.offsetWidth;
+		if (left < margin) left = margin;
+		if (left + popRect.width > window.innerWidth - margin) {
+			left = window.innerWidth - margin - popRect.width;
+			if (left < margin) left = margin;
+		}
+		if (flipped !== morePopupFlipped) {
+			morePopupFlipped = flipped;
+			if (flipped) {
+				morePopup.classList.remove("flip");
+				void morePopup.offsetWidth;
+				morePopup.classList.add("flip");
+			} else {
+				morePopup.classList.remove("flip");
+			}
+		}
+		morePopup.style.left = left + "px";
+		morePopup.style.top = Math.max(margin, top) + "px";
 	}
 	function repositionMore() {
 		if (!morePopup || morePopup.hidden || !moreToggleEl) return;
@@ -51,8 +78,10 @@ export function createBlockRenderer({
 		if (!morePopup) return;
 		morePopup.hidden = true;
 		morePopup.replaceChildren();
+		morePopup.classList.remove("flip");
 		moreAnchorId = null;
 		moreToggleEl = null;
+		morePopupFlipped = false;
 		window.removeEventListener("scroll", repositionMore, true);
 	}
 

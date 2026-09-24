@@ -12,14 +12,13 @@ async function seedBlock(page, section) {
 	await expect(dialog).toBeHidden();
 }
 
-test("新增段落 adds a section", async ({ page }) => {
+test("add section button can add a section", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const sections = page.locator("#sections .section");
 	const before = await sections.count();
 	await test.step("open the section menu and add a section", async () => {
 		const section = sections.first();
 		await section.locator("[data-more-toggle]").first().click();
-		// 新增段落 opens a prompt dialog; it must be named and confirmed.
 		await section.locator("[data-more]").first().locator("[data-add-section]").click();
 		await expect(page.locator("[data-value]")).toBeVisible();
 		await page.locator("[data-value]").fill(`e2e-section-${Date.now()}`);
@@ -31,7 +30,7 @@ test("新增段落 adds a section", async ({ page }) => {
 	});
 });
 
-test("新增段落 at the form bottom adds a section", async ({ page }) => {
+test("add section button at the form bottom can add a section", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const sections = page.locator("#sections .section");
 	const before = await sections.count();
@@ -49,7 +48,7 @@ test("新增段落 at the form bottom adds a section", async ({ page }) => {
 	});
 });
 
-test("複製 duplicates a block in its section", async ({ page }) => {
+test("copy button duplicates a block in its section", async ({ page }) => {
 	await test.step("open the editor and seed a block", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first());
@@ -65,7 +64,7 @@ test("複製 duplicates a block in its section", async ({ page }) => {
 	});
 });
 
-test("刪除 removes a block after confirming", async ({ page }) => {
+test("delete button removes a block after confirming", async ({ page }) => {
 	await test.step("open the editor and seed a block", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first());
@@ -87,7 +86,7 @@ test("刪除 removes a block after confirming", async ({ page }) => {
 	});
 });
 
-test("block 其他 menu rides its block while the page scrolls", async ({ page }) => {
+test("block more menu rides its block while the page scrolls", async ({ page }) => {
 	await test.step("open the editor, seed a block, and make the page scrollable", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first());

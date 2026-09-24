@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("summary lines become 結論 bullets in the Textile", async ({ page }) => {
+test("summary lines become conclusion bullets in the Textile", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	await test.step("fill the summary", async () => {
 		await page.fill("#summary", "機器重開後HANG");

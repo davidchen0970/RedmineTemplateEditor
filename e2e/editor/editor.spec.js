@@ -40,9 +40,6 @@ test("theme toggle flips body back and forth light/dark", async ({ page }) => {
 		await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
 	});
 	await test.step("toggle to dark", async () => {
-		// The theme toggle now lives inside the 設定 dialog: open the 更多 group,
-		// then its #settingsOpen opener, then the row. Clicking the group panel
-		// button auto-collapses the group, but the dialog stays up.
 		await page.locator('[data-header-action-group="more"] .header-action-group-toggle').click();
 		await page.click("#settingsOpen");
 		await page.click("#themeToggle");
@@ -55,7 +52,7 @@ test("theme toggle flips body back and forth light/dark", async ({ page }) => {
 	});
 });
 
-test("adds an implementation block from the 其他 menu and dialog", async ({ page }) => {
+test("adds an implementation block from the more menu and dialog", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const section = page.locator("#sections .section").first();
 	await test.step("open the add-block dialog", async () => {
@@ -63,10 +60,8 @@ test("adds an implementation block from the 其他 menu and dialog", async ({ pa
 		await section.locator("[data-more]").first().locator("[data-add]").click();
 		const dialog = page.locator("dialog#abDialog");
 		await expect(dialog).toBeVisible();
-		// Implementation fields: a 語言 input and a 內容 textarea.
 		await expect(dialog.locator("#abMain input")).toBeVisible();
 		await expect(dialog.locator("#abMain textarea")).toBeVisible();
-		// The less common fields fold behind the 其他 collapsible.
 		await expect(dialog.locator("#abExtraWrap")).toBeVisible();
 	});
 	await test.step("fill the implementation and submit", async () => {

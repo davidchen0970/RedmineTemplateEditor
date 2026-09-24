@@ -83,7 +83,6 @@ test("reset clears the active document back to the preset default", async ({ pag
 		// import-actions.js:103-109 uses window.confirm(...); Playwright surfaces it
 		// as a page dialog. Accepting makes confirm() return true and proceeds with reset.
 		page.once("dialog", (dialog) => dialog.accept());
-		// #reset now lives in the folded "更多" (more) group; open it first.
 		await page.locator('[data-header-action-group="more"] .header-action-group-toggle').click();
 		await page.locator("#reset").click();
 	});

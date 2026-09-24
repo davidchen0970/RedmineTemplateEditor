@@ -30,7 +30,7 @@ async function enableFirstSection(page) {
 	await page.locator("#sections .section").first().locator("[data-se]").first().check();
 }
 
-test("block 上移/下移 swaps block order in the section", async ({ page }) => {
+test("block move up/down swaps block order in the section", async ({ page }) => {
 	await test.step("open the editor and seed two distinguishable blocks", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first(), { content: "int a;" });
@@ -53,7 +53,7 @@ test("block 上移/下移 swaps block order in the section", async ({ page }) =>
 	});
 });
 
-test("block type 切換 to implementation re-applies defaults and work path", async ({ page }) => {
+test("switching block type to implementation re-applies defaults and work path", async ({ page }) => {
 	await test.step("open the editor and seed one block in an enabled section", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first(), { content: "int x;" });
@@ -75,7 +75,7 @@ test("block type 切換 to implementation re-applies defaults and work path", as
 	});
 });
 
-test("新增內容 pushes a second content segment into the block output", async ({ page }) => {
+test("add content pushes a second content segment into the block output", async ({ page }) => {
 	await test.step("open the editor and seed one block in an enabled section", async () => {
 		await page.goto("/");
 		await seedBlock(page, page.locator("#sections .section").first(), { content: "int x;" });

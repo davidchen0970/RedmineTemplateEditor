@@ -36,7 +36,7 @@ async function seedBlock(page, section, title = "seed-block") {
 	await expect(dialog).toBeHidden();
 }
 
-test("複製段落 duplicates a section", async ({ page }) => {
+test("duplicate section button duplicates a section", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const sections = page.locator("#sections .section");
 	const before = await sections.count();
@@ -50,7 +50,7 @@ test("複製段落 duplicates a section", async ({ page }) => {
 	});
 });
 
-test("上移/下移 reorders sections", async ({ page }) => {
+test("move up/down button reorders sections", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const sections = page.locator("#sections .section");
 	const titleOf = (nth) => sections.nth(nth).locator("[data-title]").first();
@@ -69,7 +69,7 @@ test("上移/下移 reorders sections", async ({ page }) => {
 	});
 });
 
-test("改段落標題 reflects into #out as h3.", async ({ page }) => {
+test("changing the section title button reflects into #out as h3.", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const section = page.locator("#sections .section").first();
 	const ts = Date.now();
@@ -92,7 +92,7 @@ test("改段落標題 reflects into #out as h3.", async ({ page }) => {
 	});
 });
 
-test("子項目有序/無序 toggle switches #/* markers in #out", async ({ page }) => {
+test("ordered/unordered item button toggle switches #/* markers in #out", async ({ page }) => {
 	await test.step("open the editor", () => page.goto("/"));
 	const section = page.locator("#sections .section").first();
 	const ts = Date.now();
