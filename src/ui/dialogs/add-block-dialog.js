@@ -62,6 +62,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 	let pendingIndex;
 	let selectedType = "implementation";
 	let pendingDiffFiles = [];
+	let lastRenderedType = null;
 
 	function insertionIndex(section) {
 		if (typeof pendingIndex !== "number") return section.blocks.length;
@@ -102,9 +103,14 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 		const fields = fieldsFor(selectedType);
 		const title = dialog.querySelector("#abTitle");
 		const isPlain = selectedType === "plainText";
+		const typeChanged = selectedType !== lastRenderedType;
+		lastRenderedType = selectedType;
 		title.disabled = isPlain;
 		title.placeholder = isPlain ? t("block.titleUnavailable") : "";
-		title.value = isPlain ? "" : defaultTitle(selectedType);
+		// Reset the title only when the block type changes; a same-type re-render
+		// (card re-click, i18n switch) must keep whatever the user already typed.
+		if (isPlain) title.value = "";
+		else if (typeChanged) title.value = defaultTitle(selectedType);
 
 		const mainRoot = dialog.querySelector("#abMain");
 		mainRoot.replaceChildren();
@@ -325,6 +331,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 			return;
 		}
 		pendingSectionId = sectionId;
+		lastRenderedType = null;
 		const dialog = ensure();
 		applyStaticText(dialog);
 		renderFields(dialog);
