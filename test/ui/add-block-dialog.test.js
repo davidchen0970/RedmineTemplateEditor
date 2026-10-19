@@ -12,6 +12,8 @@
 //      switching away from diff clears the staged preview and re-enables it.
 //   5. the submitted level is clamped to getMaxBlockLevel at the insertion point
 //      (first block max 1, a level-1 first block makes the second max 2).
+//   6. in the implementation extra group (#abExtra) the showWorkPath checkbox is the
+//      FIRST field, is a field-checkbox (inline layout), and defaults to checked.
 //
 // The real browser-ism path (scrollIntoView, markEntering) degrades gracefully in
 // jsdom: blockCard() finds no `.block[data-block=<id>]` node, so both are
@@ -166,4 +168,28 @@ test("submitted level is clamped to getMaxBlockLevel at the insertion point", ()
 	dialog.querySelector("#abLevel").value = 99;
 	submit(dialog);
 	assert.equal(state.sections[0].blocks[1].level, 2);
+});
+
+test("implementation extras: showWorkPath checkbox is first, inline, and default-checked", () => {
+	const { api } = makeDialog();
+	api.add("s1");
+	const dialog = dialogEl();
+	const extra = dialog.querySelector("#abExtra");
+
+	// The work-path group fields render in IMPL_EXTRAS order: showWorkPath must be the
+	// first field so its toggle sits above the editable work-path inputs.
+	const first = extra.children[0];
+	assert.equal(first.querySelector("[data-ab='showWorkPath']") !== null, true);
+	assert.equal(first.classList.contains("field-checkbox"), true);
+	assert.equal(first.querySelector("[data-ab='showWorkPath']").type, "checkbox");
+	assert.equal(first.querySelector("[data-ab='showWorkPath']").checked, true);
+
+	// showWorkPath precedes the workPathTitle input in the same group.
+	const showPathIdx = Array.from(extra.children).findIndex(
+		(el) => el.querySelector("[data-ab='showWorkPath']"),
+	);
+	const workPathTitleIdx = Array.from(extra.children).findIndex(
+		(el) => el.querySelector("[data-ab='workPathTitle']"),
+	);
+	assert.ok(showPathIdx >= 0 && showPathIdx < workPathTitleIdx);
 });
