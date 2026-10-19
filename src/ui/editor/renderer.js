@@ -25,7 +25,8 @@ export function createRenderer(context) {
 	const dialog = createAddBlockDialog({
 		findSection,
 		changed,
-		renderAll
+		renderAll,
+		getState
 	});
 	const blocks = createBlockRenderer({
 		getState,

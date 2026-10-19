@@ -5,6 +5,7 @@ import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 import { blockCard } from "../dom/card.js";
 import { splitPatch } from "../../app/import-actions.js";
 import { applyStaticText, t } from "../../i18n.js";
+import { ensureUiState } from "../editor/ui-state.js";
 
 const IMPL_EXTRAS = [
 	{ n: "workPathTitle", label: "block.workPathTitle", kind: "text", def: "work path" },
@@ -56,7 +57,7 @@ function fieldsFor(type) {
 	return TYPE_FIELDS[type] || DEFAULT_FIELDS;
 }
 
-export function createAddBlockDialog({ findSection, changed, renderAll }) {
+export function createAddBlockDialog({ findSection, changed, renderAll, getState }) {
 	let pendingSectionId = null;
 	let pendingIndex;
 	let selectedType = "implementation";
@@ -201,6 +202,19 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 		return block(type, title, reads(dialog, "content") || "");
 	}
 
+	// Force the hosting section open so a just-added block is visible in a
+	// section that defaults to collapsed.
+	function expandSection(sectionId) {
+		if (!getState || !sectionId) return;
+		const ui = ensureUiState(getState());
+		ui.collapsed.sections[sectionId] = false;
+	}
+
+	function revealBlock(blockId) {
+		const element = blockCard(blockId);
+		if (element) element.scrollIntoView({ block: "center", behavior: "smooth" });
+	}
+
 	function ensure() {
 		let dialog = document.getElementById("abDialog");
 		if (dialog) return dialog;
@@ -265,9 +279,11 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 				pendingSectionId = null;
 				pendingIndex = undefined;
 				dialog.close();
+				expandSection(section.id);
 				changed();
 				renderAll({ openBlockId: openId });
 				markEntering(openId, blockCard);
+				revealBlock(openId);
 				return;
 			}
 			const newBlock = buildBlock(dialog, type, title);
@@ -277,9 +293,11 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			pendingSectionId = null;
 			pendingIndex = undefined;
 			dialog.close();
+			expandSection(section.id);
 			changed();
 			renderAll({ openBlockId: newBlock.id });
 			markEntering(newBlock.id, blockCard);
+			revealBlock(newBlock.id);
 		};
 		renderTypeCards(typeRoot, dialog);
 		renderFields(dialog);
@@ -300,8 +318,10 @@ export function createAddBlockDialog({ findSection, changed, renderAll }) {
 			newBlock.level = 1;
 			const target = insertionIndex(targetSection);
 			targetSection.blocks.splice(target, 0, newBlock);
+			expandSection(sectionId);
 			changed();
 			renderAll({ openBlockId: newBlock.id });
+			revealBlock(newBlock.id);
 			return;
 		}
 		pendingSectionId = sectionId;
