@@ -331,9 +331,11 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 			return;
 		}
 		pendingSectionId = sectionId;
+		selectedType = "implementation";
 		lastRenderedType = null;
 		const dialog = ensure();
 		applyStaticText(dialog);
+		renderTypeCards(dialog.querySelector("#abTypes"), dialog);
 		renderFields(dialog);
 		dialog.querySelector("#abLevel").value = 1;
 		dialog.showModal();
