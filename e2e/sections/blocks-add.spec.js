@@ -57,3 +57,24 @@ test("submitting the dialog auto-expands the hosting section so the new block sh
 		await expect(section.locator(".section-body [data-block]").first()).toBeVisible();
 	});
 });
+
+test("same type card click keeps the typed title; a different card resets it", async ({ page }) => {
+	await test.step("open the editor", () => page.goto("/"));
+	const section = page.locator("#sections .section").first();
+	const dialog = await openAddDialog(page, section);
+	await test.step("type a custom title then re-click the active implementation card", async () => {
+		await dialog.locator("#abTitle").fill("my-custom-title");
+		await dialog.locator("#abTypes [data-ab-type='implementation']").click();
+		// Same type: selectedType stays "implementation" and lastRenderedType already
+		// matches (add-block-dialog.js:106), so the title reset branch is skipped and
+		// the user's own text survives (comment at lines 110-111).
+		await expect(dialog.locator("#abTitle")).toHaveValue("my-custom-title");
+	});
+	await test.step("click the text card: the type changed, so the title resets", async () => {
+		await dialog.locator("#abTypes [data-ab-type='text']").click();
+		// typeChanged=true now resets #abTitle to defaultTitle("text") = "" (line 113).
+		await expect(dialog.locator("#abTitle")).toHaveValue("");
+		await dialog.locator("#abCancel").click();
+		await expect(dialog).toBeHidden();
+	});
+});

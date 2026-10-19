@@ -5,6 +5,8 @@
 //   1. a successful submit forces the hosting section open
 //      (ui.collapsed.sections[sectionId] = false) via expandSection, observed
 //      through the renderAll spy + shared state.
+//   2. re-clicking the SAME type card keeps the typed title; only switching to a
+//      DIFFERENT type resets it to that type's default.
 //
 // The real browser-ism path (scrollIntoView, markEntering) degrades gracefully in
 // jsdom: blockCard() finds no `.block[data-block=<id>]` node, so both are
@@ -46,6 +48,15 @@ function dialogEl() {
 	return document.getElementById("abDialog");
 }
 
+function activeType(dialog) {
+	const card = dialog.querySelector("#abTypes .card.active");
+	return card ? card.dataset.abType : null;
+}
+
+function clickType(dialog, type) {
+	dialog.querySelector(`#abTypes [data-ab-type="${type}"]`).click();
+}
+
 function submit(dialog) {
 	dialog.querySelector("#abForm").dispatchEvent(
 		new window.Event("submit", { bubbles: true, cancelable: true }),
@@ -69,4 +80,17 @@ test("successful submit expands the hosting section and renders with the block i
 	assert.deepEqual(seen, [{ openBlockId: block.id }]);
 	assert.equal(block.type, "implementation");
 	assert.equal(block.level, 1);
+});
+
+test("same-type card re-click keeps the typed title; switching type resets it", () => {
+	const { api } = makeDialog();
+	api.add("s1");
+	const dialog = dialogEl();
+	const title = dialog.querySelector("#abTitle");
+	title.value = "keep me";
+	clickType(dialog, "implementation"); // same type: typeChanged === false
+	assert.equal(title.value, "keep me");
+
+	clickType(dialog, "text"); // different type: title becomes that type's default
+	assert.equal(title.value, defaultTitle("text"));
 });
