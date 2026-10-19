@@ -8,10 +8,10 @@ import { applyStaticText, t } from "../../i18n.js";
 import { ensureUiState, getMaxBlockLevel, normalizeBlockLevel } from "../editor/ui-state.js";
 
 const IMPL_EXTRAS = [
+	{ n: "showWorkPath", label: "block.showWorkPath", kind: "checkbox", def: true },
 	{ n: "workPathTitle", label: "block.workPathTitle", kind: "text", def: t("block.workPath") },
 	{ n: "workPath", label: "block.workPath", kind: "textarea", def: "(docker)$ pwd" },
 	{ n: "description", label: "Description", kind: "textarea", def: "" },
-	{ n: "showWorkPath", label: "block.showWorkPath", kind: "checkbox", def: true },
 ];
 
 // Per type: `main` fields render fully, `extra` folds behind a "block.more" collapsible.
@@ -76,6 +76,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 		caption.textContent = t(field.label);
 		const control = document.createElement(field.kind === "textarea" ? "textarea" : "input");
 		if (field.kind === "checkbox") {
+			wrapper.className += " field-checkbox";
 			control.type = "checkbox";
 			if (field.def) control.checked = true;
 		} else if (field.kind === "file") {

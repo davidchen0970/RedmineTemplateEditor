@@ -296,6 +296,19 @@
 	max-height: min(70vh, 560px);
 	overflow: auto
 }
+/* Show-work-path checkbox sits on one line with its caption, ahead of the
+   path title/path textareas in the "more" group. Overrides `.field`'s
+   block/full-width input rules (forms-components.css) for this dialog only. */
+.add-block-dialog .field-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 8px
+}
+.add-block-dialog .field-checkbox input[type="checkbox"] {
+	width: auto;
+	flex: 0 0 auto;
+	margin: 0
+}
 .add-block-dialog #ndSections {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
