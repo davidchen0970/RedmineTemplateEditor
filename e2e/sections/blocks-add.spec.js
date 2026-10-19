@@ -105,3 +105,25 @@ test("reopening the dialog resets the type to implementation and its default tit
 		await expect(dialog).toBeHidden();
 	});
 });
+
+test("level is clamped to the insertion point: first block stays at level 1", async ({ page }) => {
+	await test.step("open the editor", () => page.goto("/"));
+	const section = page.locator("#sections .section").first();
+
+	await test.step("add a block with an overstated level of 99", async () => {
+		const dialog = await openAddDialog(page, section);
+		await dialog.locator("#abTitle").fill("first-block");
+		await dialog.locator("#abMain textarea").fill("int x;");
+		await dialog.locator("#abLevel").fill("99");
+		await dialog.locator("#abForm button[type=submit]").click();
+		await expect(dialog).toBeHidden();
+	});
+
+	await test.step("the seated block renders at level 1 regardless of the typed 99", async () => {
+		// Insertion index 0 has no previous block -> getMaxBlockLevel returns 1
+		// (ui-state.js:19-21) and onsubmit clamps via normalizeBlockLevel (add-block-
+		// dialog.js:287-288), so block.level lands at 1 and data-blevel shows "1"
+		// (block-view.js:97).
+		await expect(page.locator("#sections [data-block] [data-blevel]")).toHaveValue("1");
+	});
+});

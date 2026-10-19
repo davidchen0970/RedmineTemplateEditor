@@ -10,6 +10,8 @@
 //   3. every `add()` resets selectedType back to "implementation" (no stale type).
 //   4. diff type: staging an uploaded file disables the pasted-content textarea;
 //      switching away from diff clears the staged preview and re-enables it.
+//   5. the submitted level is clamped to getMaxBlockLevel at the insertion point
+//      (first block max 1, a level-1 first block makes the second max 2).
 //
 // The real browser-ism path (scrollIntoView, markEntering) degrades gracefully in
 // jsdom: blockCard() finds no `.block[data-block=<id>]` node, so both are
@@ -147,4 +149,21 @@ test("diff: uploaded diff disables the pasted-content field; leaving diff clears
 	assert.equal(dialog.querySelector('[data-ab="content"]').disabled, false);
 	assert.equal(preview.hidden, true);
 	assert.equal(preview.children.length, 0);
+});
+
+test("submitted level is clamped to getMaxBlockLevel at the insertion point", () => {
+	const { state, api } = makeDialog();
+	// First block in an empty section sits at index 0 -> max level 1.
+	api.add("s1");
+	let dialog = dialogEl();
+	dialog.querySelector("#abLevel").value = 99;
+	submit(dialog);
+	assert.equal(state.sections[0].blocks[0].level, 1);
+
+	// Second block lands after a level-1 block -> max level 2.
+	api.add("s1");
+	dialog = dialogEl();
+	dialog.querySelector("#abLevel").value = 99;
+	submit(dialog);
+	assert.equal(state.sections[0].blocks[1].level, 2);
 });
