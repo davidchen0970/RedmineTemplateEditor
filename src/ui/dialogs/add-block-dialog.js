@@ -142,6 +142,11 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 	function renderDiffPreview(dialog) {
 		const root = dialog.querySelector("#abDiffPreview");
 		if (!root) return;
+		// "Upload file" and "paste content" are mutually exclusive: once a diff
+		// file is staged, the pasted-content field is disabled so the user does
+		// not type something that would be silently discarded on submit.
+		const content = dialog.querySelector('[data-ab="content"]');
+		if (content) content.disabled = selectedType === "diff" && pendingDiffFiles.length > 0;
 		const show = selectedType === "diff" && pendingDiffFiles.length > 0;
 		root.hidden = !show;
 		if (!show) { root.replaceChildren(); return; }
@@ -185,6 +190,10 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 			card.appendChild(strong);
 			card.appendChild(caption);
 			card.onclick = () => {
+				// Staged diff files with their preview belong to the diff type only;
+				// dropping them when switching away avoids stale previews and a
+				// content field that stays disabled after returning to diff.
+				if (type !== "diff") pendingDiffFiles = [];
 				selectedType = type;
 				renderFields(dialog);
 				renderTypeCards(typeRoot, dialog);
