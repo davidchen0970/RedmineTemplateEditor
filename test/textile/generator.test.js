@@ -116,9 +116,10 @@ test("status PASS / FAILED / WIP each carry their textile color span", () => {
 	}
 });
 
-test("N/A status emits no 結論 h3 at all", () => {
+test("N/A status keeps the 結論 block but drops the 執行狀態 line", () => {
 	const out = textile(stateWith([], { status: "N/A" }));
-	assert.ok(!/n3\. 結論|結論/.test(out));
+	assert.match(out, /h3\. 結論/);
+	assert.doesNotMatch(out, /執行狀態/);
 });
 
 test("summary lines become textile bullets", () => {

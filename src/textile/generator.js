@@ -102,8 +102,8 @@ export function textile(state) {
 	}
 
 	outputLines.push("");
+	addH3(outputLines, "結論");
 	if (state.status !== "N/A") {
-		addH3(outputLines, "結論");
 		outputLines.push("執行狀態: " + status(state.status));
 	}
 	const summaryLines = toNonEmptyTrimmedLines(state.summary);
