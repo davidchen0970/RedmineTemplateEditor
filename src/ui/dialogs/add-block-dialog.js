@@ -5,7 +5,7 @@ import { dismissOnBackdrop } from "./dismiss-on-backdrop.js";
 import { blockCard } from "../dom/card.js";
 import { splitPatch } from "../../app/import-actions.js";
 import { applyStaticText, t } from "../../i18n.js";
-import { ensureUiState } from "../editor/ui-state.js";
+import { ensureUiState, getMaxBlockLevel, normalizeBlockLevel } from "../editor/ui-state.js";
 
 const IMPL_EXTRAS = [
 	{ n: "workPathTitle", label: "block.workPathTitle", kind: "text", def: t("block.workPath") },
@@ -280,10 +280,14 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 			const type = selectedType;
 			const title = dialog.querySelector("#abTitle").value || defaultTitle(type);
 			const section = findSection(pendingSectionId);
-			const level = Math.max(1, Math.floor(Number(dialog.querySelector("#abLevel").value) || 1));
+			let target = insertionIndex(section);
+			// Clamp the chosen level to what the insertion point actually allows:
+			// at most the previous block's level + 1 (first block stays at 1), so
+			// the stored value never needs to be silently re-normalized on render.
+			const maxLevel = getMaxBlockLevel(section, target);
+			const level = normalizeBlockLevel(dialog.querySelector("#abLevel").value, maxLevel);
 			const chosen = pendingDiffFiles.filter((item) => item.selected);
 			if (type === "diff" && chosen.length) {
-				let target = insertionIndex(section);
 				let openId = null;
 				for (const unit of buildDiffUnits(chosen, level)) {
 					section.blocks.splice(target, 0, unit);
@@ -303,7 +307,6 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 			}
 			const newBlock = buildBlock(dialog, type, title);
 			newBlock.level = level;
-			const target = insertionIndex(section);
 			section.blocks.splice(target, 0, newBlock);
 			pendingSectionId = null;
 			pendingIndex = undefined;
@@ -347,6 +350,10 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 		renderTypeCards(dialog.querySelector("#abTypes"), dialog);
 		renderFields(dialog);
 		dialog.querySelector("#abLevel").value = 1;
+		// Surface the highest level the insertion point allows so the user cannot
+		// type (and have silently re-normalized) a level that exceeds it.
+		const section = findSection(sectionId);
+		if (section) dialog.querySelector("#abLevel").max = getMaxBlockLevel(section, insertionIndex(section));
 		dialog.showModal();
 		const titleInput = dialog.querySelector("#abTitle");
 		if (!titleInput.disabled) {
