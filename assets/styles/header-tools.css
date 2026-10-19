@@ -82,8 +82,13 @@ body[data-theme="dark"] .top-actions.header-collapsible button {
 	gap: 8px;
 }
 
-#workPath{
+.field-header .work-path-toggle {
 	width: 20px;
+	height: 16px;
+	flex: 0 0 auto;
+	margin: 0.1em 0 0;
+	accent-color: var(--primary);
+	vertical-align: middle;
 }
 
 .text-color-menu {

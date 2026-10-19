@@ -61,7 +61,7 @@ export function createBlockElement(block, maxLevel, { open = false, onToggle = n
 		<label class="field">
 			<div class="field-header">
 				<span data-work-label>${workTitle || "work path"}</span>
-				<input id="workPath" type="checkbox" data-show-work ${showWorkChecked}>
+				<input class="work-path-toggle" type="checkbox" data-show-work ${showWorkChecked}>
 			</div>
 			<div class="work-path-fields" data-work-fields ${block.showWorkPath === false ? "hidden" : ""}>
 				<input data-work-title value="${workTitle}">

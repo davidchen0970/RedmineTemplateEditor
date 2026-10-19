@@ -46,6 +46,22 @@
 	background: var(--panel-2)
 }
 
+.work-path-fields {
+	margin-top: 8px;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 6px;
+}
+
+.work-path-fields input,
+.work-path-fields textarea {
+	margin-top: 0;
+}
+
+.work-path-fields textarea {
+	min-height: 60px;
+}
+
 .actions {
 	display: flex;
 	flex-wrap: wrap;
