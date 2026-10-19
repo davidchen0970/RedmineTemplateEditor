@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { sectionsTextile, textile } from "../../src/textile/generator.js";
 import {
+	createImplementationBlock,
 	createSection,
 	makeState,
 } from "../../src/core/state.js";
+import { getLocale, setLocale } from "../../src/i18n.js";
 import { makeBlock, stateWithEnvironment, stateWithImplementation, stateWithMermaid } from "../_fixtures.js";
 
 test("environment emits only enabled and filled items", () => {
@@ -82,7 +84,63 @@ test("textile emits an implementation block with title, work path and per-conten
 	assert.match(out, /# api\.c/);
 	assert.match(out, /<pre><code class="c">/);
 	assert.match(out, /int x;/);
-	assert.match(out, /work path/);
+	assert.match(out, /{{collapse\((工作路徑|Working Path|work path)\)/);
+});
+
+test("empty workPathTitle always falls back to a localized, non-empty collapse label", () => {
+	const original = getLocale();
+	try {
+		for (const [locale, label] of [
+			["zh", "工作路徑"],
+			["en", "Working Path"],
+		]) {
+			setLocale(locale);
+			const out = textile(stateWithImplementation());
+			assert.match(out, new RegExp(`\\{\\{collapse\\(${label}\\)`));
+			// never an empty {{collapse()}}
+			assert.doesNotMatch(out, /\{\{collapse\(\)/);
+		}
+	} finally {
+		setLocale(original);
+	}
+});
+
+test("custom workPathTitle is emitted verbatim, independent of locale", () => {
+	const original = getLocale();
+	try {
+		const block = createImplementationBlock("api.c", "(docker)$ pwd", "shell", "echo hi", "", "source dir");
+		const s = makeState();
+		s.sections = [createSection("實作", true, [block])];
+		for (const locale of ["zh", "en"]) {
+			setLocale(locale);
+			const out = textile(s);
+			assert.match(out, /{{collapse\(source dir\)/);
+			assert.doesNotMatch(out, /工作路徑|Working Path/);
+		}
+	} finally {
+		setLocale(original);
+	}
+});
+
+test("showWorkPath false omits the collapse work-path block", () => {
+	const block = createImplementationBlock("api.c", "(docker)$ pwd", "shell", "echo hi", "", "", false);
+	const s = makeState();
+	s.sections = [createSection("實作", true, [block])];
+	const out = textile(s);
+	assert.doesNotMatch(out, /\{\{collapse/);
+});
+
+test("implementation block with a blank title falls back to api.c", () => {
+	const block = createImplementationBlock("  ", "(docker)$ pwd", "shell", "echo hi");
+	const s = makeState();
+	s.sections = [createSection("實作", true, [block])];
+	const out = textile(s);
+	assert.match(out, /# api\.c/);
+});
+
+test("collapse label, title and contents are emitted together", () => {
+	const out = textile(stateWithImplementation());
+	assert.match(out, /# api\.c[\s\S]*\{\{collapse\((工作路徑|Working Path|work path)\)[\s\S]*<pre><code class="c">[\s\S]*int x;/);
 });
 
 test("textile keeps the relatedRef line", () => {
