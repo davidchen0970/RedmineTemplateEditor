@@ -8,6 +8,8 @@
 //   2. re-clicking the SAME type card keeps the typed title; only switching to a
 //      DIFFERENT type resets it to that type's default.
 //   3. every `add()` resets selectedType back to "implementation" (no stale type).
+//   4. diff type: staging an uploaded file disables the pasted-content textarea;
+//      switching away from diff clears the staged preview and re-enables it.
 //
 // The real browser-ism path (scrollIntoView, markEntering) degrades gracefully in
 // jsdom: blockCard() finds no `.block[data-block=<id>]` node, so both are
@@ -111,4 +113,38 @@ test("add() always resets to implementation even after picking another type", ()
 	dialog = dialogEl();
 	assert.equal(activeType(dialog), "implementation");
 	assert.equal(dialog.querySelector("#abTitle").value, defaultTitle("implementation"));
+});
+
+test("diff: uploaded diff disables the pasted-content field; leaving diff clears it", () => {
+	const { api } = makeDialog();
+	api.add("s1");
+	const dialog = dialogEl();
+	clickType(dialog, "diff");
+
+	const fileInput = dialog.querySelector('[data-ab="diffFile"]');
+	const content = dialog.querySelector('[data-ab="content"]');
+	assert.equal(content.disabled, false);
+
+	// Stage a "file": the onchange handler reads fileInput.files[0] through a
+	// FileReader whose readAsText resolves synchronously.
+	Object.defineProperty(fileInput, "files", { configurable: true, value: [{}] });
+	globalThis.FileReader = class {
+		constructor() { this.onload = null; }
+		readAsText() {
+			this.result = "diff --git a/src/a.c b/src/a.c\n@@ -1 +1 @@\n+p";
+			if (this.onload) this.onload();
+		}
+	};
+	fileInput.onchange();
+	assert.equal(content.disabled, true);
+	const preview = dialog.querySelector("#abDiffPreview");
+	assert.equal(preview.hidden, false);
+	assert.equal(preview.children.length, 1);
+
+	// Leave the diff type: staged files are dropped, the disable is lifted, and the
+	// preview is emptied rather than left lingering.
+	clickType(dialog, "text");
+	assert.equal(dialog.querySelector('[data-ab="content"]').disabled, false);
+	assert.equal(preview.hidden, true);
+	assert.equal(preview.children.length, 0);
 });
