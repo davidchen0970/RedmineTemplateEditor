@@ -78,3 +78,30 @@ test("same type card click keeps the typed title; a different card resets it", a
 		await expect(dialog).toBeHidden();
 	});
 });
+
+test("reopening the dialog resets the type to implementation and its default title", async ({ page }) => {
+	await test.step("open the editor", () => page.goto("/"));
+	const section = page.locator("#sections .section").first();
+
+	await test.step("pick the text type, fill a title, and submit", async () => {
+		const dialog = await openAddDialog(page, section);
+		await dialog.locator("#abTypes [data-ab-type='text']").click();
+		// text defaults to an empty title (defaultTitle, block-view.js:27); the main
+		// content textarea still exists (DEFAULT_FIELDS, add-block-dialog.js:39-42).
+		await dialog.locator("#abTitle").fill("text-title");
+		await dialog.locator("#abMain textarea").fill("some text");
+		await dialog.locator("#abForm button[type=submit]").click();
+		await expect(dialog).toBeHidden();
+	});
+
+	await test.step("reopen: implementation card is active again and title is its default", async () => {
+		const dialog = await openAddDialog(page, section);
+		// add() re-arms selectedType="implementation" and lastRenderedType=null
+		// (add-block-dialog.js:346-347), so renderFields sees typeChanged and writes
+		// defaultTitle("implementation") = "api.c" into #abTitle (lines 106-113).
+		await expect(dialog.locator("#abTypes [data-ab-type='implementation']")).toHaveClass(/\bactive\b/);
+		await expect(dialog.locator("#abTitle")).toHaveValue("api.c");
+		await dialog.locator("#abCancel").click();
+		await expect(dialog).toBeHidden();
+	});
+});

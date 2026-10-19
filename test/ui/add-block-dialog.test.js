@@ -7,6 +7,7 @@
 //      through the renderAll spy + shared state.
 //   2. re-clicking the SAME type card keeps the typed title; only switching to a
 //      DIFFERENT type resets it to that type's default.
+//   3. every `add()` resets selectedType back to "implementation" (no stale type).
 //
 // The real browser-ism path (scrollIntoView, markEntering) degrades gracefully in
 // jsdom: blockCard() finds no `.block[data-block=<id>]` node, so both are
@@ -93,4 +94,21 @@ test("same-type card re-click keeps the typed title; switching type resets it", 
 
 	clickType(dialog, "text"); // different type: title becomes that type's default
 	assert.equal(title.value, defaultTitle("text"));
+});
+
+test("add() always resets to implementation even after picking another type", () => {
+	const { api } = makeDialog();
+	api.add("s1");
+	let dialog = dialogEl();
+	assert.equal(activeType(dialog), "implementation");
+	assert.equal(dialog.querySelector("#abTitle").value, defaultTitle("implementation"));
+
+	clickType(dialog, "text");
+	assert.equal(activeType(dialogEl()), "text");
+
+	// Re-opens are via add(), which must reset the persisted selectedType.
+	api.add("s1");
+	dialog = dialogEl();
+	assert.equal(activeType(dialog), "implementation");
+	assert.equal(dialog.querySelector("#abTitle").value, defaultTitle("implementation"));
 });
