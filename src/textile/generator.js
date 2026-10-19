@@ -1,4 +1,5 @@
 import { toNonEmptyTrimmedLines, DEFAULT_CODE_LANG } from "../core/state.js";
+import { t } from "../i18n.js";
 
 const MERMAID_CLASSIC_FRONTMATTER = [
 	"---",
@@ -217,7 +218,7 @@ function push(outputLines, blockData, unordered) {
 		outputLines.push(marker + (title || "api.c"));
 		if (blockData.showWorkPath !== false) {
 			outputLines.push(
-				" {{collapse(" + (blockData.workPathTitle || "work path") + ")",
+				" {{collapse(" + (blockData.workPathTitle || t("block.workPath")) + ")",
 				'<pre><code class="shell">',
 				blockData.workPath || "(docker)$ pwd",
 				"</code></pre>",

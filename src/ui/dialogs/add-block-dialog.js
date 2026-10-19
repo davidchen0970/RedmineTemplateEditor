@@ -8,7 +8,7 @@ import { applyStaticText, t } from "../../i18n.js";
 import { ensureUiState } from "../editor/ui-state.js";
 
 const IMPL_EXTRAS = [
-	{ n: "workPathTitle", label: "block.workPathTitle", kind: "text", def: "work path" },
+	{ n: "workPathTitle", label: "block.workPathTitle", kind: "text", def: t("block.workPath") },
 	{ n: "workPath", label: "block.workPath", kind: "textarea", def: "(docker)$ pwd" },
 	{ n: "description", label: "Description", kind: "textarea", def: "" },
 	{ n: "showWorkPath", label: "block.showWorkPath", kind: "checkbox", def: true },
@@ -210,7 +210,7 @@ export function createAddBlockDialog({ findSection, changed, renderAll, getState
 				reads(dialog, "lang") || DEFAULT_CODE_LANG,
 				reads(dialog, "content") || "",
 				reads(dialog, "description") || "",
-				reads(dialog, "workPathTitle") || "work path",
+				reads(dialog, "workPathTitle") || t("block.workPath"),
 				reads(dialog, "showWorkPath") !== false,
 			);
 		}

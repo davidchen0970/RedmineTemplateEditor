@@ -28,7 +28,7 @@ export function createImplementationBlock(
 	lang = DEFAULT_CODE_LANG,
 	content = "",
 	description = "",
-	workPathTitle = "work path",
+	workPathTitle = "",
 	showWorkPath = true,
 ) {
 	return {
